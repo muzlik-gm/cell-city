@@ -1116,3 +1116,52 @@ PartsHub is a speed-optimized Mobile Spare Parts Management System (Next.js 16 S
 - **Home hero is content-rich**: with 8 widgets now (Today's Summary, search, Camera, Recent Searches, Popular Models, Low Stock, Customer+Supplier Search, Recently Sold), the hero is comprehensive but tall. The 2-column layout for customer/supplier search helps. Could add a collapse/expand toggle for power users.
 - **Keyboard arrow navigation**: search result cards don't yet support arrow-key navigation.
 - **Next priorities**: (1) implement real JWT auth + login screen, (2) add live barcode scanning camera feed, (3) optimize search DB indexes for 100k+ products, (4) make home widgets collapsible/personizable, (5) add keyboard arrow-key navigation through search result cards, (6) add a "top parts by revenue" widget, (7) add low-stock email/notification alerts.
+
+---
+Task ID: CRON-REVIEW-8
+Agent: orchestrator (Z.ai Code) — cron review round 8
+Task: Assess project status, QA via agent-browser, add Top Parts by Revenue widget + Collapsible widget wrapper, reorganize home hero into 2-column grids.
+
+## Current Project Status Assessment
+PartsHub is a speed-optimized Mobile Spare Parts Management System (Next.js 16 SPA, Prisma+SQLite, shadcn/ui) with universal search homepage, 7-item navigation, single-screen workflows, and a rich home command center (9 widgets). After this round: Top Parts by Revenue widget added, CollapsibleWidget wrapper created, home hero reorganized into 2-column grids for better space efficiency. Lint: 0 errors. All 7 views render. All APIs healthy.
+
+## Completed Modifications
+
+### New feature: CollapsibleWidget wrapper
+- **`src/components/shared/collapsible-widget.tsx`**: a reusable wrapper that adds expand/collapse functionality to any widget. Features:
+  - Header with icon, title, badge, action, and chevron toggle.
+  - Animated height transition via Framer Motion AnimatePresence.
+  - Persists open/closed state to localStorage (`pw-{storageKey}`).
+  - Lazy-initializes from localStorage (no setState-in-effect).
+  - Emerald design system, rounded-xl border + shadow-soft.
+
+### New feature: Top Parts by Revenue widget
+- **`src/components/shared/top-parts-widget.tsx`**: compact widget showing the top 6 products by revenue from the last 30 days. Features:
+  - Fetches `/api/dashboard/charts` (returns topProducts with name, qty, revenue).
+  - Each row: rank badge (#1 gets a Crown icon + amber styling), product name, revenue bar (gradient amber, proportional to max), qty sold, revenue (amber bold).
+  - Clicking a row fills the universal search input with the product name for instant re-ordering.
+  - "Reports" link in header.
+  - Loading skeleton, empty state.
+  - Placed side-by-side with LowStockWidget in a 2-column grid.
+
+### Polish: home hero 2-column grid layout
+- **`src/components/views/home-view.tsx`**: reorganized the hero widgets into 2-column grids for better space efficiency on desktop:
+  - Row 1: LowStockWidget + TopPartsWidget (side by side)
+  - Row 2: CustomerQuickSearch + SupplierQuickSearch (side by side)
+  - Row 3: RecentlySoldWidget (full width)
+  - This reduces vertical height and makes better use of wide screens.
+
+### Verification Results
+- `bun run lint`: 0 errors, 0 warnings.
+- All 7 nav views render correctly.
+- Top Parts by Revenue widget verified: shows "Samsung Galaxy F12 Frame ORIGINAL White, 7 sold, Rs 8,708" as #1 with crown, followed by other products with revenue bars.
+- Home hero 2-column layout verified: LowStock + TopParts side by side, Customer + Supplier search side by side.
+- Core flows verified: universal search returns product cards with 5 buttons, Quick Sell modal opens with discount field.
+- No console errors on fresh load.
+- Dark mode works.
+
+## Unresolved Issues / Risks & Next-Phase Recommendations
+- **CollapsibleWidget not yet applied**: the wrapper is built but not yet wrapping the existing widgets (LowStock, RecentlySold, etc.). Could wrap them so users can collapse widgets they don't need.
+- **Keyboard arrow navigation**: search result cards don't yet support arrow-key navigation.
+- **Home hero is still tall**: even with 2-column grids, there are 9 widgets. The CollapsibleWidget wrapper could help users hide widgets they don't use daily.
+- **Next priorities**: (1) wrap existing home widgets in CollapsibleWidget for user-customizable layout, (2) implement real JWT auth + login screen, (3) add live barcode scanning camera feed, (4) optimize search DB indexes for 100k+ products, (5) add keyboard arrow-key navigation through search result cards, (6) add low-stock email/notification alerts, (7) add a "quick add product" flow from home.

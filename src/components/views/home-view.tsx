@@ -15,6 +15,8 @@ import { TodaySummaryWidget } from "@/components/shared/today-summary-widget";
 import { CustomerQuickSearch } from "@/components/shared/customer-quick-search";
 import { SupplierQuickSearch } from "@/components/shared/supplier-quick-search";
 import { RecentlySoldWidget } from "@/components/shared/recently-sold-widget";
+import { TopPartsWidget } from "@/components/shared/top-parts-widget";
+import { CollapsibleWidget } from "@/components/shared/collapsible-widget";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -254,8 +256,11 @@ export function HomeView() {
               </div>
             )}
 
-            {/* Low-stock alerts widget */}
-            <LowStockWidget />
+            {/* Low-stock alerts + Top parts by revenue side by side on large screens */}
+            <div className="grid w-full gap-4 sm:grid-cols-2">
+              <LowStockWidget />
+              <TopPartsWidget />
+            </div>
 
             {/* Customer + Supplier quick-search side by side on large screens */}
             <div className="grid w-full gap-4 sm:grid-cols-2">
