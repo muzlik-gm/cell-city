@@ -1203,3 +1203,64 @@ PartsHub is a speed-optimized Mobile Spare Parts Management System (Next.js 16 S
 - **Stale Turbopack cache**: browser console still shows stale "Module not found" errors for deleted view files. Non-blocking — the app renders correctly. A dev server restart would clear it.
 - **CollapsibleWidget not yet applied**: the wrapper is built but not yet wrapping existing widgets. Could wrap LowStock, TopParts, RecentlySold for user-customizable layout.
 - **Next priorities**: (1) wrap home widgets in CollapsibleWidget for customizable layout, (2) implement real JWT auth + login screen, (3) add live barcode scanning camera feed, (4) optimize search DB indexes for 100k+ products, (5) add low-stock email/notification alerts, (6) add a "quick add product" flow from home, (7) add Tab key to cycle through part-type groups.
+
+---
+Task ID: CRON-REVIEW-10
+Agent: orchestrator (Z.ai Code) — cron review round 10
+Task: Redesign visual hierarchy for readability — large e-commerce-style product cards, generous spacing, large typography, 52px+ click targets per the new design philosophy.
+
+## Current Project Status Assessment
+PartsHub is a speed-optimized Mobile Spare Parts Management System (Next.js 16 SPA, Prisma+SQLite, shadcn/ui). After this round: complete visual redesign of product cards to large e-commerce-style layout (Amazon/Daraz-inspired), larger typography throughout, generous spacing, 2-column card grids, 52px+ click targets. Lint: 0 errors. All 7 views render. The interface now passes the 70-100cm readability test.
+
+## Completed Modifications
+
+### SmartProductCard complete redesign (`src/components/shared/smart-product-card.tsx`)
+Redesigned from a compact info-dense card to a large, spacious e-commerce-style card:
+- **Large image**: `aspect-[4/3]` (was h-20 w-20 thumbnail). Image scales on hover.
+- **Part type + quality badges**: large, top-left and top-right over the image.
+- **Out of stock overlay**: full-image dark overlay with "Out of Stock" badge.
+- **Product name**: `text-xl font-bold` (was text-sm). Line-clamp-2.
+- **Brand · Model**: `text-base` (was text-xs).
+- **Stock + Price row**: `text-2xl font-bold` (was text-xs). Stock color-coded (emerald/amber/rose). Price in emerald.
+- **Shelf location**: large rounded box with MapPin icon, `text-lg font-bold` (was text-xs inline).
+- **Compatible models**: `text-sm` chips with Layers icon (was text-[10px]).
+- **Primary action**: large full-width `h-14` "Sell Now" button (was 5 tiny buttons in a row).
+- **Secondary actions**: 4 buttons in a grid, each `h-12` with icon + label (was h-8 tiny buttons).
+- **Padding**: `p-5` (was p-3). Generous internal spacing.
+
+### Home view typography + layout (`src/components/views/home-view.tsx`)
+- **Hero title**: `text-4xl sm:text-5xl` (was text-3xl sm:text-4xl).
+- **Hero subtitle**: `text-lg` (was text-sm).
+- **Search bar**: `h-16 text-lg` with `h-6` search icon (was h-14 text-base with h-5 icon).
+- **Section titles** (part type headers): `text-xl font-bold` (was text-sm uppercase).
+- **Card grid**: 2-column `gap-6` (was 3-column gap-4). "4 large cards > 12 tiny cards".
+- **Loading skeletons**: `h-[520px]` 4 cards (was h-64 6 cards).
+
+### Page header (`src/components/shared/page-header.tsx`)
+- **Title**: `text-2xl sm:text-3xl` (was text-xl sm:text-2xl).
+- **Description**: `text-base` (was text-sm).
+- **Icon container**: `h-14 w-14` with `h-7` icon (was h-11 w-11 with h-5 icon).
+- **Margin bottom**: `mb-8` (was mb-6).
+
+### Sidebar (`src/components/sidebar.tsx`)
+- **Nav buttons**: `py-3.5 text-base` (was py-2.5 text-sm) — now ~52px height (meets 48px min).
+- **Nav icons**: `h-6 w-6` (was h-5 w-5).
+- **Padding**: `px-4` (was px-3).
+
+### Inventory view (`src/components/views/inventory-view.tsx`)
+- **Card grid**: 2-column `gap-6` (was 3-column gap-4).
+- **Loading skeletons**: `h-[520px]` 4 cards (was h-64 6 cards).
+
+### Verification Results
+- `bun run lint`: 0 errors, 0 warnings.
+- All 7 nav views render correctly.
+- Product cards verified: 24 cards render for "A12" search, each with large image, name, stock, price, shelf, compatible models, Sell Now button, and 4 secondary actions.
+- Card content DOM-verified: "OLED PREMIUM COPY Samsung Galaxy A12 Nacho OLED... Stock 34 units Price Rs 9,958 Shelf B2 Main".
+- Sell Now button exists in DOM and is clickable.
+- Large cards scroll naturally (intentional — "scrolling is acceptable, tiny text is not").
+- Dark mode works.
+
+## Unresolved Issues / Risks & Next-Phase Recommendations
+- **Card height**: cards are tall (image + name + stock + price + shelf + compatible + Sell button + 4 actions). This is intentional per the design philosophy ("4 large cards > 12 tiny cards, scrolling is acceptable"). Could add a "compact view" toggle for power users who want density.
+- **Product images**: most seeded products don't have real images (showing Package placeholder). The large image area is ready for real product photos.
+- **Next priorities**: (1) add real product images via AI generation or upload, (2) add a compact/density view toggle, (3) implement real JWT auth + login screen, (4) add live barcode scanning, (5) wrap home widgets in CollapsibleWidget, (6) add low-stock email alerts.

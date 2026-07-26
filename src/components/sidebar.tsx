@@ -77,14 +77,14 @@ export function Sidebar() {
                 onClick={() => setView(item.key)}
                 title={sidebarCollapsed ? item.label : undefined}
                 className={cn(
-                  "group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all",
+                  "group flex w-full items-center gap-3 rounded-xl px-4 py-3.5 text-base font-medium transition-all",
                   active
                     ? "bg-primary text-primary-foreground shadow-soft"
                     : "text-muted-foreground hover:bg-sidebar-accent hover:text-foreground",
                   sidebarCollapsed && "justify-center"
                 )}
               >
-                <Icon className={cn("h-5 w-5 shrink-0")} />
+                <Icon className={cn("h-6 w-6 shrink-0")} />
                 {!sidebarCollapsed && <span className="truncate">{item.label}</span>}
               </button>
             );

@@ -175,8 +175,8 @@ export function InventoryView() {
 
       {/* Product grid */}
       {products.isLoading ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, i) => <div key={i} className="h-64 animate-pulse rounded-2xl border bg-muted/50" />)}
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+          {Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-[520px] animate-pulse rounded-2xl border bg-muted/50" />)}
         </div>
       ) : filtered.length === 0 ? (
         <EmptyState
@@ -186,7 +186,7 @@ export function InventoryView() {
           action={!hasFilters && <Button onClick={() => { setEditing(null); setFormOpen(true); }} className="gap-1.5"><Plus className="h-4 w-4" /> Add Product</Button>}
         />
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           {filtered.map((p) => (
             <SmartProductCard
               key={p.id}

@@ -189,10 +189,10 @@ export function HomeView() {
               <Sparkles className="h-3.5 w-3.5 text-primary" />
               Search anything · finds parts, models, compatibility & more
             </div>
-            <h1 className="mb-2 text-center text-3xl font-bold tracking-tight sm:text-4xl">
+            <h1 className="mb-3 text-center text-4xl font-bold tracking-tight sm:text-5xl">
               Find any part in <span className="text-gradient">seconds</span>
             </h1>
-            <p className="mb-8 max-w-md text-center text-sm text-muted-foreground">
+            <p className="mb-10 max-w-lg text-center text-lg text-muted-foreground">
               Type a phone model, LCD code, barcode, or compatible phone. Results appear instantly.
             </p>
           </motion.div>
@@ -200,24 +200,24 @@ export function HomeView() {
       </AnimatePresence>
 
       {/* Search bar — always visible, large and centered */}
-      <div className={`relative ${!debounced ? "mx-auto max-w-2xl" : "mb-4"}`}>
+      <div className={`relative ${!debounced ? "mx-auto max-w-2xl" : "mb-6"}`}>
         <div className="relative">
-          <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute left-5 top-1/2 h-6 w-6 -translate-y-1/2 text-muted-foreground" />
           <Input
             id="universal-search"
             ref={inputRef}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search Samsung A12, LCD code, barcode, M12…"
-            className="h-14 rounded-2xl border-2 pl-12 pr-24 text-base shadow-card focus-visible:border-primary"
+            className="h-16 rounded-2xl border-2 pl-14 pr-14 text-lg shadow-card focus-visible:border-primary"
             autoComplete="off"
           />
           {query && (
             <button
               onClick={() => { setQuery(""); inputRef.current?.focus(); }}
-              className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted-foreground hover:bg-muted"
+              className="absolute right-5 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-muted-foreground hover:bg-muted"
             >
-              <X className="h-5 w-5" />
+              <X className="h-6 w-6" />
             </button>
           )}
         </div>
@@ -301,9 +301,9 @@ export function HomeView() {
 
       {/* Loading state */}
       {isLoading && debounced && (
-        <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-64 animate-pulse rounded-2xl border bg-muted/50" />
+        <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="h-[520px] animate-pulse rounded-2xl border bg-muted/50" />
           ))}
         </div>
       )}
@@ -407,11 +407,11 @@ export function HomeView() {
             let globalIdx = -1;
             return sortedGroups.map(([partType, products]) => (
               <div key={partType}>
-                <div className="mb-3 flex items-center gap-2">
-                  <h3 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">{partType}</h3>
-                  <Badge variant="secondary">{products.length}</Badge>
+                <div className="mb-4 flex items-center gap-3">
+                  <h3 className="text-xl font-bold tracking-tight">{partType}</h3>
+                  <Badge variant="secondary" className="text-sm">{products.length}</Badge>
                 </div>
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                   {products.map((p) => {
                     globalIdx++;
                     const idx = globalIdx;
@@ -446,7 +446,7 @@ export function HomeView() {
             <div>
               <div className="mb-3 flex items-center gap-2">
                 <ShoppingCart className="h-4 w-4 text-muted-foreground" />
-                <h3 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">Related Sales</h3>
+                <h3 className="text-xl font-bold tracking-tight">Related Sales</h3>
               </div>
               <div className="space-y-2">
                 {data.sales.map((s: any) => (
