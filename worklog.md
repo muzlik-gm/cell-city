@@ -1165,3 +1165,41 @@ PartsHub is a speed-optimized Mobile Spare Parts Management System (Next.js 16 S
 - **Keyboard arrow navigation**: search result cards don't yet support arrow-key navigation.
 - **Home hero is still tall**: even with 2-column grids, there are 9 widgets. The CollapsibleWidget wrapper could help users hide widgets they don't use daily.
 - **Next priorities**: (1) wrap existing home widgets in CollapsibleWidget for user-customizable layout, (2) implement real JWT auth + login screen, (3) add live barcode scanning camera feed, (4) optimize search DB indexes for 100k+ products, (5) add keyboard arrow-key navigation through search result cards, (6) add low-stock email/notification alerts, (7) add a "quick add product" flow from home.
+
+---
+Task ID: CRON-REVIEW-9
+Agent: orchestrator (Z.ai Code) — cron review round 9
+Task: Assess project status, QA via agent-browser, add keyboard arrow-key navigation through search result cards, fix ReferenceError.
+
+## Current Project Status Assessment
+PartsHub is a speed-optimized Mobile Spare Parts Management System (Next.js 16 SPA, Prisma+SQLite, shadcn/ui) with universal search homepage, 7-item navigation, single-screen workflows, and a rich home command center (9 widgets). After this round: keyboard arrow-key navigation added to search results (power-user speed feature), ReferenceError fixed. Lint: 0 errors. All 7 views render. All APIs healthy.
+
+## Completed Modifications
+
+### Bug fix: ReferenceError — Cannot access 'hasResults' before initialization
+- **`src/components/views/home-view.tsx`**: the keyboard navigation effect was declared before `hasResults` and `dedupedProducts` were defined, causing a ReferenceError crash when the component rendered. Moved the keyboard effect to AFTER the `hasResults`, `dedupedProducts`, `sortedGroups`, and `handleSell` declarations so all referenced variables are initialized before the effect runs. The app now loads without crashing.
+
+### New feature: Keyboard arrow-key navigation through search results
+- **`src/components/views/home-view.tsx`**: added full keyboard navigation for search result cards:
+  - **ArrowDown / ArrowUp**: navigate between product cards (wraps from -1 = none to last card).
+  - **Enter**: when a card is focused, opens the product detail sheet; when no card is focused, saves the search to recent searches.
+  - **Esc**: clears the search and resets focus (when search input is focused).
+  - **Visual focus state**: focused card gets `ring-2 ring-primary ring-offset-2 scale-[1.02]` and auto-scrolls into view (smooth scroll).
+  - **Global index tracking**: cards are indexed across all part-type groups (LCD, OLED, Battery, etc.) using a closure counter in the render.
+  - **Keyboard hints**: a subtle hint bar (↑↓ navigate · Enter open · Esc clear) appears at the top of search results when products are found.
+  - **Reset on new search**: focusedCardIndex resets to -1 when the search query changes.
+  - Verified: pressing ArrowDown twice focuses the second card (ring-2 applied), 24 product cards navigable.
+
+### Verification Results
+- `bun run lint`: 0 errors, 0 warnings.
+- All 7 nav views render correctly.
+- Keyboard navigation verified: ArrowDown focuses cards with ring-2 + scale, 24 cards navigable for "A12" search.
+- App loads without crashing (ReferenceError fixed).
+- Core flows verified: universal search returns product cards, Quick Sell modal works.
+- No console errors on fresh load (except stale Turbopack cache for deleted view files).
+- Dark mode works.
+
+## Unresolved Issues / Risks & Next-Phase Recommendations
+- **Stale Turbopack cache**: browser console still shows stale "Module not found" errors for deleted view files. Non-blocking — the app renders correctly. A dev server restart would clear it.
+- **CollapsibleWidget not yet applied**: the wrapper is built but not yet wrapping existing widgets. Could wrap LowStock, TopParts, RecentlySold for user-customizable layout.
+- **Next priorities**: (1) wrap home widgets in CollapsibleWidget for customizable layout, (2) implement real JWT auth + login screen, (3) add live barcode scanning camera feed, (4) optimize search DB indexes for 100k+ products, (5) add low-stock email/notification alerts, (6) add a "quick add product" flow from home, (7) add Tab key to cycle through part-type groups.

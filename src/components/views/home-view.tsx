@@ -27,6 +27,7 @@ import {
   X, TrendingUp, ArrowRight, Sparkles, Camera, Clock, Flame,
 } from "lucide-react";
 import { useAppStore } from "@/lib/store";
+import { cn } from "@/lib/utils";
 import { formatCurrency, timeAgo } from "@/lib/format";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -44,6 +45,7 @@ export function HomeView() {
   const [adjustProduct, setAdjustProduct] = useState<any>(null);
   const [aiOpen, setAiOpen] = useState(false);
   const [quickSellProduct, setQuickSellProduct] = useState<any>(null);
+  const [focusedCardIndex, setFocusedCardIndex] = useState(-1);
   const [recentSearches, setRecentSearches] = useState<string[]>(() => {
     if (typeof window === "undefined") return [];
     try {
@@ -52,10 +54,11 @@ export function HomeView() {
     } catch { return []; }
   });
   const inputRef = useRef<HTMLInputElement>(null);
+  const focusedCardRef = useRef<HTMLDivElement>(null);
 
   // Debounce search
   useEffect(() => {
-    const t = setTimeout(() => setDebounced(query), 200);
+    const t = setTimeout(() => { setDebounced(query); setFocusedCardIndex(-1); }, 200);
     return () => clearTimeout(t);
   }, [query]);
 
@@ -63,6 +66,13 @@ export function HomeView() {
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
+
+  // Scroll focused card into view
+  useEffect(() => {
+    if (focusedCardIndex >= 0 && focusedCardRef.current) {
+      focusedCardRef.current.scrollIntoView({ block: "center", behavior: "smooth" });
+    }
+  }, [focusedCardIndex]);
 
   const saveRecent = useCallback((q: string) => {
     setRecentSearches((prev) => {
@@ -76,20 +86,6 @@ export function HomeView() {
     setRecentSearches([]);
     try { localStorage.removeItem(RECENT_KEY); } catch { /* ignore */ }
   }, []);
-
-  // Esc clears search; Enter saves to recent
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && document.activeElement === inputRef.current) {
-        setQuery("");
-      }
-      if (e.key === "Enter" && debounced.length > 1) {
-        saveRecent(debounced);
-      }
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [debounced, saveRecent]);
 
   // Popular models (top by product count) for the hero
   const popular = useQuery({
@@ -143,6 +139,35 @@ export function HomeView() {
     useAppStore.getState().setContextId(p.id);
     setView("sales");
   }, [setView]);
+
+  // Esc clears search; Enter saves to recent / opens focused card; Arrow keys navigate cards
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && document.activeElement === inputRef.current) {
+        setQuery("");
+        setFocusedCardIndex(-1);
+      }
+      if (e.key === "Enter" && debounced.length > 1) {
+        if (focusedCardIndex >= 0 && focusedCardIndex < dedupedProducts.length) {
+          e.preventDefault();
+          setSelected(dedupedProducts[focusedCardIndex]);
+        } else {
+          saveRecent(debounced);
+        }
+      }
+      if (hasResults && !isLoading) {
+        if (e.key === "ArrowDown") {
+          e.preventDefault();
+          setFocusedCardIndex((i) => Math.min(i + 1, dedupedProducts.length - 1));
+        } else if (e.key === "ArrowUp") {
+          e.preventDefault();
+          setFocusedCardIndex((i) => Math.max(i - 1, -1));
+        }
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [debounced, saveRecent, focusedCardIndex, hasResults, isLoading, dedupedProducts]);
 
   return (
     <div className="mx-auto max-w-6xl">
@@ -297,6 +322,23 @@ export function HomeView() {
       {/* Results */}
       {!isLoading && hasResults && (
         <div className="mt-6 space-y-6">
+          {/* Keyboard hint */}
+          {dedupedProducts.length > 0 && (
+            <div className="flex items-center justify-end gap-3 text-[10px] text-muted-foreground">
+              <span className="flex items-center gap-1">
+                <kbd className="rounded border bg-muted px-1 py-0.5 font-mono text-[9px]">↑↓</kbd>
+                navigate
+              </span>
+              <span className="flex items-center gap-1">
+                <kbd className="rounded border bg-muted px-1 py-0.5 font-mono text-[9px]">Enter</kbd>
+                open
+              </span>
+              <span className="flex items-center gap-1">
+                <kbd className="rounded border bg-muted px-1 py-0.5 font-mono text-[9px]">Esc</kbd>
+                clear
+              </span>
+            </div>
+          )}
           {/* Quick info chips: matched models, brands, customers, suppliers */}
           <div className="flex flex-wrap gap-2">
             {data.models?.map((m: any) => (
@@ -361,28 +403,43 @@ export function HomeView() {
           )}
 
           {/* Products grouped by part type */}
-          {sortedGroups.map(([partType, products]) => (
-            <div key={partType}>
-              <div className="mb-3 flex items-center gap-2">
-                <h3 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">{partType}</h3>
-                <Badge variant="secondary">{products.length}</Badge>
+          {(() => {
+            let globalIdx = -1;
+            return sortedGroups.map(([partType, products]) => (
+              <div key={partType}>
+                <div className="mb-3 flex items-center gap-2">
+                  <h3 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">{partType}</h3>
+                  <Badge variant="secondary">{products.length}</Badge>
+                </div>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {products.map((p) => {
+                    globalIdx++;
+                    const idx = globalIdx;
+                    return (
+                      <div
+                        key={p.id}
+                        ref={idx === focusedCardIndex ? focusedCardRef : undefined}
+                        className={cn(
+                          "rounded-2xl transition-all",
+                          idx === focusedCardIndex && "ring-2 ring-primary ring-offset-2 ring-offset-background scale-[1.02]"
+                        )}
+                      >
+                        <SmartProductCard
+                          product={p}
+                          onSell={handleSell}
+                          onQuickSell={(prod) => setQuickSellProduct(prod)}
+                          onEdit={(prod) => { setEditing(prod); setFormOpen(true); }}
+                          onPrintQR={(prod) => setQrProduct(prod)}
+                          onHistory={(prod) => setSelected(prod)}
+                          onReceive={(prod) => setAdjustProduct(prod)}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {products.map((p) => (
-                  <SmartProductCard
-                    key={p.id}
-                    product={p}
-                    onSell={handleSell}
-                    onQuickSell={(prod) => setQuickSellProduct(prod)}
-                    onEdit={(prod) => { setEditing(prod); setFormOpen(true); }}
-                    onPrintQR={(prod) => setQrProduct(prod)}
-                    onHistory={(prod) => setSelected(prod)}
-                    onReceive={(prod) => setAdjustProduct(prod)}
-                  />
-                ))}
-              </div>
-            </div>
-          ))}
+            ));
+          })()}
 
           {/* Recent sales matches */}
           {data.sales?.length > 0 && (
