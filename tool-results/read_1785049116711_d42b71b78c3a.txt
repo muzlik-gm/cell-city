@@ -1,0 +1,2002 @@
+     1→▲ Next.js 16.1.3 (Turbopack)
+     2→- Local:         http://localhost:3000
+     3→- Network:       http://21.0.11.94:3000
+     4→- Environments: .env
+     5→
+     6→✓ Starting...
+     7→Attention: Next.js now collects completely anonymous telemetry regarding usage.
+     8→This information is used to shape Next.js' roadmap and prioritize features.
+     9→You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+    10→https://nextjs.org/telemetry
+    11→
+    12→
+    13→  We detected TypeScript in your project and reconfigured your tsconfig.json file for you.
+    14→  The following suggested values were added to your tsconfig.json. These values can be changed to fit your project's needs:
+    15→
+    16→        - include was updated to add '.next/dev/types/**/*.ts'
+    17→
+    18→  The following mandatory changes were made to your tsconfig.json:
+    19→
+    20→        - jsx was set to react-jsx (next.js uses the React automatic runtime)
+    21→
+    22→✓ Ready in 641ms
+    23→○ Compiling / ...
+    24→ GET / 200 in 3.5s (compile: 3.4s, render: 126ms)
+    25→ GET / 200 in 1486ms (compile: 1314ms, render: 172ms)
+    26→ GET / 200 in 35ms (compile: 2ms, render: 32ms)
+    27→⨯ ./src/app/layout.tsx:6:1
+    28→Module not found: Can't resolve '@/components/query-provider'
+    29→[0m [90m 4 |[39m [36mimport[39m { [33mToaster[39m } [36mfrom[39m [32m"@/components/ui/sonner"[39m[33m;[39m
+    30→ [90m 5 |[39m [36mimport[39m { [33mThemeProvider[39m } [36mfrom[39m [32m"@/components/theme-provider"[39m[33m;[39m
+    31→[31m[1m>[22m[39m[90m 6 |[39m [36mimport[39m { [33mQueryProvider[39m } [36mfrom[39m [32m"@/components/query-provider"[39m[33m;[39m
+    32→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+    33→ [90m 7 |[39m
+    34→ [90m 8 |[39m [36mconst[39m inter [33m=[39m [33mInter[39m({
+    35→ [90m 9 |[39m   variable[33m:[39m [32m"--font-sans"[39m[33m,[39m[0m
+    36→
+    37→Import map: aliased to relative './src/components/query-provider' inside of [project]/
+    38→
+    39→
+    40→https://nextjs.org/docs/messages/module-not-found
+    41→
+    42→
+    43→⨯ ./src/app/layout.tsx:6:1
+    44→Module not found: Can't resolve '@/components/query-provider'
+    45→[0m [90m 4 |[39m [36mimport[39m { [33mToaster[39m } [36mfrom[39m [32m"@/components/ui/sonner"[39m[33m;[39m
+    46→ [90m 5 |[39m [36mimport[39m { [33mThemeProvider[39m } [36mfrom[39m [32m"@/components/theme-provider"[39m[33m;[39m
+    47→[31m[1m>[22m[39m[90m 6 |[39m [36mimport[39m { [33mQueryProvider[39m } [36mfrom[39m [32m"@/components/query-provider"[39m[33m;[39m
+    48→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+    49→ [90m 7 |[39m
+    50→ [90m 8 |[39m [36mconst[39m inter [33m=[39m [33mInter[39m({
+    51→ [90m 9 |[39m   variable[33m:[39m [32m"--font-sans"[39m[33m,[39m[0m
+    52→
+    53→Import map: aliased to relative './src/components/query-provider' inside of [project]/
+    54→
+    55→
+    56→https://nextjs.org/docs/messages/module-not-found
+    57→
+    58→
+    59→⨯ ./src/app/layout.tsx:6:1
+    60→Module not found: Can't resolve '@/components/query-provider'
+    61→[0m [90m 4 |[39m [36mimport[39m { [33mToaster[39m } [36mfrom[39m [32m"@/components/ui/sonner"[39m[33m;[39m
+    62→ [90m 5 |[39m [36mimport[39m { [33mThemeProvider[39m } [36mfrom[39m [32m"@/components/theme-provider"[39m[33m;[39m
+    63→[31m[1m>[22m[39m[90m 6 |[39m [36mimport[39m { [33mQueryProvider[39m } [36mfrom[39m [32m"@/components/query-provider"[39m[33m;[39m
+    64→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+    65→ [90m 7 |[39m
+    66→ [90m 8 |[39m [36mconst[39m inter [33m=[39m [33mInter[39m({
+    67→ [90m 9 |[39m   variable[33m:[39m [32m"--font-sans"[39m[33m,[39m[0m
+    68→
+    69→Import map: aliased to relative './src/components/query-provider' inside of [project]/
+    70→
+    71→
+    72→https://nextjs.org/docs/messages/module-not-found
+    73→
+    74→
+    75→⨯ ./src/app/layout.tsx:6:1
+    76→Module not found: Can't resolve '@/components/query-provider'
+    77→[0m [90m 4 |[39m [36mimport[39m { [33mToaster[39m } [36mfrom[39m [32m"@/components/ui/sonner"[39m[33m;[39m
+    78→ [90m 5 |[39m [36mimport[39m { [33mThemeProvider[39m } [36mfrom[39m [32m"@/components/theme-provider"[39m[33m;[39m
+    79→[31m[1m>[22m[39m[90m 6 |[39m [36mimport[39m { [33mQueryProvider[39m } [36mfrom[39m [32m"@/components/query-provider"[39m[33m;[39m
+    80→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+    81→ [90m 7 |[39m
+    82→ [90m 8 |[39m [36mconst[39m inter [33m=[39m [33mInter[39m({
+    83→ [90m 9 |[39m   variable[33m:[39m [32m"--font-sans"[39m[33m,[39m[0m
+    84→
+    85→Import map: aliased to relative './src/components/query-provider' inside of [project]/
+    86→
+    87→
+    88→https://nextjs.org/docs/messages/module-not-found
+    89→
+    90→
+    91→⨯ ./src/app/layout.tsx:6:1
+    92→Module not found: Can't resolve '@/components/query-provider'
+    93→[0m [90m 4 |[39m [36mimport[39m { [33mToaster[39m } [36mfrom[39m [32m"@/components/ui/sonner"[39m[33m;[39m
+    94→ [90m 5 |[39m [36mimport[39m { [33mThemeProvider[39m } [36mfrom[39m [32m"@/components/theme-provider"[39m[33m;[39m
+    95→[31m[1m>[22m[39m[90m 6 |[39m [36mimport[39m { [33mQueryProvider[39m } [36mfrom[39m [32m"@/components/query-provider"[39m[33m;[39m
+    96→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+    97→ [90m 7 |[39m
+    98→ [90m 8 |[39m [36mconst[39m inter [33m=[39m [33mInter[39m({
+    99→ [90m 9 |[39m   variable[33m:[39m [32m"--font-sans"[39m[33m,[39m[0m
+   100→
+   101→Import map: aliased to relative './src/components/query-provider' inside of [project]/
+   102→
+   103→
+   104→https://nextjs.org/docs/messages/module-not-found
+   105→
+   106→
+   107→⨯ ./src/app/layout.tsx:6:1
+   108→Module not found: Can't resolve '@/components/query-provider'
+   109→[0m [90m 4 |[39m [36mimport[39m { [33mToaster[39m } [36mfrom[39m [32m"@/components/ui/sonner"[39m[33m;[39m
+   110→ [90m 5 |[39m [36mimport[39m { [33mThemeProvider[39m } [36mfrom[39m [32m"@/components/theme-provider"[39m[33m;[39m
+   111→[31m[1m>[22m[39m[90m 6 |[39m [36mimport[39m { [33mQueryProvider[39m } [36mfrom[39m [32m"@/components/query-provider"[39m[33m;[39m
+   112→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   113→ [90m 7 |[39m
+   114→ [90m 8 |[39m [36mconst[39m inter [33m=[39m [33mInter[39m({
+   115→ [90m 9 |[39m   variable[33m:[39m [32m"--font-sans"[39m[33m,[39m[0m
+   116→
+   117→Import map: aliased to relative './src/components/query-provider' inside of [project]/
+   118→
+   119→
+   120→https://nextjs.org/docs/messages/module-not-found
+   121→
+   122→
+   123→⨯ ./src/app/layout.tsx:6:1
+   124→Module not found: Can't resolve '@/components/query-provider'
+   125→[0m [90m 4 |[39m [36mimport[39m { [33mToaster[39m } [36mfrom[39m [32m"@/components/ui/sonner"[39m[33m;[39m
+   126→ [90m 5 |[39m [36mimport[39m { [33mThemeProvider[39m } [36mfrom[39m [32m"@/components/theme-provider"[39m[33m;[39m
+   127→[31m[1m>[22m[39m[90m 6 |[39m [36mimport[39m { [33mQueryProvider[39m } [36mfrom[39m [32m"@/components/query-provider"[39m[33m;[39m
+   128→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   129→ [90m 7 |[39m
+   130→ [90m 8 |[39m [36mconst[39m inter [33m=[39m [33mInter[39m({
+   131→ [90m 9 |[39m   variable[33m:[39m [32m"--font-sans"[39m[33m,[39m[0m
+   132→
+   133→Import map: aliased to relative './src/components/query-provider' inside of [project]/
+   134→
+   135→
+   136→https://nextjs.org/docs/messages/module-not-found
+   137→
+   138→
+   139→⨯ ./src/app/layout.tsx:6:1
+   140→Module not found: Can't resolve '@/components/query-provider'
+   141→[0m [90m 4 |[39m [36mimport[39m { [33mToaster[39m } [36mfrom[39m [32m"@/components/ui/sonner"[39m[33m;[39m
+   142→ [90m 5 |[39m [36mimport[39m { [33mThemeProvider[39m } [36mfrom[39m [32m"@/components/theme-provider"[39m[33m;[39m
+   143→[31m[1m>[22m[39m[90m 6 |[39m [36mimport[39m { [33mQueryProvider[39m } [36mfrom[39m [32m"@/components/query-provider"[39m[33m;[39m
+   144→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   145→ [90m 7 |[39m
+   146→ [90m 8 |[39m [36mconst[39m inter [33m=[39m [33mInter[39m({
+   147→ [90m 9 |[39m   variable[33m:[39m [32m"--font-sans"[39m[33m,[39m[0m
+   148→
+   149→Import map: aliased to relative './src/components/query-provider' inside of [project]/
+   150→
+   151→
+   152→https://nextjs.org/docs/messages/module-not-found
+   153→
+   154→
+   155→⨯ ./src/app/layout.tsx:6:1
+   156→Module not found: Can't resolve '@/components/query-provider'
+   157→[0m [90m 4 |[39m [36mimport[39m { [33mToaster[39m } [36mfrom[39m [32m"@/components/ui/sonner"[39m[33m;[39m
+   158→ [90m 5 |[39m [36mimport[39m { [33mThemeProvider[39m } [36mfrom[39m [32m"@/components/theme-provider"[39m[33m;[39m
+   159→[31m[1m>[22m[39m[90m 6 |[39m [36mimport[39m { [33mQueryProvider[39m } [36mfrom[39m [32m"@/components/query-provider"[39m[33m;[39m
+   160→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   161→ [90m 7 |[39m
+   162→ [90m 8 |[39m [36mconst[39m inter [33m=[39m [33mInter[39m({
+   163→ [90m 9 |[39m   variable[33m:[39m [32m"--font-sans"[39m[33m,[39m[0m
+   164→
+   165→Import map: aliased to relative './src/components/query-provider' inside of [project]/
+   166→
+   167→
+   168→https://nextjs.org/docs/messages/module-not-found
+   169→
+   170→
+   171→⨯ ./src/app/layout.tsx:6:1
+   172→Module not found: Can't resolve '@/components/query-provider'
+   173→[0m [90m 4 |[39m [36mimport[39m { [33mToaster[39m } [36mfrom[39m [32m"@/components/ui/sonner"[39m[33m;[39m
+   174→ [90m 5 |[39m [36mimport[39m { [33mThemeProvider[39m } [36mfrom[39m [32m"@/components/theme-provider"[39m[33m;[39m
+   175→[31m[1m>[22m[39m[90m 6 |[39m [36mimport[39m { [33mQueryProvider[39m } [36mfrom[39m [32m"@/components/query-provider"[39m[33m;[39m
+   176→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   177→ [90m 7 |[39m
+   178→ [90m 8 |[39m [36mconst[39m inter [33m=[39m [33mInter[39m({
+   179→ [90m 9 |[39m   variable[33m:[39m [32m"--font-sans"[39m[33m,[39m[0m
+   180→
+   181→Import map: aliased to relative './src/components/query-provider' inside of [project]/
+   182→
+   183→
+   184→https://nextjs.org/docs/messages/module-not-found
+   185→
+   186→
+   187→⨯ ./src/app/layout.tsx:6:1
+   188→Module not found: Can't resolve '@/components/query-provider'
+   189→[0m [90m 4 |[39m [36mimport[39m { [33mToaster[39m } [36mfrom[39m [32m"@/components/ui/sonner"[39m[33m;[39m
+   190→ [90m 5 |[39m [36mimport[39m { [33mThemeProvider[39m } [36mfrom[39m [32m"@/components/theme-provider"[39m[33m;[39m
+   191→[31m[1m>[22m[39m[90m 6 |[39m [36mimport[39m { [33mQueryProvider[39m } [36mfrom[39m [32m"@/components/query-provider"[39m[33m;[39m
+   192→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   193→ [90m 7 |[39m
+   194→ [90m 8 |[39m [36mconst[39m inter [33m=[39m [33mInter[39m({
+   195→ [90m 9 |[39m   variable[33m:[39m [32m"--font-sans"[39m[33m,[39m[0m
+   196→
+   197→Import map: aliased to relative './src/components/query-provider' inside of [project]/
+   198→
+   199→
+   200→https://nextjs.org/docs/messages/module-not-found
+   201→
+   202→
+   203→⨯ ./src/app/layout.tsx:6:1
+   204→Module not found: Can't resolve '@/components/query-provider'
+   205→[0m [90m 4 |[39m [36mimport[39m { [33mToaster[39m } [36mfrom[39m [32m"@/components/ui/sonner"[39m[33m;[39m
+   206→ [90m 5 |[39m [36mimport[39m { [33mThemeProvider[39m } [36mfrom[39m [32m"@/components/theme-provider"[39m[33m;[39m
+   207→[31m[1m>[22m[39m[90m 6 |[39m [36mimport[39m { [33mQueryProvider[39m } [36mfrom[39m [32m"@/components/query-provider"[39m[33m;[39m
+   208→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   209→ [90m 7 |[39m
+   210→ [90m 8 |[39m [36mconst[39m inter [33m=[39m [33mInter[39m({
+   211→ [90m 9 |[39m   variable[33m:[39m [32m"--font-sans"[39m[33m,[39m[0m
+   212→
+   213→Import map: aliased to relative './src/components/query-provider' inside of [project]/
+   214→
+   215→
+   216→https://nextjs.org/docs/messages/module-not-found
+   217→
+   218→
+   219→✓ Compiled in 267ms
+   220→⚠ Cross origin request detected from preview-chat-60c86f17-b507-4f20-aa40-9d337fed6dd6.space-z.ai to /_next/* resource. In a future major version of Next.js, you will need to explicitly configure "allowedDevOrigins" in next.config to allow this.
+   221→Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
+   222→✓ Compiled in 231ms
+   223→ GET / 200 in 67ms (compile: 32ms, render: 35ms)
+   224→ GET / 200 in 54ms (compile: 3ms, render: 51ms)
+   225→✓ Compiled in 241ms
+   226→⨯ ./src/app/page.tsx:3:1
+   227→Module not found: Can't resolve '@/components/app-shell'
+   228→[0m [90m 1 |[39m [32m"use client"[39m[33m;[39m
+   229→ [90m 2 |[39m
+   230→[31m[1m>[22m[39m[90m 3 |[39m [36mimport[39m { [33mAppShell[39m } [36mfrom[39m [32m"@/components/app-shell"[39m[33m;[39m
+   231→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   232→ [90m 4 |[39m
+   233→ [90m 5 |[39m [36mexport[39m [36mdefault[39m [36mfunction[39m [33mHome[39m() {
+   234→ [90m 6 |[39m   [36mreturn[39m [33m<[39m[33mAppShell[39m [33m/[39m[33m>[39m[33m;[39m[0m
+   235→
+   236→Import map: aliased to relative './src/components/app-shell' inside of [project]/
+   237→
+   238→
+   239→Import traces:
+   240→  Client Component Browser:
+   241→    ./src/app/page.tsx [Client Component Browser]
+   242→    ./src/app/page.tsx [Server Component]
+   243→
+   244→  Client Component SSR:
+   245→    ./src/app/page.tsx [Client Component SSR]
+   246→    ./src/app/page.tsx [Server Component]
+   247→
+   248→https://nextjs.org/docs/messages/module-not-found
+   249→
+   250→
+   251→⨯ ./src/app/page.tsx:3:1
+   252→Module not found: Can't resolve '@/components/app-shell'
+   253→[0m [90m 1 |[39m [32m"use client"[39m[33m;[39m
+   254→ [90m 2 |[39m
+   255→[31m[1m>[22m[39m[90m 3 |[39m [36mimport[39m { [33mAppShell[39m } [36mfrom[39m [32m"@/components/app-shell"[39m[33m;[39m
+   256→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   257→ [90m 4 |[39m
+   258→ [90m 5 |[39m [36mexport[39m [36mdefault[39m [36mfunction[39m [33mHome[39m() {
+   259→ [90m 6 |[39m   [36mreturn[39m [33m<[39m[33mAppShell[39m [33m/[39m[33m>[39m[33m;[39m[0m
+   260→
+   261→Import map: aliased to relative './src/components/app-shell' inside of [project]/
+   262→
+   263→
+   264→Import traces:
+   265→  Client Component Browser:
+   266→    ./src/app/page.tsx [Client Component Browser]
+   267→    ./src/app/page.tsx [Server Component]
+   268→
+   269→  Client Component SSR:
+   270→    ./src/app/page.tsx [Client Component SSR]
+   271→    ./src/app/page.tsx [Server Component]
+   272→
+   273→https://nextjs.org/docs/messages/module-not-found
+   274→
+   275→
+   276→⨯ ./src/app/page.tsx:3:1
+   277→Module not found: Can't resolve '@/components/app-shell'
+   278→[0m [90m 1 |[39m [32m"use client"[39m[33m;[39m
+   279→ [90m 2 |[39m
+   280→[31m[1m>[22m[39m[90m 3 |[39m [36mimport[39m { [33mAppShell[39m } [36mfrom[39m [32m"@/components/app-shell"[39m[33m;[39m
+   281→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   282→ [90m 4 |[39m
+   283→ [90m 5 |[39m [36mexport[39m [36mdefault[39m [36mfunction[39m [33mHome[39m() {
+   284→ [90m 6 |[39m   [36mreturn[39m [33m<[39m[33mAppShell[39m [33m/[39m[33m>[39m[33m;[39m[0m
+   285→
+   286→Import map: aliased to relative './src/components/app-shell' inside of [project]/
+   287→
+   288→
+   289→Import traces:
+   290→  Client Component Browser:
+   291→    ./src/app/page.tsx [Client Component Browser]
+   292→    ./src/app/page.tsx [Server Component]
+   293→
+   294→  Client Component SSR:
+   295→    ./src/app/page.tsx [Client Component SSR]
+   296→    ./src/app/page.tsx [Server Component]
+   297→
+   298→https://nextjs.org/docs/messages/module-not-found
+   299→
+   300→
+   301→⨯ ./src/app/page.tsx:3:1
+   302→Module not found: Can't resolve '@/components/app-shell'
+   303→[0m [90m 1 |[39m [32m"use client"[39m[33m;[39m
+   304→ [90m 2 |[39m
+   305→[31m[1m>[22m[39m[90m 3 |[39m [36mimport[39m { [33mAppShell[39m } [36mfrom[39m [32m"@/components/app-shell"[39m[33m;[39m
+   306→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   307→ [90m 4 |[39m
+   308→ [90m 5 |[39m [36mexport[39m [36mdefault[39m [36mfunction[39m [33mHome[39m() {
+   309→ [90m 6 |[39m   [36mreturn[39m [33m<[39m[33mAppShell[39m [33m/[39m[33m>[39m[33m;[39m[0m
+   310→
+   311→Import map: aliased to relative './src/components/app-shell' inside of [project]/
+   312→
+   313→
+   314→Import traces:
+   315→  Client Component Browser:
+   316→    ./src/app/page.tsx [Client Component Browser]
+   317→    ./src/app/page.tsx [Server Component]
+   318→
+   319→  Client Component SSR:
+   320→    ./src/app/page.tsx [Client Component SSR]
+   321→    ./src/app/page.tsx [Server Component]
+   322→
+   323→https://nextjs.org/docs/messages/module-not-found
+   324→
+   325→
+   326→⨯ ./src/app/page.tsx:3:1
+   327→Module not found: Can't resolve '@/components/app-shell'
+   328→[0m [90m 1 |[39m [32m"use client"[39m[33m;[39m
+   329→ [90m 2 |[39m
+   330→[31m[1m>[22m[39m[90m 3 |[39m [36mimport[39m { [33mAppShell[39m } [36mfrom[39m [32m"@/components/app-shell"[39m[33m;[39m
+   331→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   332→ [90m 4 |[39m
+   333→ [90m 5 |[39m [36mexport[39m [36mdefault[39m [36mfunction[39m [33mHome[39m() {
+   334→ [90m 6 |[39m   [36mreturn[39m [33m<[39m[33mAppShell[39m [33m/[39m[33m>[39m[33m;[39m[0m
+   335→
+   336→Import map: aliased to relative './src/components/app-shell' inside of [project]/
+   337→
+   338→
+   339→Import traces:
+   340→  Client Component Browser:
+   341→    ./src/app/page.tsx [Client Component Browser]
+   342→    ./src/app/page.tsx [Server Component]
+   343→
+   344→  Client Component SSR:
+   345→    ./src/app/page.tsx [Client Component SSR]
+   346→    ./src/app/page.tsx [Server Component]
+   347→
+   348→https://nextjs.org/docs/messages/module-not-found
+   349→
+   350→
+   351→⨯ ./src/app/page.tsx:3:1
+   352→Module not found: Can't resolve '@/components/app-shell'
+   353→[0m [90m 1 |[39m [32m"use client"[39m[33m;[39m
+   354→ [90m 2 |[39m
+   355→[31m[1m>[22m[39m[90m 3 |[39m [36mimport[39m { [33mAppShell[39m } [36mfrom[39m [32m"@/components/app-shell"[39m[33m;[39m
+   356→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   357→ [90m 4 |[39m
+   358→ [90m 5 |[39m [36mexport[39m [36mdefault[39m [36mfunction[39m [33mHome[39m() {
+   359→ [90m 6 |[39m   [36mreturn[39m [33m<[39m[33mAppShell[39m [33m/[39m[33m>[39m[33m;[39m[0m
+   360→
+   361→Import map: aliased to relative './src/components/app-shell' inside of [project]/
+   362→
+   363→
+   364→Import traces:
+   365→  Client Component Browser:
+   366→    ./src/app/page.tsx [Client Component Browser]
+   367→    ./src/app/page.tsx [Server Component]
+   368→
+   369→  Client Component SSR:
+   370→    ./src/app/page.tsx [Client Component SSR]
+   371→    ./src/app/page.tsx [Server Component]
+   372→
+   373→https://nextjs.org/docs/messages/module-not-found
+   374→
+   375→
+   376→⨯ ./src/app/page.tsx:3:1
+   377→Module not found: Can't resolve '@/components/app-shell'
+   378→[0m [90m 1 |[39m [32m"use client"[39m[33m;[39m
+   379→ [90m 2 |[39m
+   380→[31m[1m>[22m[39m[90m 3 |[39m [36mimport[39m { [33mAppShell[39m } [36mfrom[39m [32m"@/components/app-shell"[39m[33m;[39m
+   381→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   382→ [90m 4 |[39m
+   383→ [90m 5 |[39m [36mexport[39m [36mdefault[39m [36mfunction[39m [33mHome[39m() {
+   384→ [90m 6 |[39m   [36mreturn[39m [33m<[39m[33mAppShell[39m [33m/[39m[33m>[39m[33m;[39m[0m
+   385→
+   386→Import map: aliased to relative './src/components/app-shell' inside of [project]/
+   387→
+   388→
+   389→Import traces:
+   390→  Client Component Browser:
+   391→    ./src/app/page.tsx [Client Component Browser]
+   392→    ./src/app/page.tsx [Server Component]
+   393→
+   394→  Client Component SSR:
+   395→    ./src/app/page.tsx [Client Component SSR]
+   396→    ./src/app/page.tsx [Server Component]
+   397→
+   398→https://nextjs.org/docs/messages/module-not-found
+   399→
+   400→
+   401→⨯ ./src/app/page.tsx:3:1
+   402→Module not found: Can't resolve '@/components/app-shell'
+   403→[0m [90m 1 |[39m [32m"use client"[39m[33m;[39m
+   404→ [90m 2 |[39m
+   405→[31m[1m>[22m[39m[90m 3 |[39m [36mimport[39m { [33mAppShell[39m } [36mfrom[39m [32m"@/components/app-shell"[39m[33m;[39m
+   406→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   407→ [90m 4 |[39m
+   408→ [90m 5 |[39m [36mexport[39m [36mdefault[39m [36mfunction[39m [33mHome[39m() {
+   409→ [90m 6 |[39m   [36mreturn[39m [33m<[39m[33mAppShell[39m [33m/[39m[33m>[39m[33m;[39m[0m
+   410→
+   411→Import map: aliased to relative './src/components/app-shell' inside of [project]/
+   412→
+   413→
+   414→Import traces:
+   415→  Client Component Browser:
+   416→    ./src/app/page.tsx [Client Component Browser]
+   417→    ./src/app/page.tsx [Server Component]
+   418→
+   419→  Client Component SSR:
+   420→    ./src/app/page.tsx [Client Component SSR]
+   421→    ./src/app/page.tsx [Server Component]
+   422→
+   423→https://nextjs.org/docs/messages/module-not-found
+   424→
+   425→
+   426→⨯ ./src/app/page.tsx:3:1
+   427→Module not found: Can't resolve '@/components/app-shell'
+   428→[0m [90m 1 |[39m [32m"use client"[39m[33m;[39m
+   429→ [90m 2 |[39m
+   430→[31m[1m>[22m[39m[90m 3 |[39m [36mimport[39m { [33mAppShell[39m } [36mfrom[39m [32m"@/components/app-shell"[39m[33m;[39m
+   431→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   432→ [90m 4 |[39m
+   433→ [90m 5 |[39m [36mexport[39m [36mdefault[39m [36mfunction[39m [33mHome[39m() {
+   434→ [90m 6 |[39m   [36mreturn[39m [33m<[39m[33mAppShell[39m [33m/[39m[33m>[39m[33m;[39m[0m
+   435→
+   436→Import map: aliased to relative './src/components/app-shell' inside of [project]/
+   437→
+   438→
+   439→Import traces:
+   440→  Client Component Browser:
+   441→    ./src/app/page.tsx [Client Component Browser]
+   442→    ./src/app/page.tsx [Server Component]
+   443→
+   444→  Client Component SSR:
+   445→    ./src/app/page.tsx [Client Component SSR]
+   446→    ./src/app/page.tsx [Server Component]
+   447→
+   448→https://nextjs.org/docs/messages/module-not-found
+   449→
+   450→
+   451→⨯ ./src/app/page.tsx:3:1
+   452→Module not found: Can't resolve '@/components/app-shell'
+   453→[0m [90m 1 |[39m [32m"use client"[39m[33m;[39m
+   454→ [90m 2 |[39m
+   455→[31m[1m>[22m[39m[90m 3 |[39m [36mimport[39m { [33mAppShell[39m } [36mfrom[39m [32m"@/components/app-shell"[39m[33m;[39m
+   456→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   457→ [90m 4 |[39m
+   458→ [90m 5 |[39m [36mexport[39m [36mdefault[39m [36mfunction[39m [33mHome[39m() {
+   459→ [90m 6 |[39m   [36mreturn[39m [33m<[39m[33mAppShell[39m [33m/[39m[33m>[39m[33m;[39m[0m
+   460→
+   461→Import map: aliased to relative './src/components/app-shell' inside of [project]/
+   462→
+   463→
+   464→Import traces:
+   465→  Client Component Browser:
+   466→    ./src/app/page.tsx [Client Component Browser]
+   467→    ./src/app/page.tsx [Server Component]
+   468→
+   469→  Client Component SSR:
+   470→    ./src/app/page.tsx [Client Component SSR]
+   471→    ./src/app/page.tsx [Server Component]
+   472→
+   473→https://nextjs.org/docs/messages/module-not-found
+   474→
+   475→
+   476→⨯ ./src/app/page.tsx:3:1
+   477→Module not found: Can't resolve '@/components/app-shell'
+   478→[0m [90m 1 |[39m [32m"use client"[39m[33m;[39m
+   479→ [90m 2 |[39m
+   480→[31m[1m>[22m[39m[90m 3 |[39m [36mimport[39m { [33mAppShell[39m } [36mfrom[39m [32m"@/components/app-shell"[39m[33m;[39m
+   481→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   482→ [90m 4 |[39m
+   483→ [90m 5 |[39m [36mexport[39m [36mdefault[39m [36mfunction[39m [33mHome[39m() {
+   484→ [90m 6 |[39m   [36mreturn[39m [33m<[39m[33mAppShell[39m [33m/[39m[33m>[39m[33m;[39m[0m
+   485→
+   486→Import map: aliased to relative './src/components/app-shell' inside of [project]/
+   487→
+   488→
+   489→Import traces:
+   490→  Client Component Browser:
+   491→    ./src/app/page.tsx [Client Component Browser]
+   492→    ./src/app/page.tsx [Server Component]
+   493→
+   494→  Client Component SSR:
+   495→    ./src/app/page.tsx [Client Component SSR]
+   496→    ./src/app/page.tsx [Server Component]
+   497→
+   498→https://nextjs.org/docs/messages/module-not-found
+   499→
+   500→
+   501→⨯ ./src/app/page.tsx:3:1
+   502→Module not found: Can't resolve '@/components/app-shell'
+   503→[0m [90m 1 |[39m [32m"use client"[39m[33m;[39m
+   504→ [90m 2 |[39m
+   505→[31m[1m>[22m[39m[90m 3 |[39m [36mimport[39m { [33mAppShell[39m } [36mfrom[39m [32m"@/components/app-shell"[39m[33m;[39m
+   506→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   507→ [90m 4 |[39m
+   508→ [90m 5 |[39m [36mexport[39m [36mdefault[39m [36mfunction[39m [33mHome[39m() {
+   509→ [90m 6 |[39m   [36mreturn[39m [33m<[39m[33mAppShell[39m [33m/[39m[33m>[39m[33m;[39m[0m
+   510→
+   511→Import map: aliased to relative './src/components/app-shell' inside of [project]/
+   512→
+   513→
+   514→Import traces:
+   515→  Client Component Browser:
+   516→    ./src/app/page.tsx [Client Component Browser]
+   517→    ./src/app/page.tsx [Server Component]
+   518→
+   519→  Client Component SSR:
+   520→    ./src/app/page.tsx [Client Component SSR]
+   521→    ./src/app/page.tsx [Server Component]
+   522→
+   523→https://nextjs.org/docs/messages/module-not-found
+   524→
+   525→
+   526→⨯ ./src/app/page.tsx:3:1
+   527→Module not found: Can't resolve '@/components/app-shell'
+   528→[0m [90m 1 |[39m [32m"use client"[39m[33m;[39m
+   529→ [90m 2 |[39m
+   530→[31m[1m>[22m[39m[90m 3 |[39m [36mimport[39m { [33mAppShell[39m } [36mfrom[39m [32m"@/components/app-shell"[39m[33m;[39m
+   531→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   532→ [90m 4 |[39m
+   533→ [90m 5 |[39m [36mexport[39m [36mdefault[39m [36mfunction[39m [33mHome[39m() {
+   534→ [90m 6 |[39m   [36mreturn[39m [33m<[39m[33mAppShell[39m [33m/[39m[33m>[39m[33m;[39m[0m
+   535→
+   536→Import map: aliased to relative './src/components/app-shell' inside of [project]/
+   537→
+   538→
+   539→Import traces:
+   540→  Client Component Browser:
+   541→    ./src/app/page.tsx [Client Component Browser]
+   542→    ./src/app/page.tsx [Server Component]
+   543→
+   544→  Client Component SSR:
+   545→    ./src/app/page.tsx [Client Component SSR]
+   546→    ./src/app/page.tsx [Server Component]
+   547→
+   548→https://nextjs.org/docs/messages/module-not-found
+   549→
+   550→
+   551→⨯ ./src/app/page.tsx:3:1
+   552→Module not found: Can't resolve '@/components/app-shell'
+   553→[0m [90m 1 |[39m [32m"use client"[39m[33m;[39m
+   554→ [90m 2 |[39m
+   555→[31m[1m>[22m[39m[90m 3 |[39m [36mimport[39m { [33mAppShell[39m } [36mfrom[39m [32m"@/components/app-shell"[39m[33m;[39m
+   556→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   557→ [90m 4 |[39m
+   558→ [90m 5 |[39m [36mexport[39m [36mdefault[39m [36mfunction[39m [33mHome[39m() {
+   559→ [90m 6 |[39m   [36mreturn[39m [33m<[39m[33mAppShell[39m [33m/[39m[33m>[39m[33m;[39m[0m
+   560→
+   561→Import map: aliased to relative './src/components/app-shell' inside of [project]/
+   562→
+   563→
+   564→Import traces:
+   565→  Client Component Browser:
+   566→    ./src/app/page.tsx [Client Component Browser]
+   567→    ./src/app/page.tsx [Server Component]
+   568→
+   569→  Client Component SSR:
+   570→    ./src/app/page.tsx [Client Component SSR]
+   571→    ./src/app/page.tsx [Server Component]
+   572→
+   573→https://nextjs.org/docs/messages/module-not-found
+   574→
+   575→
+   576→⨯ ./src/app/page.tsx:3:1
+   577→Module not found: Can't resolve '@/components/app-shell'
+   578→[0m [90m 1 |[39m [32m"use client"[39m[33m;[39m
+   579→ [90m 2 |[39m
+   580→[31m[1m>[22m[39m[90m 3 |[39m [36mimport[39m { [33mAppShell[39m } [36mfrom[39m [32m"@/components/app-shell"[39m[33m;[39m
+   581→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   582→ [90m 4 |[39m
+   583→ [90m 5 |[39m [36mexport[39m [36mdefault[39m [36mfunction[39m [33mHome[39m() {
+   584→ [90m 6 |[39m   [36mreturn[39m [33m<[39m[33mAppShell[39m [33m/[39m[33m>[39m[33m;[39m[0m
+   585→
+   586→Import map: aliased to relative './src/components/app-shell' inside of [project]/
+   587→
+   588→
+   589→Import traces:
+   590→  Client Component Browser:
+   591→    ./src/app/page.tsx [Client Component Browser]
+   592→    ./src/app/page.tsx [Server Component]
+   593→
+   594→  Client Component SSR:
+   595→    ./src/app/page.tsx [Client Component SSR]
+   596→    ./src/app/page.tsx [Server Component]
+   597→
+   598→https://nextjs.org/docs/messages/module-not-found
+   599→
+   600→
+   601→⨯ ./src/app/page.tsx:3:1
+   602→Module not found: Can't resolve '@/components/app-shell'
+   603→[0m [90m 1 |[39m [32m"use client"[39m[33m;[39m
+   604→ [90m 2 |[39m
+   605→[31m[1m>[22m[39m[90m 3 |[39m [36mimport[39m { [33mAppShell[39m } [36mfrom[39m [32m"@/components/app-shell"[39m[33m;[39m
+   606→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   607→ [90m 4 |[39m
+   608→ [90m 5 |[39m [36mexport[39m [36mdefault[39m [36mfunction[39m [33mHome[39m() {
+   609→ [90m 6 |[39m   [36mreturn[39m [33m<[39m[33mAppShell[39m [33m/[39m[33m>[39m[33m;[39m[0m
+   610→
+   611→Import map: aliased to relative './src/components/app-shell' inside of [project]/
+   612→
+   613→
+   614→Import traces:
+   615→  Client Component Browser:
+   616→    ./src/app/page.tsx [Client Component Browser]
+   617→    ./src/app/page.tsx [Server Component]
+   618→
+   619→  Client Component SSR:
+   620→    ./src/app/page.tsx [Client Component SSR]
+   621→    ./src/app/page.tsx [Server Component]
+   622→
+   623→https://nextjs.org/docs/messages/module-not-found
+   624→
+   625→
+   626→⨯ ./src/app/page.tsx:3:1
+   627→Module not found: Can't resolve '@/components/app-shell'
+   628→[0m [90m 1 |[39m [32m"use client"[39m[33m;[39m
+   629→ [90m 2 |[39m
+   630→[31m[1m>[22m[39m[90m 3 |[39m [36mimport[39m { [33mAppShell[39m } [36mfrom[39m [32m"@/components/app-shell"[39m[33m;[39m
+   631→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   632→ [90m 4 |[39m
+   633→ [90m 5 |[39m [36mexport[39m [36mdefault[39m [36mfunction[39m [33mHome[39m() {
+   634→ [90m 6 |[39m   [36mreturn[39m [33m<[39m[33mAppShell[39m [33m/[39m[33m>[39m[33m;[39m[0m
+   635→
+   636→Import map: aliased to relative './src/components/app-shell' inside of [project]/
+   637→
+   638→
+   639→Import traces:
+   640→  Client Component Browser:
+   641→    ./src/app/page.tsx [Client Component Browser]
+   642→    ./src/app/page.tsx [Server Component]
+   643→
+   644→  Client Component SSR:
+   645→    ./src/app/page.tsx [Client Component SSR]
+   646→    ./src/app/page.tsx [Server Component]
+   647→
+   648→https://nextjs.org/docs/messages/module-not-found
+   649→
+   650→
+   651→⨯ ./src/app/page.tsx:3:1
+   652→Module not found: Can't resolve '@/components/app-shell'
+   653→[0m [90m 1 |[39m [32m"use client"[39m[33m;[39m
+   654→ [90m 2 |[39m
+   655→[31m[1m>[22m[39m[90m 3 |[39m [36mimport[39m { [33mAppShell[39m } [36mfrom[39m [32m"@/components/app-shell"[39m[33m;[39m
+   656→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   657→ [90m 4 |[39m
+   658→ [90m 5 |[39m [36mexport[39m [36mdefault[39m [36mfunction[39m [33mHome[39m() {
+   659→ [90m 6 |[39m   [36mreturn[39m [33m<[39m[33mAppShell[39m [33m/[39m[33m>[39m[33m;[39m[0m
+   660→
+   661→Import map: aliased to relative './src/components/app-shell' inside of [project]/
+   662→
+   663→
+   664→Import traces:
+   665→  Client Component Browser:
+   666→    ./src/app/page.tsx [Client Component Browser]
+   667→    ./src/app/page.tsx [Server Component]
+   668→
+   669→  Client Component SSR:
+   670→    ./src/app/page.tsx [Client Component SSR]
+   671→    ./src/app/page.tsx [Server Component]
+   672→
+   673→https://nextjs.org/docs/messages/module-not-found
+   674→
+   675→
+   676→⨯ ./src/app/page.tsx:3:1
+   677→Module not found: Can't resolve '@/components/app-shell'
+   678→[0m [90m 1 |[39m [32m"use client"[39m[33m;[39m
+   679→ [90m 2 |[39m
+   680→[31m[1m>[22m[39m[90m 3 |[39m [36mimport[39m { [33mAppShell[39m } [36mfrom[39m [32m"@/components/app-shell"[39m[33m;[39m
+   681→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   682→ [90m 4 |[39m
+   683→ [90m 5 |[39m [36mexport[39m [36mdefault[39m [36mfunction[39m [33mHome[39m() {
+   684→ [90m 6 |[39m   [36mreturn[39m [33m<[39m[33mAppShell[39m [33m/[39m[33m>[39m[33m;[39m[0m
+   685→
+   686→Import map: aliased to relative './src/components/app-shell' inside of [project]/
+   687→
+   688→
+   689→Import traces:
+   690→  Client Component Browser:
+   691→    ./src/app/page.tsx [Client Component Browser]
+   692→    ./src/app/page.tsx [Server Component]
+   693→
+   694→  Client Component SSR:
+   695→    ./src/app/page.tsx [Client Component SSR]
+   696→    ./src/app/page.tsx [Server Component]
+   697→
+   698→https://nextjs.org/docs/messages/module-not-found
+   699→
+   700→
+   701→⨯ ./src/app/page.tsx:3:1
+   702→Module not found: Can't resolve '@/components/app-shell'
+   703→[0m [90m 1 |[39m [32m"use client"[39m[33m;[39m
+   704→ [90m 2 |[39m
+   705→[31m[1m>[22m[39m[90m 3 |[39m [36mimport[39m { [33mAppShell[39m } [36mfrom[39m [32m"@/components/app-shell"[39m[33m;[39m
+   706→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   707→ [90m 4 |[39m
+   708→ [90m 5 |[39m [36mexport[39m [36mdefault[39m [36mfunction[39m [33mHome[39m() {
+   709→ [90m 6 |[39m   [36mreturn[39m [33m<[39m[33mAppShell[39m [33m/[39m[33m>[39m[33m;[39m[0m
+   710→
+   711→Import map: aliased to relative './src/components/app-shell' inside of [project]/
+   712→
+   713→
+   714→Import traces:
+   715→  Client Component Browser:
+   716→    ./src/app/page.tsx [Client Component Browser]
+   717→    ./src/app/page.tsx [Server Component]
+   718→
+   719→  Client Component SSR:
+   720→    ./src/app/page.tsx [Client Component SSR]
+   721→    ./src/app/page.tsx [Server Component]
+   722→
+   723→https://nextjs.org/docs/messages/module-not-found
+   724→
+   725→
+   726→⨯ ./src/app/page.tsx:3:1
+   727→Module not found: Can't resolve '@/components/app-shell'
+   728→[0m [90m 1 |[39m [32m"use client"[39m[33m;[39m
+   729→ [90m 2 |[39m
+   730→[31m[1m>[22m[39m[90m 3 |[39m [36mimport[39m { [33mAppShell[39m } [36mfrom[39m [32m"@/components/app-shell"[39m[33m;[39m
+   731→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   732→ [90m 4 |[39m
+   733→ [90m 5 |[39m [36mexport[39m [36mdefault[39m [36mfunction[39m [33mHome[39m() {
+   734→ [90m 6 |[39m   [36mreturn[39m [33m<[39m[33mAppShell[39m [33m/[39m[33m>[39m[33m;[39m[0m
+   735→
+   736→Import map: aliased to relative './src/components/app-shell' inside of [project]/
+   737→
+   738→
+   739→Import traces:
+   740→  Client Component Browser:
+   741→    ./src/app/page.tsx [Client Component Browser]
+   742→    ./src/app/page.tsx [Server Component]
+   743→
+   744→  Client Component SSR:
+   745→    ./src/app/page.tsx [Client Component SSR]
+   746→    ./src/app/page.tsx [Server Component]
+   747→
+   748→https://nextjs.org/docs/messages/module-not-found
+   749→
+   750→
+   751→⨯ ./src/app/page.tsx:3:1
+   752→Module not found: Can't resolve '@/components/app-shell'
+   753→[0m [90m 1 |[39m [32m"use client"[39m[33m;[39m
+   754→ [90m 2 |[39m
+   755→[31m[1m>[22m[39m[90m 3 |[39m [36mimport[39m { [33mAppShell[39m } [36mfrom[39m [32m"@/components/app-shell"[39m[33m;[39m
+   756→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   757→ [90m 4 |[39m
+   758→ [90m 5 |[39m [36mexport[39m [36mdefault[39m [36mfunction[39m [33mHome[39m() {
+   759→ [90m 6 |[39m   [36mreturn[39m [33m<[39m[33mAppShell[39m [33m/[39m[33m>[39m[33m;[39m[0m
+   760→
+   761→Import map: aliased to relative './src/components/app-shell' inside of [project]/
+   762→
+   763→
+   764→Import traces:
+   765→  Client Component Browser:
+   766→    ./src/app/page.tsx [Client Component Browser]
+   767→    ./src/app/page.tsx [Server Component]
+   768→
+   769→  Client Component SSR:
+   770→    ./src/app/page.tsx [Client Component SSR]
+   771→    ./src/app/page.tsx [Server Component]
+   772→
+   773→https://nextjs.org/docs/messages/module-not-found
+   774→
+   775→
+   776→⨯ ./src/app/page.tsx:3:1
+   777→Module not found: Can't resolve '@/components/app-shell'
+   778→[0m [90m 1 |[39m [32m"use client"[39m[33m;[39m
+   779→ [90m 2 |[39m
+   780→[31m[1m>[22m[39m[90m 3 |[39m [36mimport[39m { [33mAppShell[39m } [36mfrom[39m [32m"@/components/app-shell"[39m[33m;[39m
+   781→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   782→ [90m 4 |[39m
+   783→ [90m 5 |[39m [36mexport[39m [36mdefault[39m [36mfunction[39m [33mHome[39m() {
+   784→ [90m 6 |[39m   [36mreturn[39m [33m<[39m[33mAppShell[39m [33m/[39m[33m>[39m[33m;[39m[0m
+   785→
+   786→Import map: aliased to relative './src/components/app-shell' inside of [project]/
+   787→
+   788→
+   789→Import traces:
+   790→  Client Component Browser:
+   791→    ./src/app/page.tsx [Client Component Browser]
+   792→    ./src/app/page.tsx [Server Component]
+   793→
+   794→  Client Component SSR:
+   795→    ./src/app/page.tsx [Client Component SSR]
+   796→    ./src/app/page.tsx [Server Component]
+   797→
+   798→https://nextjs.org/docs/messages/module-not-found
+   799→
+   800→
+   801→⨯ ./src/app/page.tsx:3:1
+   802→Module not found: Can't resolve '@/components/app-shell'
+   803→[0m [90m 1 |[39m [32m"use client"[39m[33m;[39m
+   804→ [90m 2 |[39m
+   805→[31m[1m>[22m[39m[90m 3 |[39m [36mimport[39m { [33mAppShell[39m } [36mfrom[39m [32m"@/components/app-shell"[39m[33m;[39m
+   806→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   807→ [90m 4 |[39m
+   808→ [90m 5 |[39m [36mexport[39m [36mdefault[39m [36mfunction[39m [33mHome[39m() {
+   809→ [90m 6 |[39m   [36mreturn[39m [33m<[39m[33mAppShell[39m [33m/[39m[33m>[39m[33m;[39m[0m
+   810→
+   811→Import map: aliased to relative './src/components/app-shell' inside of [project]/
+   812→
+   813→
+   814→Import traces:
+   815→  Client Component Browser:
+   816→    ./src/app/page.tsx [Client Component Browser]
+   817→    ./src/app/page.tsx [Server Component]
+   818→
+   819→  Client Component SSR:
+   820→    ./src/app/page.tsx [Client Component SSR]
+   821→    ./src/app/page.tsx [Server Component]
+   822→
+   823→https://nextjs.org/docs/messages/module-not-found
+   824→
+   825→
+   826→⨯ ./src/app/page.tsx:3:1
+   827→Module not found: Can't resolve '@/components/app-shell'
+   828→[0m [90m 1 |[39m [32m"use client"[39m[33m;[39m
+   829→ [90m 2 |[39m
+   830→[31m[1m>[22m[39m[90m 3 |[39m [36mimport[39m { [33mAppShell[39m } [36mfrom[39m [32m"@/components/app-shell"[39m[33m;[39m
+   831→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   832→ [90m 4 |[39m
+   833→ [90m 5 |[39m [36mexport[39m [36mdefault[39m [36mfunction[39m [33mHome[39m() {
+   834→ [90m 6 |[39m   [36mreturn[39m [33m<[39m[33mAppShell[39m [33m/[39m[33m>[39m[33m;[39m[0m
+   835→
+   836→Import map: aliased to relative './src/components/app-shell' inside of [project]/
+   837→
+   838→
+   839→Import traces:
+   840→  Client Component Browser:
+   841→    ./src/app/page.tsx [Client Component Browser]
+   842→    ./src/app/page.tsx [Server Component]
+   843→
+   844→  Client Component SSR:
+   845→    ./src/app/page.tsx [Client Component SSR]
+   846→    ./src/app/page.tsx [Server Component]
+   847→
+   848→https://nextjs.org/docs/messages/module-not-found
+   849→
+   850→
+   851→⨯ ./src/app/page.tsx:3:1
+   852→Module not found: Can't resolve '@/components/app-shell'
+   853→[0m [90m 1 |[39m [32m"use client"[39m[33m;[39m
+   854→ [90m 2 |[39m
+   855→[31m[1m>[22m[39m[90m 3 |[39m [36mimport[39m { [33mAppShell[39m } [36mfrom[39m [32m"@/components/app-shell"[39m[33m;[39m
+   856→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   857→ [90m 4 |[39m
+   858→ [90m 5 |[39m [36mexport[39m [36mdefault[39m [36mfunction[39m [33mHome[39m() {
+   859→ [90m 6 |[39m   [36mreturn[39m [33m<[39m[33mAppShell[39m [33m/[39m[33m>[39m[33m;[39m[0m
+   860→
+   861→Import map: aliased to relative './src/components/app-shell' inside of [project]/
+   862→
+   863→
+   864→Import traces:
+   865→  Client Component Browser:
+   866→    ./src/app/page.tsx [Client Component Browser]
+   867→    ./src/app/page.tsx [Server Component]
+   868→
+   869→  Client Component SSR:
+   870→    ./src/app/page.tsx [Client Component SSR]
+   871→    ./src/app/page.tsx [Server Component]
+   872→
+   873→https://nextjs.org/docs/messages/module-not-found
+   874→
+   875→
+   876→⨯ ./src/app/page.tsx:3:1
+   877→Module not found: Can't resolve '@/components/app-shell'
+   878→[0m [90m 1 |[39m [32m"use client"[39m[33m;[39m
+   879→ [90m 2 |[39m
+   880→[31m[1m>[22m[39m[90m 3 |[39m [36mimport[39m { [33mAppShell[39m } [36mfrom[39m [32m"@/components/app-shell"[39m[33m;[39m
+   881→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   882→ [90m 4 |[39m
+   883→ [90m 5 |[39m [36mexport[39m [36mdefault[39m [36mfunction[39m [33mHome[39m() {
+   884→ [90m 6 |[39m   [36mreturn[39m [33m<[39m[33mAppShell[39m [33m/[39m[33m>[39m[33m;[39m[0m
+   885→
+   886→Import map: aliased to relative './src/components/app-shell' inside of [project]/
+   887→
+   888→
+   889→Import traces:
+   890→  Client Component Browser:
+   891→    ./src/app/page.tsx [Client Component Browser]
+   892→    ./src/app/page.tsx [Server Component]
+   893→
+   894→  Client Component SSR:
+   895→    ./src/app/page.tsx [Client Component SSR]
+   896→    ./src/app/page.tsx [Server Component]
+   897→
+   898→https://nextjs.org/docs/messages/module-not-found
+   899→
+   900→
+   901→⨯ ./src/app/page.tsx:3:1
+   902→Module not found: Can't resolve '@/components/app-shell'
+   903→[0m [90m 1 |[39m [32m"use client"[39m[33m;[39m
+   904→ [90m 2 |[39m
+   905→[31m[1m>[22m[39m[90m 3 |[39m [36mimport[39m { [33mAppShell[39m } [36mfrom[39m [32m"@/components/app-shell"[39m[33m;[39m
+   906→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   907→ [90m 4 |[39m
+   908→ [90m 5 |[39m [36mexport[39m [36mdefault[39m [36mfunction[39m [33mHome[39m() {
+   909→ [90m 6 |[39m   [36mreturn[39m [33m<[39m[33mAppShell[39m [33m/[39m[33m>[39m[33m;[39m[0m
+   910→
+   911→Import map: aliased to relative './src/components/app-shell' inside of [project]/
+   912→
+   913→
+   914→Import traces:
+   915→  Client Component Browser:
+   916→    ./src/app/page.tsx [Client Component Browser]
+   917→    ./src/app/page.tsx [Server Component]
+   918→
+   919→  Client Component SSR:
+   920→    ./src/app/page.tsx [Client Component SSR]
+   921→    ./src/app/page.tsx [Server Component]
+   922→
+   923→https://nextjs.org/docs/messages/module-not-found
+   924→
+   925→
+   926→✓ Compiled in 94ms
+   927→⨯ ./src/components/app-shell.tsx:6:1
+   928→Module not found: Can't resolve '@/components/command-palette'
+   929→[0m [90m 4 |[39m [36mimport[39m { [33mSidebar[39m } [36mfrom[39m [32m"@/components/sidebar"[39m[33m;[39m
+   930→ [90m 5 |[39m [36mimport[39m { [33mTopbar[39m } [36mfrom[39m [32m"@/components/topbar"[39m[33m;[39m
+   931→[31m[1m>[22m[39m[90m 6 |[39m [36mimport[39m { [33mCommandPalette[39m } [36mfrom[39m [32m"@/components/command-palette"[39m[33m;[39m
+   932→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   933→ [90m 7 |[39m [36mimport[39m { [33mViewRouter[39m } [36mfrom[39m [32m"@/components/view-router"[39m[33m;[39m
+   934→ [90m 8 |[39m [36mimport[39m { [33mMobileNav[39m } [36mfrom[39m [32m"@/components/mobile-nav"[39m[33m;[39m
+   935→ [90m 9 |[39m[0m
+   936→
+   937→Import map: aliased to relative './src/components/command-palette' inside of [project]/
+   938→
+   939→
+   940→Import traces:
+   941→  Client Component Browser:
+   942→    ./src/components/app-shell.tsx [Client Component Browser]
+   943→    ./src/app/page.tsx [Client Component Browser]
+   944→    ./src/app/page.tsx [Server Component]
+   945→
+   946→  Client Component SSR:
+   947→    ./src/components/app-shell.tsx [Client Component SSR]
+   948→    ./src/app/page.tsx [Client Component SSR]
+   949→    ./src/app/page.tsx [Server Component]
+   950→
+   951→https://nextjs.org/docs/messages/module-not-found
+   952→
+   953→
+   954→⨯ ./src/components/app-shell.tsx:6:1
+   955→Module not found: Can't resolve '@/components/command-palette'
+   956→[0m [90m 4 |[39m [36mimport[39m { [33mSidebar[39m } [36mfrom[39m [32m"@/components/sidebar"[39m[33m;[39m
+   957→ [90m 5 |[39m [36mimport[39m { [33mTopbar[39m } [36mfrom[39m [32m"@/components/topbar"[39m[33m;[39m
+   958→[31m[1m>[22m[39m[90m 6 |[39m [36mimport[39m { [33mCommandPalette[39m } [36mfrom[39m [32m"@/components/command-palette"[39m[33m;[39m
+   959→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   960→ [90m 7 |[39m [36mimport[39m { [33mViewRouter[39m } [36mfrom[39m [32m"@/components/view-router"[39m[33m;[39m
+   961→ [90m 8 |[39m [36mimport[39m { [33mMobileNav[39m } [36mfrom[39m [32m"@/components/mobile-nav"[39m[33m;[39m
+   962→ [90m 9 |[39m[0m
+   963→
+   964→Import map: aliased to relative './src/components/command-palette' inside of [project]/
+   965→
+   966→
+   967→Import traces:
+   968→  Client Component Browser:
+   969→    ./src/components/app-shell.tsx [Client Component Browser]
+   970→    ./src/app/page.tsx [Client Component Browser]
+   971→    ./src/app/page.tsx [Server Component]
+   972→
+   973→  Client Component SSR:
+   974→    ./src/components/app-shell.tsx [Client Component SSR]
+   975→    ./src/app/page.tsx [Client Component SSR]
+   976→    ./src/app/page.tsx [Server Component]
+   977→
+   978→https://nextjs.org/docs/messages/module-not-found
+   979→
+   980→
+   981→⨯ ./src/components/app-shell.tsx:6:1
+   982→Module not found: Can't resolve '@/components/command-palette'
+   983→[0m [90m 4 |[39m [36mimport[39m { [33mSidebar[39m } [36mfrom[39m [32m"@/components/sidebar"[39m[33m;[39m
+   984→ [90m 5 |[39m [36mimport[39m { [33mTopbar[39m } [36mfrom[39m [32m"@/components/topbar"[39m[33m;[39m
+   985→[31m[1m>[22m[39m[90m 6 |[39m [36mimport[39m { [33mCommandPalette[39m } [36mfrom[39m [32m"@/components/command-palette"[39m[33m;[39m
+   986→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   987→ [90m 7 |[39m [36mimport[39m { [33mViewRouter[39m } [36mfrom[39m [32m"@/components/view-router"[39m[33m;[39m
+   988→ [90m 8 |[39m [36mimport[39m { [33mMobileNav[39m } [36mfrom[39m [32m"@/components/mobile-nav"[39m[33m;[39m
+   989→ [90m 9 |[39m[0m
+   990→
+   991→Import map: aliased to relative './src/components/command-palette' inside of [project]/
+   992→
+   993→
+   994→Import traces:
+   995→  Client Component Browser:
+   996→    ./src/components/app-shell.tsx [Client Component Browser]
+   997→    ./src/app/page.tsx [Client Component Browser]
+   998→    ./src/app/page.tsx [Server Component]
+   999→
+  1000→  Client Component SSR:
+  1001→    ./src/components/app-shell.tsx [Client Component SSR]
+  1002→    ./src/app/page.tsx [Client Component SSR]
+  1003→    ./src/app/page.tsx [Server Component]
+  1004→
+  1005→https://nextjs.org/docs/messages/module-not-found
+  1006→
+  1007→
+  1008→⨯ ./src/components/app-shell.tsx:6:1
+  1009→Module not found: Can't resolve '@/components/command-palette'
+  1010→[0m [90m 4 |[39m [36mimport[39m { [33mSidebar[39m } [36mfrom[39m [32m"@/components/sidebar"[39m[33m;[39m
+  1011→ [90m 5 |[39m [36mimport[39m { [33mTopbar[39m } [36mfrom[39m [32m"@/components/topbar"[39m[33m;[39m
+  1012→[31m[1m>[22m[39m[90m 6 |[39m [36mimport[39m { [33mCommandPalette[39m } [36mfrom[39m [32m"@/components/command-palette"[39m[33m;[39m
+  1013→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+  1014→ [90m 7 |[39m [36mimport[39m { [33mViewRouter[39m } [36mfrom[39m [32m"@/components/view-router"[39m[33m;[39m
+  1015→ [90m 8 |[39m [36mimport[39m { [33mMobileNav[39m } [36mfrom[39m [32m"@/components/mobile-nav"[39m[33m;[39m
+  1016→ [90m 9 |[39m[0m
+  1017→
+  1018→Import map: aliased to relative './src/components/command-palette' inside of [project]/
+  1019→
+  1020→
+  1021→Import traces:
+  1022→  Client Component Browser:
+  1023→    ./src/components/app-shell.tsx [Client Component Browser]
+  1024→    ./src/app/page.tsx [Client Component Browser]
+  1025→    ./src/app/page.tsx [Server Component]
+  1026→
+  1027→  Client Component SSR:
+  1028→    ./src/components/app-shell.tsx [Client Component SSR]
+  1029→    ./src/app/page.tsx [Client Component SSR]
+  1030→    ./src/app/page.tsx [Server Component]
+  1031→
+  1032→https://nextjs.org/docs/messages/module-not-found
+  1033→
+  1034→
+  1035→⨯ ./src/components/app-shell.tsx:8:1
+  1036→Module not found: Can't resolve '@/components/mobile-nav'
+  1037→[0m [90m  6 |[39m [36mimport[39m { [33mCommandPalette[39m } [36mfrom[39m [32m"@/components/command-palette"[39m[33m;[39m
+  1038→ [90m  7 |[39m [36mimport[39m { [33mViewRouter[39m } [36mfrom[39m [32m"@/components/view-router"[39m[33m;[39m
+  1039→[31m[1m>[22m[39m[90m  8 |[39m [36mimport[39m { [33mMobileNav[39m } [36mfrom[39m [32m"@/components/mobile-nav"[39m[33m;[39m
+  1040→ [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+  1041→ [90m  9 |[39m
+  1042→ [90m 10 |[39m [36mexport[39m [36mfunction[39m [33mAppShell[39m() {
+  1043→ [90m 11 |[39m   [36mconst[39m collapsed [33m=[39m useAppStore((s) [33m=>[39m s[33m.[39msidebarCollapsed)[33m;[39m[0m
+  1044→
+  1045→Import map: aliased to relative './src/components/mobile-nav' inside of [project]/
+  1046→
+  1047→
+  1048→Import traces:
+  1049→  Client Component Browser:
+  1050→    ./src/components/app-shell.tsx [Client Component Browser]
+  1051→    ./src/app/page.tsx [Client Component Browser]
+  1052→    ./src/app/page.tsx [Server Component]
+  1053→
+  1054→  Client Component SSR:
+  1055→    ./src/components/app-shell.tsx [Client Component SSR]
+  1056→    ./src/app/page.tsx [Client Component SSR]
+  1057→    ./src/app/page.tsx [Server Component]
+  1058→
+  1059→https://nextjs.org/docs/messages/module-not-found
+  1060→
+  1061→
+  1062→⨯ ./src/components/app-shell.tsx:8:1
+  1063→Module not found: Can't resolve '@/components/mobile-nav'
+  1064→[0m [90m  6 |[39m [36mimport[39m { [33mCommandPalette[39m } [36mfrom[39m [32m"@/components/command-palette"[39m[33m;[39m
+  1065→ [90m  7 |[39m [36mimport[39m { [33mViewRouter[39m } [36mfrom[39m [32m"@/components/view-router"[39m[33m;[39m
+  1066→[31m[1m>[22m[39m[90m  8 |[39m [36mimport[39m { [33mMobileNav[39m } [36mfrom[39m [32m"@/components/mobile-nav"[39m[33m;[39m
+  1067→ [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+  1068→ [90m  9 |[39m
+  1069→ [90m 10 |[39m [36mexport[39m [36mfunction[39m [33mAppShell[39m() {
+  1070→ [90m 11 |[39m   [36mconst[39m collapsed [33m=[39m useAppStore((s) [33m=>[39m s[33m.[39msidebarCollapsed)[33m;[39m[0m
+  1071→
+  1072→Import map: aliased to relative './src/components/mobile-nav' inside of [project]/
+  1073→
+  1074→
+  1075→Import traces:
+  1076→  Client Component Browser:
+  1077→    ./src/components/app-shell.tsx [Client Component Browser]
+  1078→    ./src/app/page.tsx [Client Component Browser]
+  1079→    ./src/app/page.tsx [Server Component]
+  1080→
+  1081→  Client Component SSR:
+  1082→    ./src/components/app-shell.tsx [Client Component SSR]
+  1083→    ./src/app/page.tsx [Client Component SSR]
+  1084→    ./src/app/page.tsx [Server Component]
+  1085→
+  1086→https://nextjs.org/docs/messages/module-not-found
+  1087→
+  1088→
+  1089→⨯ ./src/components/app-shell.tsx:8:1
+  1090→Module not found: Can't resolve '@/components/mobile-nav'
+  1091→[0m [90m  6 |[39m [36mimport[39m { [33mCommandPalette[39m } [36mfrom[39m [32m"@/components/command-palette"[39m[33m;[39m
+  1092→ [90m  7 |[39m [36mimport[39m { [33mViewRouter[39m } [36mfrom[39m [32m"@/components/view-router"[39m[33m;[39m
+  1093→[31m[1m>[22m[39m[90m  8 |[39m [36mimport[39m { [33mMobileNav[39m } [36mfrom[39m [32m"@/components/mobile-nav"[39m[33m;[39m
+  1094→ [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+  1095→ [90m  9 |[39m
+  1096→ [90m 10 |[39m [36mexport[39m [36mfunction[39m [33mAppShell[39m() {
+  1097→ [90m 11 |[39m   [36mconst[39m collapsed [33m=[39m useAppStore((s) [33m=>[39m s[33m.[39msidebarCollapsed)[33m;[39m[0m
+  1098→
+  1099→Import map: aliased to relative './src/components/mobile-nav' inside of [project]/
+  1100→
+  1101→
+  1102→Import traces:
+  1103→  Client Component Browser:
+  1104→    ./src/components/app-shell.tsx [Client Component Browser]
+  1105→    ./src/app/page.tsx [Client Component Browser]
+  1106→    ./src/app/page.tsx [Server Component]
+  1107→
+  1108→  Client Component SSR:
+  1109→    ./src/components/app-shell.tsx [Client Component SSR]
+  1110→    ./src/app/page.tsx [Client Component SSR]
+  1111→    ./src/app/page.tsx [Server Component]
+  1112→
+  1113→https://nextjs.org/docs/messages/module-not-found
+  1114→
+  1115→
+  1116→⨯ ./src/components/app-shell.tsx:8:1
+  1117→Module not found: Can't resolve '@/components/mobile-nav'
+  1118→[0m [90m  6 |[39m [36mimport[39m { [33mCommandPalette[39m } [36mfrom[39m [32m"@/components/command-palette"[39m[33m;[39m
+  1119→ [90m  7 |[39m [36mimport[39m { [33mViewRouter[39m } [36mfrom[39m [32m"@/components/view-router"[39m[33m;[39m
+  1120→[31m[1m>[22m[39m[90m  8 |[39m [36mimport[39m { [33mMobileNav[39m } [36mfrom[39m [32m"@/components/mobile-nav"[39m[33m;[39m
+  1121→ [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+  1122→ [90m  9 |[39m
+  1123→ [90m 10 |[39m [36mexport[39m [36mfunction[39m [33mAppShell[39m() {
+  1124→ [90m 11 |[39m   [36mconst[39m collapsed [33m=[39m useAppStore((s) [33m=>[39m s[33m.[39msidebarCollapsed)[33m;[39m[0m
+  1125→
+  1126→Import map: aliased to relative './src/components/mobile-nav' inside of [project]/
+  1127→
+  1128→
+  1129→Import traces:
+  1130→  Client Component Browser:
+  1131→    ./src/components/app-shell.tsx [Client Component Browser]
+  1132→    ./src/app/page.tsx [Client Component Browser]
+  1133→    ./src/app/page.tsx [Server Component]
+  1134→
+  1135→  Client Component SSR:
+  1136→    ./src/components/app-shell.tsx [Client Component SSR]
+  1137→    ./src/app/page.tsx [Client Component SSR]
+  1138→    ./src/app/page.tsx [Server Component]
+  1139→
+  1140→https://nextjs.org/docs/messages/module-not-found
+  1141→
+  1142→
+  1143→⨯ ./src/components/app-shell.tsx:4:1
+  1144→Module not found: Can't resolve '@/components/sidebar'
+  1145→[0m [90m 2 |[39m
+  1146→ [90m 3 |[39m [36mimport[39m { useAppStore } [36mfrom[39m [32m"@/lib/store"[39m[33m;[39m
+  1147→[31m[1m>[22m[39m[90m 4 |[39m [36mimport[39m { [33mSidebar[39m } [36mfrom[39m [32m"@/components/sidebar"[39m[33m;[39m
+  1148→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+  1149→ [90m 5 |[39m [36mimport[39m { [33mTopbar[39m } [36mfrom[39m [32m"@/components/topbar"[39m[33m;[39m
+  1150→ [90m 6 |[39m [36mimport[39m { [33mCommandPalette[39m } [36mfrom[39m [32m"@/components/command-palette"[39m[33m;[39m
+  1151→ [90m 7 |[39m [36mimport[39m { [33mViewRouter[39m } [36mfrom[39m [32m"@/components/view-router"[39m[33m;[39m[0m
+  1152→
+  1153→Import map: aliased to relative './src/components/sidebar' inside of [project]/
+  1154→
+  1155→
+  1156→Import traces:
+  1157→  Client Component Browser:
+  1158→    ./src/components/app-shell.tsx [Client Component Browser]
+  1159→    ./src/app/page.tsx [Client Component Browser]
+  1160→    ./src/app/page.tsx [Server Component]
+  1161→
+  1162→  Client Component SSR:
+  1163→    ./src/components/app-shell.tsx [Client Component SSR]
+  1164→    ./src/app/page.tsx [Client Component SSR]
+  1165→    ./src/app/page.tsx [Server Component]
+  1166→
+  1167→https://nextjs.org/docs/messages/module-not-found
+  1168→
+  1169→
+  1170→⨯ ./src/components/app-shell.tsx:4:1
+  1171→Module not found: Can't resolve '@/components/sidebar'
+  1172→[0m [90m 2 |[39m
+  1173→ [90m 3 |[39m [36mimport[39m { useAppStore } [36mfrom[39m [32m"@/lib/store"[39m[33m;[39m
+  1174→[31m[1m>[22m[39m[90m 4 |[39m [36mimport[39m { [33mSidebar[39m } [36mfrom[39m [32m"@/components/sidebar"[39m[33m;[39m
+  1175→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+  1176→ [90m 5 |[39m [36mimport[39m { [33mTopbar[39m } [36mfrom[39m [32m"@/components/topbar"[39m[33m;[39m
+  1177→ [90m 6 |[39m [36mimport[39m { [33mCommandPalette[39m } [36mfrom[39m [32m"@/components/command-palette"[39m[33m;[39m
+  1178→ [90m 7 |[39m [36mimport[39m { [33mViewRouter[39m } [36mfrom[39m [32m"@/components/view-router"[39m[33m;[39m[0m
+  1179→
+  1180→Import map: aliased to relative './src/components/sidebar' inside of [project]/
+  1181→
+  1182→
+  1183→Import traces:
+  1184→  Client Component Browser:
+  1185→    ./src/components/app-shell.tsx [Client Component Browser]
+  1186→    ./src/app/page.tsx [Client Component Browser]
+  1187→    ./src/app/page.tsx [Server Component]
+  1188→
+  1189→  Client Component SSR:
+  1190→    ./src/components/app-shell.tsx [Client Component SSR]
+  1191→    ./src/app/page.tsx [Client Component SSR]
+  1192→    ./src/app/page.tsx [Server Component]
+  1193→
+  1194→https://nextjs.org/docs/messages/module-not-found
+  1195→
+  1196→
+  1197→⨯ ./src/components/app-shell.tsx:4:1
+  1198→Module not found: Can't resolve '@/components/sidebar'
+  1199→[0m [90m 2 |[39m
+  1200→ [90m 3 |[39m [36mimport[39m { useAppStore } [36mfrom[39m [32m"@/lib/store"[39m[33m;[39m
+  1201→[31m[1m>[22m[39m[90m 4 |[39m [36mimport[39m { [33mSidebar[39m } [36mfrom[39m [32m"@/components/sidebar"[39m[33m;[39m
+  1202→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+  1203→ [90m 5 |[39m [36mimport[39m { [33mTopbar[39m } [36mfrom[39m [32m"@/components/topbar"[39m[33m;[39m
+  1204→ [90m 6 |[39m [36mimport[39m { [33mCommandPalette[39m } [36mfrom[39m [32m"@/components/command-palette"[39m[33m;[39m
+  1205→ [90m 7 |[39m [36mimport[39m { [33mViewRouter[39m } [36mfrom[39m [32m"@/components/view-router"[39m[33m;[39m[0m
+  1206→
+  1207→Import map: aliased to relative './src/components/sidebar' inside of [project]/
+  1208→
+  1209→
+  1210→Import traces:
+  1211→  Client Component Browser:
+  1212→    ./src/components/app-shell.tsx [Client Component Browser]
+  1213→    ./src/app/page.tsx [Client Component Browser]
+  1214→    ./src/app/page.tsx [Server Component]
+  1215→
+  1216→  Client Component SSR:
+  1217→    ./src/components/app-shell.tsx [Client Component SSR]
+  1218→    ./src/app/page.tsx [Client Component SSR]
+  1219→    ./src/app/page.tsx [Server Component]
+  1220→
+  1221→https://nextjs.org/docs/messages/module-not-found
+  1222→
+  1223→
+  1224→⨯ ./src/components/app-shell.tsx:4:1
+  1225→Module not found: Can't resolve '@/components/sidebar'
+  1226→[0m [90m 2 |[39m
+  1227→ [90m 3 |[39m [36mimport[39m { useAppStore } [36mfrom[39m [32m"@/lib/store"[39m[33m;[39m
+  1228→[31m[1m>[22m[39m[90m 4 |[39m [36mimport[39m { [33mSidebar[39m } [36mfrom[39m [32m"@/components/sidebar"[39m[33m;[39m
+  1229→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+  1230→ [90m 5 |[39m [36mimport[39m { [33mTopbar[39m } [36mfrom[39m [32m"@/components/topbar"[39m[33m;[39m
+  1231→ [90m 6 |[39m [36mimport[39m { [33mCommandPalette[39m } [36mfrom[39m [32m"@/components/command-palette"[39m[33m;[39m
+  1232→ [90m 7 |[39m [36mimport[39m { [33mViewRouter[39m } [36mfrom[39m [32m"@/components/view-router"[39m[33m;[39m[0m
+  1233→
+  1234→Import map: aliased to relative './src/components/sidebar' inside of [project]/
+  1235→
+  1236→
+  1237→Import traces:
+  1238→  Client Component Browser:
+  1239→    ./src/components/app-shell.tsx [Client Component Browser]
+  1240→    ./src/app/page.tsx [Client Component Browser]
+  1241→    ./src/app/page.tsx [Server Component]
+  1242→
+  1243→  Client Component SSR:
+  1244→    ./src/components/app-shell.tsx [Client Component SSR]
+  1245→    ./src/app/page.tsx [Client Component SSR]
+  1246→    ./src/app/page.tsx [Server Component]
+  1247→
+  1248→https://nextjs.org/docs/messages/module-not-found
+  1249→
+  1250→
+  1251→⨯ ./src/components/app-shell.tsx:5:1
+  1252→Module not found: Can't resolve '@/components/topbar'
+  1253→[0m [90m 3 |[39m [36mimport[39m { useAppStore } [36mfrom[39m [32m"@/lib/store"[39m[33m;[39m
+  1254→ [90m 4 |[39m [36mimport[39m { [33mSidebar[39m } [36mfrom[39m [32m"@/components/sidebar"[39m[33m;[39m
+  1255→[31m[1m>[22m[39m[90m 5 |[39m [36mimport[39m { [33mTopbar[39m } [36mfrom[39m [32m"@/components/topbar"[39m[33m;[39m
+  1256→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+  1257→ [90m 6 |[39m [36mimport[39m { [33mCommandPalette[39m } [36mfrom[39m [32m"@/components/command-palette"[39m[33m;[39m
+  1258→ [90m 7 |[39m [36mimport[39m { [33mViewRouter[39m } [36mfrom[39m [32m"@/components/view-router"[39m[33m;[39m
+  1259→ [90m 8 |[39m [36mimport[39m { [33mMobileNav[39m } [36mfrom[39m [32m"@/components/mobile-nav"[39m[33m;[39m[0m
+  1260→
+  1261→Import map: aliased to relative './src/components/topbar' inside of [project]/
+  1262→
+  1263→
+  1264→Import traces:
+  1265→  Client Component Browser:
+  1266→    ./src/components/app-shell.tsx [Client Component Browser]
+  1267→    ./src/app/page.tsx [Client Component Browser]
+  1268→    ./src/app/page.tsx [Server Component]
+  1269→
+  1270→  Client Component SSR:
+  1271→    ./src/components/app-shell.tsx [Client Component SSR]
+  1272→    ./src/app/page.tsx [Client Component SSR]
+  1273→    ./src/app/page.tsx [Server Component]
+  1274→
+  1275→https://nextjs.org/docs/messages/module-not-found
+  1276→
+  1277→
+  1278→⨯ ./src/components/app-shell.tsx:5:1
+  1279→Module not found: Can't resolve '@/components/topbar'
+  1280→[0m [90m 3 |[39m [36mimport[39m { useAppStore } [36mfrom[39m [32m"@/lib/store"[39m[33m;[39m
+  1281→ [90m 4 |[39m [36mimport[39m { [33mSidebar[39m } [36mfrom[39m [32m"@/components/sidebar"[39m[33m;[39m
+  1282→[31m[1m>[22m[39m[90m 5 |[39m [36mimport[39m { [33mTopbar[39m } [36mfrom[39m [32m"@/components/topbar"[39m[33m;[39m
+  1283→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+  1284→ [90m 6 |[39m [36mimport[39m { [33mCommandPalette[39m } [36mfrom[39m [32m"@/components/command-palette"[39m[33m;[39m
+  1285→ [90m 7 |[39m [36mimport[39m { [33mViewRouter[39m } [36mfrom[39m [32m"@/components/view-router"[39m[33m;[39m
+  1286→ [90m 8 |[39m [36mimport[39m { [33mMobileNav[39m } [36mfrom[39m [32m"@/components/mobile-nav"[39m[33m;[39m[0m
+  1287→
+  1288→Import map: aliased to relative './src/components/topbar' inside of [project]/
+  1289→
+  1290→
+  1291→Import traces:
+  1292→  Client Component Browser:
+  1293→    ./src/components/app-shell.tsx [Client Component Browser]
+  1294→    ./src/app/page.tsx [Client Component Browser]
+  1295→    ./src/app/page.tsx [Server Component]
+  1296→
+  1297→  Client Component SSR:
+  1298→    ./src/components/app-shell.tsx [Client Component SSR]
+  1299→    ./src/app/page.tsx [Client Component SSR]
+  1300→    ./src/app/page.tsx [Server Component]
+  1301→
+  1302→https://nextjs.org/docs/messages/module-not-found
+  1303→
+  1304→
+  1305→⨯ ./src/components/app-shell.tsx:5:1
+  1306→Module not found: Can't resolve '@/components/topbar'
+  1307→[0m [90m 3 |[39m [36mimport[39m { useAppStore } [36mfrom[39m [32m"@/lib/store"[39m[33m;[39m
+  1308→ [90m 4 |[39m [36mimport[39m { [33mSidebar[39m } [36mfrom[39m [32m"@/components/sidebar"[39m[33m;[39m
+  1309→[31m[1m>[22m[39m[90m 5 |[39m [36mimport[39m { [33mTopbar[39m } [36mfrom[39m [32m"@/components/topbar"[39m[33m;[39m
+  1310→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+  1311→ [90m 6 |[39m [36mimport[39m { [33mCommandPalette[39m } [36mfrom[39m [32m"@/components/command-palette"[39m[33m;[39m
+  1312→ [90m 7 |[39m [36mimport[39m { [33mViewRouter[39m } [36mfrom[39m [32m"@/components/view-router"[39m[33m;[39m
+  1313→ [90m 8 |[39m [36mimport[39m { [33mMobileNav[39m } [36mfrom[39m [32m"@/components/mobile-nav"[39m[33m;[39m[0m
+  1314→
+  1315→Import map: aliased to relative './src/components/topbar' inside of [project]/
+  1316→
+  1317→
+  1318→Import traces:
+  1319→  Client Component Browser:
+  1320→    ./src/components/app-shell.tsx [Client Component Browser]
+  1321→    ./src/app/page.tsx [Client Component Browser]
+  1322→    ./src/app/page.tsx [Server Component]
+  1323→
+  1324→  Client Component SSR:
+  1325→    ./src/components/app-shell.tsx [Client Component SSR]
+  1326→    ./src/app/page.tsx [Client Component SSR]
+  1327→    ./src/app/page.tsx [Server Component]
+  1328→
+  1329→https://nextjs.org/docs/messages/module-not-found
+  1330→
+  1331→
+  1332→⨯ ./src/components/app-shell.tsx:5:1
+  1333→Module not found: Can't resolve '@/components/topbar'
+  1334→[0m [90m 3 |[39m [36mimport[39m { useAppStore } [36mfrom[39m [32m"@/lib/store"[39m[33m;[39m
+  1335→ [90m 4 |[39m [36mimport[39m { [33mSidebar[39m } [36mfrom[39m [32m"@/components/sidebar"[39m[33m;[39m
+  1336→[31m[1m>[22m[39m[90m 5 |[39m [36mimport[39m { [33mTopbar[39m } [36mfrom[39m [32m"@/components/topbar"[39m[33m;[39m
+  1337→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+  1338→ [90m 6 |[39m [36mimport[39m { [33mCommandPalette[39m } [36mfrom[39m [32m"@/components/command-palette"[39m[33m;[39m
+  1339→ [90m 7 |[39m [36mimport[39m { [33mViewRouter[39m } [36mfrom[39m [32m"@/components/view-router"[39m[33m;[39m
+  1340→ [90m 8 |[39m [36mimport[39m { [33mMobileNav[39m } [36mfrom[39m [32m"@/components/mobile-nav"[39m[33m;[39m[0m
+  1341→
+  1342→Import map: aliased to relative './src/components/topbar' inside of [project]/
+  1343→
+  1344→
+  1345→Import traces:
+  1346→  Client Component Browser:
+  1347→    ./src/components/app-shell.tsx [Client Component Browser]
+  1348→    ./src/app/page.tsx [Client Component Browser]
+  1349→    ./src/app/page.tsx [Server Component]
+  1350→
+  1351→  Client Component SSR:
+  1352→    ./src/components/app-shell.tsx [Client Component SSR]
+  1353→    ./src/app/page.tsx [Client Component SSR]
+  1354→    ./src/app/page.tsx [Server Component]
+  1355→
+  1356→https://nextjs.org/docs/messages/module-not-found
+  1357→
+  1358→
+  1359→⨯ ./src/components/app-shell.tsx:7:1
+  1360→Module not found: Can't resolve '@/components/view-router'
+  1361→[0m [90m  5 |[39m [36mimport[39m { [33mTopbar[39m } [36mfrom[39m [32m"@/components/topbar"[39m[33m;[39m
+  1362→ [90m  6 |[39m [36mimport[39m { [33mCommandPalette[39m } [36mfrom[39m [32m"@/components/command-palette"[39m[33m;[39m
+  1363→[31m[1m>[22m[39m[90m  7 |[39m [36mimport[39m { [33mViewRouter[39m } [36mfrom[39m [32m"@/components/view-router"[39m[33m;[39m
+  1364→ [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+  1365→ [90m  8 |[39m [36mimport[39m { [33mMobileNav[39m } [36mfrom[39m [32m"@/components/mobile-nav"[39m[33m;[39m
+  1366→ [90m  9 |[39m
+  1367→ [90m 10 |[39m [36mexport[39m [36mfunction[39m [33mAppShell[39m() {[0m
+  1368→
+  1369→Import map: aliased to relative './src/components/view-router' inside of [project]/
+  1370→
+  1371→
+  1372→Import traces:
+  1373→  Client Component Browser:
+  1374→    ./src/components/app-shell.tsx [Client Component Browser]
+  1375→    ./src/app/page.tsx [Client Component Browser]
+  1376→    ./src/app/page.tsx [Server Component]
+  1377→
+  1378→  Client Component SSR:
+  1379→    ./src/components/app-shell.tsx [Client Component SSR]
+  1380→    ./src/app/page.tsx [Client Component SSR]
+  1381→    ./src/app/page.tsx [Server Component]
+  1382→
+  1383→https://nextjs.org/docs/messages/module-not-found
+  1384→
+  1385→
+  1386→⨯ ./src/components/app-shell.tsx:7:1
+  1387→Module not found: Can't resolve '@/components/view-router'
+  1388→[0m [90m  5 |[39m [36mimport[39m { [33mTopbar[39m } [36mfrom[39m [32m"@/components/topbar"[39m[33m;[39m
+  1389→ [90m  6 |[39m [36mimport[39m { [33mCommandPalette[39m } [36mfrom[39m [32m"@/components/command-palette"[39m[33m;[39m
+  1390→[31m[1m>[22m[39m[90m  7 |[39m [36mimport[39m { [33mViewRouter[39m } [36mfrom[39m [32m"@/components/view-router"[39m[33m;[39m
+  1391→ [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+  1392→ [90m  8 |[39m [36mimport[39m { [33mMobileNav[39m } [36mfrom[39m [32m"@/components/mobile-nav"[39m[33m;[39m
+  1393→ [90m  9 |[39m
+  1394→ [90m 10 |[39m [36mexport[39m [36mfunction[39m [33mAppShell[39m() {[0m
+  1395→
+  1396→Import map: aliased to relative './src/components/view-router' inside of [project]/
+  1397→
+  1398→
+  1399→Import traces:
+  1400→  Client Component Browser:
+  1401→    ./src/components/app-shell.tsx [Client Component Browser]
+  1402→    ./src/app/page.tsx [Client Component Browser]
+  1403→    ./src/app/page.tsx [Server Component]
+  1404→
+  1405→  Client Component SSR:
+  1406→    ./src/components/app-shell.tsx [Client Component SSR]
+  1407→    ./src/app/page.tsx [Client Component SSR]
+  1408→    ./src/app/page.tsx [Server Component]
+  1409→
+  1410→https://nextjs.org/docs/messages/module-not-found
+  1411→
+  1412→
+  1413→⨯ ./src/components/app-shell.tsx:7:1
+  1414→Module not found: Can't resolve '@/components/view-router'
+  1415→[0m [90m  5 |[39m [36mimport[39m { [33mTopbar[39m } [36mfrom[39m [32m"@/components/topbar"[39m[33m;[39m
+  1416→ [90m  6 |[39m [36mimport[39m { [33mCommandPalette[39m } [36mfrom[39m [32m"@/components/command-palette"[39m[33m;[39m
+  1417→[31m[1m>[22m[39m[90m  7 |[39m [36mimport[39m { [33mViewRouter[39m } [36mfrom[39m [32m"@/components/view-router"[39m[33m;[39m
+  1418→ [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+  1419→ [90m  8 |[39m [36mimport[39m { [33mMobileNav[39m } [36mfrom[39m [32m"@/components/mobile-nav"[39m[33m;[39m
+  1420→ [90m  9 |[39m
+  1421→ [90m 10 |[39m [36mexport[39m [36mfunction[39m [33mAppShell[39m() {[0m
+  1422→
+  1423→Import map: aliased to relative './src/components/view-router' inside of [project]/
+  1424→
+  1425→
+  1426→Import traces:
+  1427→  Client Component Browser:
+  1428→    ./src/components/app-shell.tsx [Client Component Browser]
+  1429→    ./src/app/page.tsx [Client Component Browser]
+  1430→    ./src/app/page.tsx [Server Component]
+  1431→
+  1432→  Client Component SSR:
+  1433→    ./src/components/app-shell.tsx [Client Component SSR]
+  1434→    ./src/app/page.tsx [Client Component SSR]
+  1435→    ./src/app/page.tsx [Server Component]
+  1436→
+  1437→https://nextjs.org/docs/messages/module-not-found
+  1438→
+  1439→
+  1440→⨯ ./src/components/app-shell.tsx:7:1
+  1441→Module not found: Can't resolve '@/components/view-router'
+  1442→[0m [90m  5 |[39m [36mimport[39m { [33mTopbar[39m } [36mfrom[39m [32m"@/components/topbar"[39m[33m;[39m
+  1443→ [90m  6 |[39m [36mimport[39m { [33mCommandPalette[39m } [36mfrom[39m [32m"@/components/command-palette"[39m[33m;[39m
+  1444→[31m[1m>[22m[39m[90m  7 |[39m [36mimport[39m { [33mViewRouter[39m } [36mfrom[39m [32m"@/components/view-router"[39m[33m;[39m
+  1445→ [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+  1446→ [90m  8 |[39m [36mimport[39m { [33mMobileNav[39m } [36mfrom[39m [32m"@/components/mobile-nav"[39m[33m;[39m
+  1447→ [90m  9 |[39m
+  1448→ [90m 10 |[39m [36mexport[39m [36mfunction[39m [33mAppShell[39m() {[0m
+  1449→
+  1450→Import map: aliased to relative './src/components/view-router' inside of [project]/
+  1451→
+  1452→
+  1453→Import traces:
+  1454→  Client Component Browser:
+  1455→    ./src/components/app-shell.tsx [Client Component Browser]
+  1456→    ./src/app/page.tsx [Client Component Browser]
+  1457→    ./src/app/page.tsx [Server Component]
+  1458→
+  1459→  Client Component SSR:
+  1460→    ./src/components/app-shell.tsx [Client Component SSR]
+  1461→    ./src/app/page.tsx [Client Component SSR]
+  1462→    ./src/app/page.tsx [Server Component]
+  1463→
+  1464→https://nextjs.org/docs/messages/module-not-found
+  1465→
+  1466→
+  1467→⨯ ./src/components/app-shell.tsx:6:1
+  1468→Module not found: Can't resolve '@/components/command-palette'
+  1469→[0m [90m 4 |[39m [36mimport[39m { [33mSidebar[39m } [36mfrom[39m [32m"@/components/sidebar"[39m[33m;[39m
+  1470→ [90m 5 |[39m [36mimport[39m { [33mTopbar[39m } [36mfrom[39m [32m"@/components/topbar"[39m[33m;[39m
+  1471→[31m[1m>[22m[39m[90m 6 |[39m [36mimport[39m { [33mCommandPalette[39m } [36mfrom[39m [32m"@/components/command-palette"[39m[33m;[39m
+  1472→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+  1473→ [90m 7 |[39m [36mimport[39m { [33mViewRouter[39m } [36mfrom[39m [32m"@/components/view-router"[39m[33m;[39m
+  1474→ [90m 8 |[39m [36mimport[39m { [33mMobileNav[39m } [36mfrom[39m [32m"@/components/mobile-nav"[39m[33m;[39m
+  1475→ [90m 9 |[39m[0m
+  1476→
+  1477→Import map: aliased to relative './src/components/command-palette' inside of [project]/
+  1478→
+  1479→
+  1480→Import traces:
+  1481→  Client Component Browser:
+  1482→    ./src/components/app-shell.tsx [Client Component Browser]
+  1483→    ./src/app/page.tsx [Client Component Browser]
+  1484→    ./src/app/page.tsx [Server Component]
+  1485→
+  1486→  Client Component SSR:
+  1487→    ./src/components/app-shell.tsx [Client Component SSR]
+  1488→    ./src/app/page.tsx [Client Component SSR]
+  1489→    ./src/app/page.tsx [Server Component]
+  1490→
+  1491→https://nextjs.org/docs/messages/module-not-found
+  1492→
+  1493→
+  1494→⨯ ./src/components/app-shell.tsx:6:1
+  1495→Module not found: Can't resolve '@/components/command-palette'
+  1496→[0m [90m 4 |[39m [36mimport[39m { [33mSidebar[39m } [36mfrom[39m [32m"@/components/sidebar"[39m[33m;[39m
+  1497→ [90m 5 |[39m [36mimport[39m { [33mTopbar[39m } [36mfrom[39m [32m"@/components/topbar"[39m[33m;[39m
+  1498→[31m[1m>[22m[39m[90m 6 |[39m [36mimport[39m { [33mCommandPalette[39m } [36mfrom[39m [32m"@/components/command-palette"[39m[33m;[39m
+  1499→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+  1500→ [90m 7 |[39m [36mimport[39m { [33mViewRouter[39m } [36mfrom[39m [32m"@/components/view-router"[39m[33m;[39m
+  1501→ [90m 8 |[39m [36mimport[39m { [33mMobileNav[39m } [36mfrom[39m [32m"@/components/mobile-nav"[39m[33m;[39m
+  1502→ [90m 9 |[39m[0m
+  1503→
+  1504→Import map: aliased to relative './src/components/command-palette' inside of [project]/
+  1505→
+  1506→
+  1507→Import traces:
+  1508→  Client Component Browser:
+  1509→    ./src/components/app-shell.tsx [Client Component Browser]
+  1510→    ./src/app/page.tsx [Client Component Browser]
+  1511→    ./src/app/page.tsx [Server Component]
+  1512→
+  1513→  Client Component SSR:
+  1514→    ./src/components/app-shell.tsx [Client Component SSR]
+  1515→    ./src/app/page.tsx [Client Component SSR]
+  1516→    ./src/app/page.tsx [Server Component]
+  1517→
+  1518→https://nextjs.org/docs/messages/module-not-found
+  1519→
+  1520→
+  1521→⨯ ./src/components/app-shell.tsx:6:1
+  1522→Module not found: Can't resolve '@/components/command-palette'
+  1523→[0m [90m 4 |[39m [36mimport[39m { [33mSidebar[39m } [36mfrom[39m [32m"@/components/sidebar"[39m[33m;[39m
+  1524→ [90m 5 |[39m [36mimport[39m { [33mTopbar[39m } [36mfrom[39m [32m"@/components/topbar"[39m[33m;[39m
+  1525→[31m[1m>[22m[39m[90m 6 |[39m [36mimport[39m { [33mCommandPalette[39m } [36mfrom[39m [32m"@/components/command-palette"[39m[33m;[39m
+  1526→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+  1527→ [90m 7 |[39m [36mimport[39m { [33mViewRouter[39m } [36mfrom[39m [32m"@/components/view-router"[39m[33m;[39m
+  1528→ [90m 8 |[39m [36mimport[39m { [33mMobileNav[39m } [36mfrom[39m [32m"@/components/mobile-nav"[39m[33m;[39m
+  1529→ [90m 9 |[39m[0m
+  1530→
+  1531→Import map: aliased to relative './src/components/command-palette' inside of [project]/
+  1532→
+  1533→
+  1534→Import traces:
+  1535→  Client Component Browser:
+  1536→    ./src/components/app-shell.tsx [Client Component Browser]
+  1537→    ./src/app/page.tsx [Client Component Browser]
+  1538→    ./src/app/page.tsx [Server Component]
+  1539→
+  1540→  Client Component SSR:
+  1541→    ./src/components/app-shell.tsx [Client Component SSR]
+  1542→    ./src/app/page.tsx [Client Component SSR]
+  1543→    ./src/app/page.tsx [Server Component]
+  1544→
+  1545→https://nextjs.org/docs/messages/module-not-found
+  1546→
+  1547→
+  1548→⨯ ./src/components/app-shell.tsx:6:1
+  1549→Module not found: Can't resolve '@/components/command-palette'
+  1550→[0m [90m 4 |[39m [36mimport[39m { [33mSidebar[39m } [36mfrom[39m [32m"@/components/sidebar"[39m[33m;[39m
+  1551→ [90m 5 |[39m [36mimport[39m { [33mTopbar[39m } [36mfrom[39m [32m"@/components/topbar"[39m[33m;[39m
+  1552→[31m[1m>[22m[39m[90m 6 |[39m [36mimport[39m { [33mCommandPalette[39m } [36mfrom[39m [32m"@/components/command-palette"[39m[33m;[39m
+  1553→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+  1554→ [90m 7 |[39m [36mimport[39m { [33mViewRouter[39m } [36mfrom[39m [32m"@/components/view-router"[39m[33m;[39m
+  1555→ [90m 8 |[39m [36mimport[39m { [33mMobileNav[39m } [36mfrom[39m [32m"@/components/mobile-nav"[39m[33m;[39m
+  1556→ [90m 9 |[39m[0m
+  1557→
+  1558→Import map: aliased to relative './src/components/command-palette' inside of [project]/
+  1559→
+  1560→
+  1561→Import traces:
+  1562→  Client Component Browser:
+  1563→    ./src/components/app-shell.tsx [Client Component Browser]
+  1564→    ./src/app/page.tsx [Client Component Browser]
+  1565→    ./src/app/page.tsx [Server Component]
+  1566→
+  1567→  Client Component SSR:
+  1568→    ./src/components/app-shell.tsx [Client Component SSR]
+  1569→    ./src/app/page.tsx [Client Component SSR]
+  1570→    ./src/app/page.tsx [Server Component]
+  1571→
+  1572→https://nextjs.org/docs/messages/module-not-found
+  1573→
+  1574→
+  1575→⨯ ./src/components/app-shell.tsx:8:1
+  1576→Module not found: Can't resolve '@/components/mobile-nav'
+  1577→[0m [90m  6 |[39m [36mimport[39m { [33mCommandPalette[39m } [36mfrom[39m [32m"@/components/command-palette"[39m[33m;[39m
+  1578→ [90m  7 |[39m [36mimport[39m { [33mViewRouter[39m } [36mfrom[39m [32m"@/components/view-router"[39m[33m;[39m
+  1579→[31m[1m>[22m[39m[90m  8 |[39m [36mimport[39m { [33mMobileNav[39m } [36mfrom[39m [32m"@/components/mobile-nav"[39m[33m;[39m
+  1580→ [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+  1581→ [90m  9 |[39m
+  1582→ [90m 10 |[39m [36mexport[39m [36mfunction[39m [33mAppShell[39m() {
+  1583→ [90m 11 |[39m   [36mconst[39m collapsed [33m=[39m useAppStore((s) [33m=>[39m s[33m.[39msidebarCollapsed)[33m;[39m[0m
+  1584→
+  1585→Import map: aliased to relative './src/components/mobile-nav' inside of [project]/
+  1586→
+  1587→
+  1588→Import traces:
+  1589→  Client Component Browser:
+  1590→    ./src/components/app-shell.tsx [Client Component Browser]
+  1591→    ./src/app/page.tsx [Client Component Browser]
+  1592→    ./src/app/page.tsx [Server Component]
+  1593→
+  1594→  Client Component SSR:
+  1595→    ./src/components/app-shell.tsx [Client Component SSR]
+  1596→    ./src/app/page.tsx [Client Component SSR]
+  1597→    ./src/app/page.tsx [Server Component]
+  1598→
+  1599→https://nextjs.org/docs/messages/module-not-found
+  1600→
+  1601→
+  1602→⨯ ./src/components/app-shell.tsx:8:1
+  1603→Module not found: Can't resolve '@/components/mobile-nav'
+  1604→[0m [90m  6 |[39m [36mimport[39m { [33mCommandPalette[39m } [36mfrom[39m [32m"@/components/command-palette"[39m[33m;[39m
+  1605→ [90m  7 |[39m [36mimport[39m { [33mViewRouter[39m } [36mfrom[39m [32m"@/components/view-router"[39m[33m;[39m
+  1606→[31m[1m>[22m[39m[90m  8 |[39m [36mimport[39m { [33mMobileNav[39m } [36mfrom[39m [32m"@/components/mobile-nav"[39m[33m;[39m
+  1607→ [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+  1608→ [90m  9 |[39m
+  1609→ [90m 10 |[39m [36mexport[39m [36mfunction[39m [33mAppShell[39m() {
+  1610→ [90m 11 |[39m   [36mconst[39m collapsed [33m=[39m useAppStore((s) [33m=>[39m s[33m.[39msidebarCollapsed)[33m;[39m[0m
+  1611→
+  1612→Import map: aliased to relative './src/components/mobile-nav' inside of [project]/
+  1613→
+  1614→
+  1615→Import traces:
+  1616→  Client Component Browser:
+  1617→    ./src/components/app-shell.tsx [Client Component Browser]
+  1618→    ./src/app/page.tsx [Client Component Browser]
+  1619→    ./src/app/page.tsx [Server Component]
+  1620→
+  1621→  Client Component SSR:
+  1622→    ./src/components/app-shell.tsx [Client Component SSR]
+  1623→    ./src/app/page.tsx [Client Component SSR]
+  1624→    ./src/app/page.tsx [Server Component]
+  1625→
+  1626→https://nextjs.org/docs/messages/module-not-found
+  1627→
+  1628→
+  1629→⨯ ./src/components/app-shell.tsx:8:1
+  1630→Module not found: Can't resolve '@/components/mobile-nav'
+  1631→[0m [90m  6 |[39m [36mimport[39m { [33mCommandPalette[39m } [36mfrom[39m [32m"@/components/command-palette"[39m[33m;[39m
+  1632→ [90m  7 |[39m [36mimport[39m { [33mViewRouter[39m } [36mfrom[39m [32m"@/components/view-router"[39m[33m;[39m
+  1633→[31m[1m>[22m[39m[90m  8 |[39m [36mimport[39m { [33mMobileNav[39m } [36mfrom[39m [32m"@/components/mobile-nav"[39m[33m;[39m
+  1634→ [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+  1635→ [90m  9 |[39m
+  1636→ [90m 10 |[39m [36mexport[39m [36mfunction[39m [33mAppShell[39m() {
+  1637→ [90m 11 |[39m   [36mconst[39m collapsed [33m=[39m useAppStore((s) [33m=>[39m s[33m.[39msidebarCollapsed)[33m;[39m[0m
+  1638→
+  1639→Import map: aliased to relative './src/components/mobile-nav' inside of [project]/
+  1640→
+  1641→
+  1642→Import traces:
+  1643→  Client Component Browser:
+  1644→    ./src/components/app-shell.tsx [Client Component Browser]
+  1645→    ./src/app/page.tsx [Client Component Browser]
+  1646→    ./src/app/page.tsx [Server Component]
+  1647→
+  1648→  Client Component SSR:
+  1649→    ./src/components/app-shell.tsx [Client Component SSR]
+  1650→    ./src/app/page.tsx [Client Component SSR]
+  1651→    ./src/app/page.tsx [Server Component]
+  1652→
+  1653→https://nextjs.org/docs/messages/module-not-found
+  1654→
+  1655→
+  1656→⨯ ./src/components/app-shell.tsx:8:1
+  1657→Module not found: Can't resolve '@/components/mobile-nav'
+  1658→[0m [90m  6 |[39m [36mimport[39m { [33mCommandPalette[39m } [36mfrom[39m [32m"@/components/command-palette"[39m[33m;[39m
+  1659→ [90m  7 |[39m [36mimport[39m { [33mViewRouter[39m } [36mfrom[39m [32m"@/components/view-router"[39m[33m;[39m
+  1660→[31m[1m>[22m[39m[90m  8 |[39m [36mimport[39m { [33mMobileNav[39m } [36mfrom[39m [32m"@/components/mobile-nav"[39m[33m;[39m
+  1661→ [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+  1662→ [90m  9 |[39m
+  1663→ [90m 10 |[39m [36mexport[39m [36mfunction[39m [33mAppShell[39m() {
+  1664→ [90m 11 |[39m   [36mconst[39m collapsed [33m=[39m useAppStore((s) [33m=>[39m s[33m.[39msidebarCollapsed)[33m;[39m[0m
+  1665→
+  1666→Import map: aliased to relative './src/components/mobile-nav' inside of [project]/
+  1667→
+  1668→
+  1669→Import traces:
+  1670→  Client Component Browser:
+  1671→    ./src/components/app-shell.tsx [Client Component Browser]
+  1672→    ./src/app/page.tsx [Client Component Browser]
+  1673→    ./src/app/page.tsx [Server Component]
+  1674→
+  1675→  Client Component SSR:
+  1676→    ./src/components/app-shell.tsx [Client Component SSR]
+  1677→    ./src/app/page.tsx [Client Component SSR]
+  1678→    ./src/app/page.tsx [Server Component]
+  1679→
+  1680→https://nextjs.org/docs/messages/module-not-found
+  1681→
+  1682→
+  1683→⨯ ./src/components/app-shell.tsx:4:1
+  1684→Module not found: Can't resolve '@/components/sidebar'
+  1685→[0m [90m 2 |[39m
+  1686→ [90m 3 |[39m [36mimport[39m { useAppStore } [36mfrom[39m [32m"@/lib/store"[39m[33m;[39m
+  1687→[31m[1m>[22m[39m[90m 4 |[39m [36mimport[39m { [33mSidebar[39m } [36mfrom[39m [32m"@/components/sidebar"[39m[33m;[39m
+  1688→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+  1689→ [90m 5 |[39m [36mimport[39m { [33mTopbar[39m } [36mfrom[39m [32m"@/components/topbar"[39m[33m;[39m
+  1690→ [90m 6 |[39m [36mimport[39m { [33mCommandPalette[39m } [36mfrom[39m [32m"@/components/command-palette"[39m[33m;[39m
+  1691→ [90m 7 |[39m [36mimport[39m { [33mViewRouter[39m } [36mfrom[39m [32m"@/components/view-router"[39m[33m;[39m[0m
+  1692→
+  1693→Import map: aliased to relative './src/components/sidebar' inside of [project]/
+  1694→
+  1695→
+  1696→Import traces:
+  1697→  Client Component Browser:
+  1698→    ./src/components/app-shell.tsx [Client Component Browser]
+  1699→    ./src/app/page.tsx [Client Component Browser]
+  1700→    ./src/app/page.tsx [Server Component]
+  1701→
+  1702→  Client Component SSR:
+  1703→    ./src/components/app-shell.tsx [Client Component SSR]
+  1704→    ./src/app/page.tsx [Client Component SSR]
+  1705→    ./src/app/page.tsx [Server Component]
+  1706→
+  1707→https://nextjs.org/docs/messages/module-not-found
+  1708→
+  1709→
+  1710→⨯ ./src/components/app-shell.tsx:4:1
+  1711→Module not found: Can't resolve '@/components/sidebar'
+  1712→[0m [90m 2 |[39m
+  1713→ [90m 3 |[39m [36mimport[39m { useAppStore } [36mfrom[39m [32m"@/lib/store"[39m[33m;[39m
+  1714→[31m[1m>[22m[39m[90m 4 |[39m [36mimport[39m { [33mSidebar[39m } [36mfrom[39m [32m"@/components/sidebar"[39m[33m;[39m
+  1715→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+  1716→ [90m 5 |[39m [36mimport[39m { [33mTopbar[39m } [36mfrom[39m [32m"@/components/topbar"[39m[33m;[39m
+  1717→ [90m 6 |[39m [36mimport[39m { [33mCommandPalette[39m } [36mfrom[39m [32m"@/components/command-palette"[39m[33m;[39m
+  1718→ [90m 7 |[39m [36mimport[39m { [33mViewRouter[39m } [36mfrom[39m [32m"@/components/view-router"[39m[33m;[39m[0m
+  1719→
+  1720→Import map: aliased to relative './src/components/sidebar' inside of [project]/
+  1721→
+  1722→
+  1723→Import traces:
+  1724→  Client Component Browser:
+  1725→    ./src/components/app-shell.tsx [Client Component Browser]
+  1726→    ./src/app/page.tsx [Client Component Browser]
+  1727→    ./src/app/page.tsx [Server Component]
+  1728→
+  1729→  Client Component SSR:
+  1730→    ./src/components/app-shell.tsx [Client Component SSR]
+  1731→    ./src/app/page.tsx [Client Component SSR]
+  1732→    ./src/app/page.tsx [Server Component]
+  1733→
+  1734→https://nextjs.org/docs/messages/module-not-found
+  1735→
+  1736→
+  1737→⨯ ./src/components/app-shell.tsx:4:1
+  1738→Module not found: Can't resolve '@/components/sidebar'
+  1739→[0m [90m 2 |[39m
+  1740→ [90m 3 |[39m [36mimport[39m { useAppStore } [36mfrom[39m [32m"@/lib/store"[39m[33m;[39m
+  1741→[31m[1m>[22m[39m[90m 4 |[39m [36mimport[39m { [33mSidebar[39m } [36mfrom[39m [32m"@/components/sidebar"[39m[33m;[39m
+  1742→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+  1743→ [90m 5 |[39m [36mimport[39m { [33mTopbar[39m } [36mfrom[39m [32m"@/components/topbar"[39m[33m;[39m
+  1744→ [90m 6 |[39m [36mimport[39m { [33mCommandPalette[39m } [36mfrom[39m [32m"@/components/command-palette"[39m[33m;[39m
+  1745→ [90m 7 |[39m [36mimport[39m { [33mViewRouter[39m } [36mfrom[39m [32m"@/components/view-router"[39m[33m;[39m[0m
+  1746→
+  1747→Import map: aliased to relative './src/components/sidebar' inside of [project]/
+  1748→
+  1749→
+  1750→Import traces:
+  1751→  Client Component Browser:
+  1752→    ./src/components/app-shell.tsx [Client Component Browser]
+  1753→    ./src/app/page.tsx [Client Component Browser]
+  1754→    ./src/app/page.tsx [Server Component]
+  1755→
+  1756→  Client Component SSR:
+  1757→    ./src/components/app-shell.tsx [Client Component SSR]
+  1758→    ./src/app/page.tsx [Client Component SSR]
+  1759→    ./src/app/page.tsx [Server Component]
+  1760→
+  1761→https://nextjs.org/docs/messages/module-not-found
+  1762→
+  1763→
+  1764→⨯ ./src/components/app-shell.tsx:4:1
+  1765→Module not found: Can't resolve '@/components/sidebar'
+  1766→[0m [90m 2 |[39m
+  1767→ [90m 3 |[39m [36mimport[39m { useAppStore } [36mfrom[39m [32m"@/lib/store"[39m[33m;[39m
+  1768→[31m[1m>[22m[39m[90m 4 |[39m [36mimport[39m { [33mSidebar[39m } [36mfrom[39m [32m"@/components/sidebar"[39m[33m;[39m
+  1769→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+  1770→ [90m 5 |[39m [36mimport[39m { [33mTopbar[39m } [36mfrom[39m [32m"@/components/topbar"[39m[33m;[39m
+  1771→ [90m 6 |[39m [36mimport[39m { [33mCommandPalette[39m } [36mfrom[39m [32m"@/components/command-palette"[39m[33m;[39m
+  1772→ [90m 7 |[39m [36mimport[39m { [33mViewRouter[39m } [36mfrom[39m [32m"@/components/view-router"[39m[33m;[39m[0m
+  1773→
+  1774→Import map: aliased to relative './src/components/sidebar' inside of [project]/
+  1775→
+  1776→
+  1777→Import traces:
+  1778→  Client Component Browser:
+  1779→    ./src/components/app-shell.tsx [Client Component Browser]
+  1780→    ./src/app/page.tsx [Client Component Browser]
+  1781→    ./src/app/page.tsx [Server Component]
+  1782→
+  1783→  Client Component SSR:
+  1784→    ./src/components/app-shell.tsx [Client Component SSR]
+  1785→    ./src/app/page.tsx [Client Component SSR]
+  1786→    ./src/app/page.tsx [Server Component]
+  1787→
+  1788→https://nextjs.org/docs/messages/module-not-found
+  1789→
+  1790→
+  1791→⨯ ./src/components/app-shell.tsx:5:1
+  1792→Module not found: Can't resolve '@/components/topbar'
+  1793→[0m [90m 3 |[39m [36mimport[39m { useAppStore } [36mfrom[39m [32m"@/lib/store"[39m[33m;[39m
+  1794→ [90m 4 |[39m [36mimport[39m { [33mSidebar[39m } [36mfrom[39m [32m"@/components/sidebar"[39m[33m;[39m
+  1795→[31m[1m>[22m[39m[90m 5 |[39m [36mimport[39m { [33mTopbar[39m } [36mfrom[39m [32m"@/components/topbar"[39m[33m;[39m
+  1796→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+  1797→ [90m 6 |[39m [36mimport[39m { [33mCommandPalette[39m } [36mfrom[39m [32m"@/components/command-palette"[39m[33m;[39m
+  1798→ [90m 7 |[39m [36mimport[39m { [33mViewRouter[39m } [36mfrom[39m [32m"@/components/view-router"[39m[33m;[39m
+  1799→ [90m 8 |[39m [36mimport[39m { [33mMobileNav[39m } [36mfrom[39m [32m"@/components/mobile-nav"[39m[33m;[39m[0m
+  1800→
+  1801→Import map: aliased to relative './src/components/topbar' inside of [project]/
+  1802→
+  1803→
+  1804→Import traces:
+  1805→  Client Component Browser:
+  1806→    ./src/components/app-shell.tsx [Client Component Browser]
+  1807→    ./src/app/page.tsx [Client Component Browser]
+  1808→    ./src/app/page.tsx [Server Component]
+  1809→
+  1810→  Client Component SSR:
+  1811→    ./src/components/app-shell.tsx [Client Component SSR]
+  1812→    ./src/app/page.tsx [Client Component SSR]
+  1813→    ./src/app/page.tsx [Server Component]
+  1814→
+  1815→https://nextjs.org/docs/messages/module-not-found
+  1816→
+  1817→
+  1818→⨯ ./src/components/app-shell.tsx:5:1
+  1819→Module not found: Can't resolve '@/components/topbar'
+  1820→[0m [90m 3 |[39m [36mimport[39m { useAppStore } [36mfrom[39m [32m"@/lib/store"[39m[33m;[39m
+  1821→ [90m 4 |[39m [36mimport[39m { [33mSidebar[39m } [36mfrom[39m [32m"@/components/sidebar"[39m[33m;[39m
+  1822→[31m[1m>[22m[39m[90m 5 |[39m [36mimport[39m { [33mTopbar[39m } [36mfrom[39m [32m"@/components/topbar"[39m[33m;[39m
+  1823→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+  1824→ [90m 6 |[39m [36mimport[39m { [33mCommandPalette[39m } [36mfrom[39m [32m"@/components/command-palette"[39m[33m;[39m
+  1825→ [90m 7 |[39m [36mimport[39m { [33mViewRouter[39m } [36mfrom[39m [32m"@/components/view-router"[39m[33m;[39m
+  1826→ [90m 8 |[39m [36mimport[39m { [33mMobileNav[39m } [36mfrom[39m [32m"@/components/mobile-nav"[39m[33m;[39m[0m
+  1827→
+  1828→Import map: aliased to relative './src/components/topbar' inside of [project]/
+  1829→
+  1830→
+  1831→Import traces:
+  1832→  Client Component Browser:
+  1833→    ./src/components/app-shell.tsx [Client Component Browser]
+  1834→    ./src/app/page.tsx [Client Component Browser]
+  1835→    ./src/app/page.tsx [Server Component]
+  1836→
+  1837→  Client Component SSR:
+  1838→    ./src/components/app-shell.tsx [Client Component SSR]
+  1839→    ./src/app/page.tsx [Client Component SSR]
+  1840→    ./src/app/page.tsx [Server Component]
+  1841→
+  1842→https://nextjs.org/docs/messages/module-not-found
+  1843→
+  1844→
+  1845→⨯ ./src/components/app-shell.tsx:5:1
+  1846→Module not found: Can't resolve '@/components/topbar'
+  1847→[0m [90m 3 |[39m [36mimport[39m { useAppStore } [36mfrom[39m [32m"@/lib/store"[39m[33m;[39m
+  1848→ [90m 4 |[39m [36mimport[39m { [33mSidebar[39m } [36mfrom[39m [32m"@/components/sidebar"[39m[33m;[39m
+  1849→[31m[1m>[22m[39m[90m 5 |[39m [36mimport[39m { [33mTopbar[39m } [36mfrom[39m [32m"@/components/topbar"[39m[33m;[39m
+  1850→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+  1851→ [90m 6 |[39m [36mimport[39m { [33mCommandPalette[39m } [36mfrom[39m [32m"@/components/command-palette"[39m[33m;[39m
+  1852→ [90m 7 |[39m [36mimport[39m { [33mViewRouter[39m } [36mfrom[39m [32m"@/components/view-router"[39m[33m;[39m
+  1853→ [90m 8 |[39m [36mimport[39m { [33mMobileNav[39m } [36mfrom[39m [32m"@/components/mobile-nav"[39m[33m;[39m[0m
+  1854→
+  1855→Import map: aliased to relative './src/components/topbar' inside of [project]/
+  1856→
+  1857→
+  1858→Import traces:
+  1859→  Client Component Browser:
+  1860→    ./src/components/app-shell.tsx [Client Component Browser]
+  1861→    ./src/app/page.tsx [Client Component Browser]
+  1862→    ./src/app/page.tsx [Server Component]
+  1863→
+  1864→  Client Component SSR:
+  1865→    ./src/components/app-shell.tsx [Client Component SSR]
+  1866→    ./src/app/page.tsx [Client Component SSR]
+  1867→    ./src/app/page.tsx [Server Component]
+  1868→
+  1869→https://nextjs.org/docs/messages/module-not-found
+  1870→
+  1871→
+  1872→⨯ ./src/components/app-shell.tsx:5:1
+  1873→Module not found: Can't resolve '@/components/topbar'
+  1874→[0m [90m 3 |[39m [36mimport[39m { useAppStore } [36mfrom[39m [32m"@/lib/store"[39m[33m;[39m
+  1875→ [90m 4 |[39m [36mimport[39m { [33mSidebar[39m } [36mfrom[39m [32m"@/components/sidebar"[39m[33m;[39m
+  1876→[31m[1m>[22m[39m[90m 5 |[39m [36mimport[39m { [33mTopbar[39m } [36mfrom[39m [32m"@/components/topbar"[39m[33m;[39m
+  1877→ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+  1878→ [90m 6 |[39m [36mimport[39m { [33mCommandPalette[39m } [36mfrom[39m [32m"@/components/command-palette"[39m[33m;[39m
+  1879→ [90m 7 |[39m [36mimport[39m { [33mViewRouter[39m } [36mfrom[39m [32m"@/components/view-router"[39m[33m;[39m
+  1880→ [90m 8 |[39m [36mimport[39m { [33mMobileNav[39m } [36mfrom[39m [32m"@/components/mobile-nav"[39m[33m;[39m[0m
+  1881→
+  1882→Import map: aliased to relative './src/components/topbar' inside of [project]/
+  1883→
+  1884→
+  1885→Import traces:
+  1886→  Client Component Browser:
+  1887→    ./src/components/app-shell.tsx [Client Component Browser]
+  1888→    ./src/app/page.tsx [Client Component Browser]
+  1889→    ./src/app/page.tsx [Server Component]
+  1890→
+  1891→  Client Component SSR:
+  1892→    ./src/components/app-shell.tsx [Client Component SSR]
+  1893→    ./src/app/page.tsx [Client Component SSR]
+  1894→    ./src/app/page.tsx [Server Component]
+  1895→
+  1896→https://nextjs.org/docs/messages/module-not-found
+  1897→
+  1898→
+  1899→⨯ ./src/components/app-shell.tsx:7:1
+  1900→Module not found: Can't resolve '@/components/view-router'
+  1901→[0m [90m  5 |[39m [36mimport[39m { [33mTopbar[39m } [36mfrom[39m [32m"@/components/topbar"[39m[33m;[39m
+  1902→ [90m  6 |[39m [36mimport[39m { [33mCommandPalette[39m } [36mfrom[39m [32m"@/components/command-palette"[39m[33m;[39m
+  1903→[31m[1m>[22m[39m[90m  7 |[39m [36mimport[39m { [33mViewRouter[39m } [36mfrom[39m [32m"@/components/view-router"[39m[33m;[39m
+  1904→ [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+  1905→ [90m  8 |[39m [36mimport[39m { [33mMobileNav[39m } [36mfrom[39m [32m"@/components/mobile-nav"[39m[33m;[39m
+  1906→ [90m  9 |[39m
+  1907→ [90m 10 |[39m [36mexport[39m [36mfunction[39m [33mAppShell[39m() {[0m
+  1908→
+  1909→Import map: aliased to relative './src/components/view-router' inside of [project]/
+  1910→
+  1911→
+  1912→Import traces:
+  1913→  Client Component Browser:
+  1914→    ./src/components/app-shell.tsx [Client Component Browser]
+  1915→    ./src/app/page.tsx [Client Component Browser]
+  1916→    ./src/app/page.tsx [Server Component]
+  1917→
+  1918→  Client Component SSR:
+  1919→    ./src/components/app-shell.tsx [Client Component SSR]
+  1920→    ./src/app/page.tsx [Client Component SSR]
+  1921→    ./src/app/page.tsx [Server Component]
+  1922→
+  1923→https://nextjs.org/docs/messages/module-not-found
+  1924→
+  1925→
+  1926→⨯ ./src/components/app-shell.tsx:7:1
+  1927→Module not found: Can't resolve '@/components/view-router'
+  1928→[0m [90m  5 |[39m [36mimport[39m { [33mTopbar[39m } [36mfrom[39m [32m"@/components/topbar"[39m[33m;[39m
+  1929→ [90m  6 |[39m [36mimport[39m { [33mCommandPalette[39m } [36mfrom[39m [32m"@/components/command-palette"[39m[33m;[39m
+  1930→[31m[1m>[22m[39m[90m  7 |[39m [36mimport[39m { [33mViewRouter[39m } [36mfrom[39m [32m"@/components/view-router"[39m[33m;[39m
+  1931→ [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+  1932→ [90m  8 |[39m [36mimport[39m { [33mMobileNav[39m } [36mfrom[39m [32m"@/components/mobile-nav"[39m[33m;[39m
+  1933→ [90m  9 |[39m
+  1934→ [90m 10 |[39m [36mexport[39m [36mfunction[39m [33mAppShell[39m() {[0m
+  1935→
+  1936→Import map: aliased to relative './src/components/view-router' inside of [project]/
+  1937→
+  1938→
+  1939→Import traces:
+  1940→  Client Component Browser:
+  1941→    ./src/components/app-shell.tsx [Client Component Browser]
+  1942→    ./src/app/page.tsx [Client Component Browser]
+  1943→    ./src/app/page.tsx [Server Component]
+  1944→
+  1945→  Client Component SSR:
+  1946→    ./src/components/app-shell.tsx [Client Component SSR]
+  1947→    ./src/app/page.tsx [Client Component SSR]
+  1948→    ./src/app/page.tsx [Server Component]
+  1949→
+  1950→https://nextjs.org/docs/messages/module-not-found
+  1951→
+  1952→
+  1953→⨯ ./src/components/app-shell.tsx:7:1
+  1954→Module not found: Can't resolve '@/components/view-router'
+  1955→[0m [90m  5 |[39m [36mimport[39m { [33mTopbar[39m } [36mfrom[39m [32m"@/components/topbar"[39m[33m;[39m
+  1956→ [90m  6 |[39m [36mimport[39m { [33mCommandPalette[39m } [36mfrom[39m [32m"@/components/command-palette"[39m[33m;[39m
+  1957→[31m[1m>[22m[39m[90m  7 |[39m [36mimport[39m { [33mViewRouter[39m } [36mfrom[39m [32m"@/components/view-router"[39m[33m;[39m
+  1958→ [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+  1959→ [90m  8 |[39m [36mimport[39m { [33mMobileNav[39m } [36mfrom[39m [32m"@/components/mobile-nav"[39m[33m;[39m
+  1960→ [90m  9 |[39m
+  1961→ [90m 10 |[39m [36mexport[39m [36mfunction[39m [33mAppShell[39m() {[0m
+  1962→
+  1963→Import map: aliased to relative './src/components/view-router' inside of [project]/
+  1964→
+  1965→
+  1966→Import traces:
+  1967→  Client Component Browser:
+  1968→    ./src/components/app-shell.tsx [Client Component Browser]
+  1969→    ./src/app/page.tsx [Client Component Browser]
+  1970→    ./src/app/page.tsx [Server Component]
+  1971→
+  1972→  Client Component SSR:
+  1973→    ./src/components/app-shell.tsx [Client Component SSR]
+  1974→    ./src/app/page.tsx [Client Component SSR]
+  1975→    ./src/app/page.tsx [Server Component]
+  1976→
+  1977→https://nextjs.org/docs/messages/module-not-found
+  1978→
+  1979→
+  1980→⨯ ./src/components/app-shell.tsx:7:1
+  1981→Module not found: Can't resolve '@/components/view-router'
+  1982→[0m [90m  5 |[39m [36mimport[39m { [33mTopbar[39m } [36mfrom[39m [32m"@/components/topbar"[39m[33m;[39m
+  1983→ [90m  6 |[39m [36mimport[39m { [33mCommandPalette[39m } [36mfrom[39m [32m"@/components/command-palette"[39m[33m;[39m
+  1984→[31m[1m>[22m[39m[90m  7 |[39m [36mimport[39m { [33mViewRouter[39m } [36mfrom[39m [32m"@/components/view-router"[39m[33m;[39m
+  1985→ [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+  1986→ [90m  8 |[39m [36mimport[39m { [33mMobileNav[39m } [36mfrom[39m [32m"@/components/mobile-nav"[39m[33m;[39m
+  1987→ [90m  9 |[39m
+  1988→ [90m 10 |[39m [36mexport[39m [36mfunction[39m [33mAppShell[39m() {[0m
+  1989→
+  1990→Import map: aliased to relative './src/components/view-router' inside of [project]/
+  1991→
+  1992→
+  1993→Import traces:
+  1994→  Client Component Browser:
+  1995→    ./src/components/app-shell.tsx [Client Component Browser]
+  1996→    ./src/app/page.tsx [Client Component Browser]
+  1997→    ./src/app/page.tsx [Server Component]
+  1998→
+  1999→  Client Component SSR:
+  2000→    ./src/components/app-shell.tsx [Client Component SSR]
+
+[showing lines 1-2000 of 81275; use offset=2001 with limit to continue reading]

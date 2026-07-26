@@ -1,0 +1,424 @@
+// Mobile Spare Parts Management System - Prisma Schema
+// Normalized relational design with indexes, constraints, and cascade rules.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Core Reference Data ────────────────────────────────────────────────
+
+model Brand {
+  id        String      @id @default(cuid())
+  name      String      @unique
+  slug      String      @unique
+  logoUrl   String?
+  country   String?
+  active    Boolean     @default(true)
+  createdAt DateTime    @default(now())
+  models    PhoneModel[]
+  products  Product[]
+
+  @@index([name])
+}
+
+model PhoneModel {
+  id            String            @id @default(cuid())
+  name          String
+  slug          String            @unique
+  brandId       String
+  brand         Brand             @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  releaseYear   Int?
+  imageUrl      String?
+  notes         String?
+  active        Boolean           @default(true)
+  createdAt     DateTime          @default(now())
+  products      Product[]
+  // Compatibility: this model is compatible with these part-groups
+  compatAsModel ModelCompatibility[] @relation("CompatModel")
+  // Compatibility: this model shares parts with these other models
+  compatAsPeer  ModelCompatibility[] @relation("CompatPeer")
+  repairJobs    RepairJob[]
+
+  @@index([brandId])
+  @@index([name])
+}
+
+/// Many-to-many compatibility between phone models.
+/// e.g. Samsung A12 ↔ Samsung M12 share the same LCD.
+model ModelCompatibility {
+  id        String     @id @default(cuid())
+  modelId   String
+  peerId    String
+  partType  String     // LCD, Touch, Battery, Frame, Flex... (empty = all)
+  note      String?
+  createdAt DateTime   @default(now())
+  model     PhoneModel @relation("CompatModel", fields: [modelId], references: [id], onDelete: Cascade)
+  peer      PhoneModel @relation("CompatPeer", fields: [peerId], references: [id], onDelete: Cascade)
+
+  @@unique([modelId, peerId, partType])
+  @@index([peerId])
+  @@index([partType])
+}
+
+model PartType {
+  id          String    @id @default(cuid())
+  name        String    @unique // LCD, OLED, AMOLED, Touch Glass, Frame, Battery...
+  slug        String    @unique
+  category    String    // Display, Battery, Frame, Flex, Camera, Audio, Housing, Board, Button, Misc
+  icon        String?
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  products    Product[]
+
+  @@index([category])
+}
+
+model Warehouse {
+  id        String      @id @default(cuid())
+  name      String
+  code      String      @unique
+  address   String?
+  active    Boolean     @default(true)
+  createdAt DateTime    @default(now())
+  shelves   Shelf[]
+  products  Product[]
+  movFrom   InventoryMovement[] @relation("MovFrom")
+  movTo     InventoryMovement[] @relation("MovTo")
+}
+
+model Shelf {
+  id           String      @id @default(cuid())
+  code         String      // e.g. A1, B3
+  warehouseId  String
+  warehouse    Warehouse   @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  rack         String?
+  bin          String?
+  description  String?
+  createdAt    DateTime    @default(now())
+  products     Product[]
+
+  @@unique([warehouseId, code])
+  @@index([warehouseId])
+}
+
+// ─── Parties ────────────────────────────────────────────────────────────
+
+model Supplier {
+  id               String            @id @default(cuid())
+  name             String
+  company          String?
+  phone            String?
+  whatsapp         String?
+  email            String?
+  address          String?
+  contactPerson    String?
+  balance          Float             @default(0) // outstanding
+  rating           Int               @default(3) // 1-5
+  notes            String?
+  active           Boolean           @default(true)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  products         Product[]
+  purchases        Purchase[]
+  priceHistory     PriceHistory[]
+}
+
+model Customer {
+  id           String       @id @default(cuid())
+  name         String
+  phone        String?
+  whatsapp     String?
+  email        String?
+  address      String?
+  company      String?
+  balance      Float        @default(0) // outstanding
+  notes        String?
+  active       Boolean      @default(true)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  sales        Sale[]
+  repairJobs   RepairJob[]
+}
+
+// ─── Users & Auth ───────────────────────────────────────────────────────
+
+model User {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  name         String
+  passwordHash String
+  role         String     @default("SALES_STAFF") // OWNER, MANAGER, SALES_STAFF, TECHNICIAN, WAREHOUSE_STAFF
+  phone        String?
+  active       Boolean    @default(true)
+  avatarUrl    String?
+  lastLogin    DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  sales        Sale[]
+  purchases    Purchase[]
+  repairJobs   RepairJob[]
+  movements    InventoryMovement[]
+}
+
+// ─── Products / Inventory ───────────────────────────────────────────────
+
+model Product {
+  id            String         @id @default(cuid())
+  sku           String         @unique
+  barcode       String?
+  qrCode        String?
+  name          String
+  brandId       String?
+  brand         Brand?         @relation(fields: [brandId], references: [id], onDelete: SetNull)
+  modelId       String?
+  model         PhoneModel?    @relation(fields: [modelId], references: [id], onDelete: SetNull)
+  partTypeId    String?
+  partType      PartType?      @relation(fields: [partTypeId], references: [id], onDelete: SetNull)
+  quality       String         @default("ORIGINAL") // ORIGINAL, OEM, COPY, PREMIUM_COPY, REFURBISHED
+  condition     String         @default("NEW") // NEW, USED, REFURBISHED
+  color         String?
+  supplierId    String?
+  supplier      Supplier?      @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  purchasePrice Float          @default(0)
+  sellingPrice  Float          @default(0)
+  stock         Int            @default(0)
+  minStock      Int            @default(5)
+  warehouseId   String?
+  warehouse     Warehouse?     @relation(fields: [warehouseId], references: [id], onDelete: SetNull)
+  shelfId       String?
+  shelf         Shelf?         @relation(fields: [shelfId], references: [id], onDelete: SetNull)
+  connectorType String?
+  lcdCode       String?
+  warranty      String?
+  notes         String?
+  active        Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  images        ProductImage[]
+  saleItems     SaleItem[]
+  purchaseItems PurchaseItem[]
+  priceHistory  PriceHistory[]
+  damages       DamagedInventory[]
+  movements     InventoryMovement[]
+  repairParts   RepairJobPart[]
+
+  @@index([brandId, modelId])
+  @@index([partTypeId])
+  @@index([supplierId])
+  @@index([warehouseId])
+  @@index([shelfId])
+  @@index([name])
+  @@index([lcdCode])
+  @@index([barcode])
+  @@index([qrCode])
+}
+
+model ProductImage {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url       String
+  kind      String   @default("FRONT") // FRONT, BACK, CONNECTOR, FLEX, IC, PACKAGING, OTHER
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([productId])
+}
+
+model PriceHistory {
+  id           String    @id @default(cuid())
+  productId    String
+  product      Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  supplierId   String?
+  supplier     Supplier? @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  purchasePrice Float
+  sellingPrice  Float
+  date         DateTime  @default(now())
+  note         String?
+
+  @@index([productId, date])
+}
+
+// ─── Sales ──────────────────────────────────────────────────────────────
+
+model Sale {
+  id            String      @id @default(cuid())
+  invoiceNo     String      @unique
+  customerId    String?
+  customer      Customer?   @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  userId        String?
+  user          User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  subtotal      Float       @default(0)
+  discount      Float       @default(0)
+  tax           Float       @default(0)
+  total         Float       @default(0)
+  profit        Float       @default(0)
+  paid          Float       @default(0)
+  paymentMethod String      @default("CASH") // CASH, CARD, BANK, MOBILE, CREDIT
+  paymentStatus String      @default("PAID") // PAID, PARTIAL, UNPAID
+  status        String      @default("COMPLETED") // COMPLETED, RETURNED
+  notes         String?
+  createdAt     DateTime    @default(now())
+  items         SaleItem[]
+
+  @@index([customerId])
+  @@index([createdAt])
+  @@index([status])
+}
+
+model SaleItem {
+  id        String  @id @default(cuid())
+  saleId    String
+  sale      Sale    @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+  name      String
+  qty       Int
+  price     Float
+  cost      Float
+  discount  Float   @default(0)
+  total     Float
+
+  @@index([saleId])
+  @@index([productId])
+}
+
+// ─── Purchases ──────────────────────────────────────────────────────────
+
+model Purchase {
+  id            String        @id @default(cuid())
+  poNo          String        @unique
+  supplierId    String?
+  supplier      Supplier?     @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  userId        String?
+  user          User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  subtotal      Float         @default(0)
+  discount      Float         @default(0)
+  tax           Float         @default(0)
+  total         Float         @default(0)
+  paid          Float         @default(0)
+  paymentStatus String        @default("UNPAID") // PAID, PARTIAL, UNPAID
+  status        String        @default("RECEIVED") // PENDING, RECEIVED, CANCELLED
+  notes         String?
+  createdAt     DateTime      @default(now())
+  items         PurchaseItem[]
+
+  @@index([supplierId])
+  @@index([createdAt])
+}
+
+model PurchaseItem {
+  id           String    @id @default(cuid())
+  purchaseId   String
+  purchase     Purchase  @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  productId    String
+  product      Product   @relation(fields: [productId], references: [id], onDelete: Restrict)
+  name         String
+  qty          Int
+  cost         Float
+  price        Float
+  total        Float
+
+  @@index([purchaseId])
+  @@index([productId])
+}
+
+// ─── Repair Jobs ────────────────────────────────────────────────────────
+
+model RepairJob {
+  id            String           @id @default(cuid())
+  ticketNo      String           @unique
+  customerId    String?
+  customer      Customer?        @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  modelId       String?
+  model         PhoneModel?      @relation(fields: [modelId], references: [id], onDelete: SetNull)
+  technicianId  String?
+  technician    User?            @relation(fields: [technicianId], references: [id], onDelete: SetNull)
+  imei          String?
+  problem       String
+  diagnosis     String?
+  status        String           @default("RECEIVED") // RECEIVED, DIAGNOSED, WAITING_PARTS, REPAIRING, COMPLETED, DELIVERED, CANCELLED
+  paymentStatus String           @default("UNPAID")
+  laborCost     Float            @default(0)
+  partsCost     Float            @default(0)
+  total         Float            @default(0)
+  paid          Float            @default(0)
+  notes         String?
+  imageUrl      String?
+  receivedAt    DateTime         @default(now())
+  completedAt   DateTime?
+  deliveredAt   DateTime?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  parts         RepairJobPart[]
+
+  @@index([customerId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model RepairJobPart {
+  id         String     @id @default(cuid())
+  repairId   String
+  repair     RepairJob  @relation(fields: [repairId], references: [id], onDelete: Cascade)
+  productId  String
+  product    Product    @relation(fields: [productId], references: [id], onDelete: Restrict)
+  qty        Int        @default(1)
+  cost       Float      @default(0)
+  used       Boolean    @default(false)
+
+  @@index([repairId])
+}
+
+// ─── Damaged Inventory ──────────────────────────────────────────────────
+
+model DamagedInventory {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  qty       Int
+  reason    String   // BROKEN, DEAD, WARRANTY, RETURNED, REJECTED, LOST, DISPOSED
+  note      String?
+  imageUrl  String?
+  date      DateTime @default(now())
+
+  @@index([productId])
+  @@index([reason])
+  @@index([date])
+}
+
+// ─── Inventory Movements ────────────────────────────────────────────────
+
+model InventoryMovement {
+  id          String     @id @default(cuid())
+  productId   String
+  product     Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  fromWarehouseId String?
+  fromWarehouse   Warehouse? @relation("MovFrom", fields: [fromWarehouseId], references: [id], onDelete: SetNull)
+  toWarehouseId   String?
+  toWarehouse     Warehouse? @relation("MovTo", fields: [toWarehouseId], references: [id], onDelete: SetNull)
+  qty         Int
+  type        String     // IN, OUT, TRANSFER, ADJUST, DAMAGE, SALE, PURCHASE, REPAIR
+  ref         String?
+  userId      String?
+  user        User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
+  note        String?
+  date        DateTime   @default(now())
+
+  @@index([productId])
+  @@index([type])
+  @@index([date])
+}
+
+// ─── Settings ───────────────────────────────────────────────────────────
+
+model Setting {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String
+}
