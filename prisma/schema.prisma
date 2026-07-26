@@ -415,6 +415,25 @@ model InventoryMovement {
   @@index([date])
 }
 
+// ─── Payments ───────────────────────────────────────────────────────────
+// Individual payment transactions recorded against customer/supplier outstanding balances.
+// Each payment may optionally link to a specific sale (customer) or purchase (supplier).
+
+model Payment {
+  id         String   @id @default(cuid())
+  partyType  String   // CUSTOMER or SUPPLIER
+  partyId    String   // customer.id or supplier.id
+  saleId     String?  // optional link to a specific sale
+  purchaseId String?  // optional link to a specific purchase
+  amount     Float
+  method     String   @default("CASH") // CASH, CARD, BANK, MOBILE, CREDIT
+  note       String?
+  date       DateTime @default(now())
+
+  @@index([partyType, partyId])
+  @@index([date])
+}
+
 // ─── Settings ───────────────────────────────────────────────────────────
 
 model Setting {

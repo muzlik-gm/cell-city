@@ -1,0 +1,929 @@
+     1→"use client";
+     2→
+     3→import { useState, useMemo } from "react";
+     4→import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+     5→import { api } from "@/lib/api";
+     6→import { PageHeader } from "@/components/shared/page-header";
+     7→import { StatCard } from "@/components/shared/stat-card";
+     8→import { DataTable, type Column } from "@/components/shared/data-table";
+     9→import { PaymentStatusBadge, PaymentMethodBadge } from "@/components/shared/badges";
+    10→import { QrDisplay } from "@/components/shared/qr-barcode";
+    11→import { Button } from "@/components/ui/button";
+    12→import { Input } from "@/components/ui/input";
+    13→import { Label } from "@/components/ui/label";
+    14→import { Textarea } from "@/components/ui/textarea";
+    15→import { Badge } from "@/components/ui/badge";
+    16→import { Card } from "@/components/ui/card";
+    17→import { ScrollArea } from "@/components/ui/scroll-area";
+    18→import {
+    19→  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+    20→} from "@/components/ui/dialog";
+    21→import {
+    22→  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+    23→} from "@/components/ui/select";
+    24→import {
+    25→  ShoppingCart, Plus, Search, Trash2, X, Printer, Eye, Undo2, Receipt,
+    26→  Wallet, TrendingUp, AlertCircle, Package, Minus, Loader2, User2,
+    27→} from "lucide-react";
+    28→import { formatCurrency, formatDateTime } from "@/lib/format";
+    29→import { PAYMENT_METHODS, PAYMENT_STATUSES } from "@/lib/types";
+    30→import { toast } from "sonner";
+    31→import { motion, AnimatePresence } from "framer-motion";
+    32→
+    33→// ────────────────────────────────────────────────────────────────────────────
+    34→// Types
+    35→// ────────────────────────────────────────────────────────────────────────────
+    36→interface Customer { id: string; name: string; phone?: string | null; company?: string | null; }
+    37→interface Product {
+    38→  id: string; sku: string; name: string; sellingPrice: number; purchasePrice: number;
+    39→  stock: number; brand?: { name: string } | null; model?: { name: string } | null;
+    40→}
+    41→interface SaleItem {
+    42→  id: string; productId: string; name: string; qty: number; price: number;
+    43→  cost: number; discount: number; total: number;
+    44→  product?: { sku?: string; brand?: { name: string } | null; model?: { name: string } | null };
+    45→}
+    46→interface Sale {
+    47→  id: string; invoiceNo: string; customerId?: string | null;
+    48→  customer?: Customer | null; user?: { name: string } | null;
+    49→  subtotal: number; discount: number; tax: number; total: number; profit: number;
+    50→  paid: number; paymentMethod: string; paymentStatus: string; status: string;
+    51→  notes?: string | null; createdAt: string; items: SaleItem[];
+    52→  business?: { name: string; phone: string; address: string; email: string; currencySymbol: string; taxName: string };
+    53→}
+    54→interface CartLine {
+    55→  key: string; productId: string; name: string; sku: string;
+    56→  qty: number; price: number; cost: number; discount: number; stock: number;
+    57→}
+    58→
+    59→// ────────────────────────────────────────────────────────────────────────────
+    60→// Main view
+    61→// ────────────────────────────────────────────────────────────────────────────
+    62→export function SalesView() {
+    63→  const qc = useQueryClient();
+    64→  const [q, setQ] = useState("");
+    65→  const [paymentStatus, setPaymentStatus] = useState("");
+    66→  const [dateFilter, setDateFilter] = useState("");
+    67→  const [page, setPage] = useState(1);
+    68→  const [formOpen, setFormOpen] = useState(false);
+    69→  const [invoiceSale, setInvoiceSale] = useState<Sale | null>(null);
+    70→
+    71→  const queryStr = useMemo(() => {
+    72→    const p = new URLSearchParams();
+    73→    if (q) p.set("q", q);
+    74→    if (paymentStatus) p.set("paymentStatus", paymentStatus);
+    75→    if (dateFilter) {
+    76→      const d = new Date(dateFilter);
+    77→      const from = new Date(d.getFullYear(), d.getMonth(), d.getDate()).toISOString();
+    78→      const to = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59).toISOString();
+    79→      p.set("from", from);
+    80→      p.set("to", to);
+    81→    }
+    82→    p.set("page", String(page));
+    83→    p.set("pageSize", "20");
+    84→    return p.toString();
+    85→  }, [q, paymentStatus, dateFilter, page]);
+    86→
+    87→  const sales = useQuery<{ data: Sale[]; total: number }>({
+    88→    queryKey: ["sales", queryStr],
+    89→    queryFn: () => api.get(`/sales?${queryStr}`),
+    90→  });
+    91→
+    92→  // Stats — fetch all sales this month for aggregation
+    93→  const statsQuery = useQuery<{ data: Sale[] }>({
+    94→    queryKey: ["sales-stats"],
+    95→    queryFn: () => api.get(`/sales?pageSize=100`),
+    96→    staleTime: 30_000,
+    97→  });
+    98→  const stats = useMemo(() => {
+    99→    const all = statsQuery.data?.data ?? [];
+   100→    const now = new Date();
+   101→    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+   102→    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+   103→    let todayTotal = 0, todayCount = 0, monthTotal = 0, outstanding = 0;
+   104→    for (const s of all) {
+   105→      const t = new Date(s.createdAt).getTime();
+   106→      if (s.status !== "RETURNED") {
+   107→        if (t >= todayStart) { todayTotal += s.total; todayCount++; }
+   108→        if (t >= monthStart) monthTotal += s.total;
+   109→      }
+   110→      if (s.paymentStatus !== "PAID") outstanding += Math.max(0, s.total - s.paid);
+   111→    }
+   112→    return { todayTotal, todayCount, monthTotal, outstanding };
+   113→  }, [statsQuery.data]);
+   114→
+   115→  const columns: Column<Sale & Record<string, unknown>>[] = [
+   116→    {
+   117→      key: "invoiceNo", header: "Invoice", className: "min-w-[140px]",
+   118→      render: (s) => (
+   119→        <div>
+   120→          <p className="font-mono text-xs font-semibold text-foreground">{s.invoiceNo}</p>
+   121→          <p className="text-[11px] text-muted-foreground">{formatDateTime(s.createdAt)}</p>
+   122→        </div>
+   123→      ),
+   124→    },
+   125→    {
+   126→      key: "customer", header: "Customer", className: "min-w-[160px]",
+   127→      render: (s) => (
+   128→        <div className="flex items-center gap-2">
+   129→          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+   130→            <User2 className="h-4 w-4" />
+   131→          </div>
+   132→          <div className="min-w-0">
+   133→            <p className="truncate text-sm font-medium">{s.customer?.name ?? "Walk-in Customer"}</p>
+   134→            <p className="text-[11px] text-muted-foreground">{s.customer?.phone ?? "—"}</p>
+   135→          </div>
+   136→        </div>
+   137→      ),
+   138→    },
+   139→    {
+   140→      key: "items", header: "Items",
+   141→      render: (s) => <Badge variant="secondary" className="font-semibold">{s.items?.length ?? 0}</Badge>,
+   142→    },
+   143→    {
+   144→      key: "total", header: "Total", className: "text-right",
+   145→      render: (s) => (
+   146→        <div className="text-right">
+   147→          <p className="text-sm font-bold">{formatCurrency(s.total)}</p>
+   148→          <p className="text-[11px] text-muted-foreground">profit {formatCurrency(s.profit)}</p>
+   149→        </div>
+   150→      ),
+   151→    },
+   152→    {
+   153→      key: "paymentMethod", header: "Method",
+   154→      render: (s) => <PaymentMethodBadge method={s.paymentMethod} />,
+   155→    },
+   156→    {
+   157→      key: "paymentStatus", header: "Payment",
+   158→      render: (s) => <PaymentStatusBadge status={s.paymentStatus} />,
+   159→    },
+   160→    {
+   161→      key: "status", header: "Status",
+   162→      render: (s) => (
+   163→        s.status === "RETURNED" ? (
+   164→          <Badge variant="outline" className="bg-rose-500/10 text-rose-600 dark:text-rose-400">Returned</Badge>
+   165→        ) : (
+   166→          <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">Completed</Badge>
+   167→        )
+   168→      ),
+   169→    },
+   170→    {
+   171→      key: "actions", header: "", className: "text-right",
+   172→      render: (s) => (
+   173→        <div className="flex justify-end gap-1">
+   174→          <Button size="sm" variant="ghost" className="h-8 gap-1" onClick={(e) => { e.stopPropagation(); openInvoice(s.id); }}>
+   175→            <Eye className="h-3.5 w-3.5" /> View
+   176→          </Button>
+   177→          {s.status !== "RETURNED" && (
+   178→            <Button size="sm" variant="ghost" className="h-8 gap-1 text-amber-600" onClick={(e) => { e.stopPropagation(); handleReturn(s); }}>
+   179→              <Undo2 className="h-3.5 w-3.5" /> Return
+   180→            </Button>
+   181→          )}
+   182→        </div>
+   183→      ),
+   184→    },
+   185→  ];
+   186→
+   187→  const openInvoice = async (id: string) => {
+   188→    try {
+   189→      const sale = await api.get<Sale>(`/sales/${id}`);
+   190→      setInvoiceSale(sale);
+   191→    } catch (e) {
+   192→      toast.error((e as Error).message);
+   193→    }
+   194→  };
+   195→
+   196→  const handleReturn = async (s: Sale) => {
+   197→    if (!confirm(`Mark invoice ${s.invoiceNo} as RETURNED? Items will be restocked.`)) return;
+   198→    try {
+   199→      await api.put(`/sales/${s.id}`, { status: "RETURNED" });
+   200→      qc.invalidateQueries({ queryKey: ["sales"] });
+   201→      qc.invalidateQueries({ queryKey: ["products"] });
+   202→      toast.success(`Invoice ${s.invoiceNo} marked as returned. Stock restocked.`);
+   203→    } catch (e) {
+   204→      toast.error((e as Error).message);
+   205→    }
+   206→  };
+   207→
+   208→  const hasFilters = q || paymentStatus || dateFilter;
+   209→  const clearFilters = () => { setQ(""); setPaymentStatus(""); setDateFilter(""); setPage(1); };
+   210→
+   211→  return (
+   212→    <div className="space-y-5">
+   213→      <PageHeader
+   214→        title="Sales & Invoices"
+   215→        description="Create POS sales, manage invoices, track payments and returns"
+   216→        icon={ShoppingCart}
+   217→        actions={
+   218→          <Button size="sm" className="gap-1.5" onClick={() => setFormOpen(true)}>
+   219→            <Plus className="h-4 w-4" /> New Sale
+   220→          </Button>
+   221→        }
+   222→      />
+   223→
+   224→      {/* Stats */}
+   225→      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+   226→        <StatCard label="Today's Sales" value={formatCurrency(stats.todayTotal)} icon={Wallet} accent="emerald" subtitle={`${stats.todayCount} invoices today`} />
+   227→        <StatCard label="Today's Count" value={stats.todayCount} icon={ShoppingCart} accent="teal" subtitle="Invoices issued today" />
+   228→        <StatCard label="This Month" value={formatCurrency(stats.monthTotal)} icon={TrendingUp} accent="purple" subtitle="Total revenue this month" />
+   229→        <StatCard label="Outstanding" value={formatCurrency(stats.outstanding)} icon={AlertCircle} accent="amber" subtitle="Unpaid invoices" />
+   230→      </div>
+   231→
+   232→      {/* Filters */}
+   233→      <Card className="p-4 shadow-soft">
+   234→        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+   235→          <div className="relative flex-1">
+   236→            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+   237→            <Input
+   238→              value={q}
+   239→              onChange={(e) => { setQ(e.target.value); setPage(1); }}
+   240→              placeholder="Search invoice no, customer name or phone…"
+   241→              className="pl-9"
+   242→            />
+   243→          </div>
+   244→          <div className="flex flex-wrap gap-2">
+   245→            <Select value={paymentStatus || "all"} onValueChange={(v) => { setPaymentStatus(v === "all" ? "" : v); setPage(1); }}>
+   246→              <SelectTrigger className="w-[150px]"><SelectValue placeholder="All payments" /></SelectTrigger>
+   247→              <SelectContent>
+   248→                <SelectItem value="all">All payments</SelectItem>
+   249→                {PAYMENT_STATUSES.map((s) => <SelectItem key={s} value={s}>{s.charAt(0) + s.slice(1).toLowerCase()}</SelectItem>)}
+   250→              </SelectContent>
+   251→            </Select>
+   252→            <Input
+   253→              type="date"
+   254→              value={dateFilter}
+   255→              onChange={(e) => { setDateFilter(e.target.value); setPage(1); }}
+   256→              className="w-[150px]"
+   257→            />
+   258→            {hasFilters && (
+   259→              <Button variant="ghost" size="sm" className="gap-1" onClick={clearFilters}>
+   260→                <X className="h-4 w-4" /> Clear
+   261→              </Button>
+   262→            )}
+   263→          </div>
+   264→        </div>
+   265→      </Card>
+   266→
+   267→      {/* Table */}
+   268→      <DataTable
+   269→        columns={columns}
+   270→        data={sales.data?.data ?? []}
+   271→        loading={sales.isLoading}
+   272→        pagination
+   273→        page={page}
+   274→        pageSize={20}
+   275→        total={sales.data?.total ?? 0}
+   276→        onPageChange={setPage}
+   277→        onRowClick={(s) => openInvoice(s.id)}
+   278→        rowKey={(s) => s.id}
+   279→        emptyTitle="No sales found"
+   280→        emptyDescription={hasFilters ? "Try adjusting your filters." : "Create your first sale to get started."}
+   281→      />
+   282→
+   283→      <SaleFormDialog
+   284→        open={formOpen}
+   285→        onOpenChange={setFormOpen}
+   286→        onCreated={(sale) => { setInvoiceSale(sale); qc.invalidateQueries({ queryKey: ["sales"] }); qc.invalidateQueries({ queryKey: ["products"] }); }}
+   287→      />
+   288→
+   289→      <InvoiceDialog sale={invoiceSale} onOpenChange={(o) => !o && setInvoiceSale(null)} />
+   290→    </div>
+   291→  );
+   292→}
+   293→
+   294→// ────────────────────────────────────────────────────────────────────────────
+   295→// Sale Form Dialog (POS-style)
+   296→// ────────────────────────────────────────────────────────────────────────────
+   297→function SaleFormDialog({
+   298→  open, onOpenChange, onCreated,
+   299→}: {
+   300→  open: boolean;
+   301→  onOpenChange: (o: boolean) => void;
+   302→  onCreated: (sale: Sale) => void;
+   303→}) {
+   304→  const qc = useQueryClient();
+   305→  const [customerId, setCustomerId] = useState("");
+   306→  const [cart, setCart] = useState<CartLine[]>([]);
+   307→  const [search, setSearch] = useState("");
+   308→  const [overallDiscount, setOverallDiscount] = useState(0);
+   309→  const [tax, setTax] = useState(0);
+   310→  const [paymentMethod, setPaymentMethod] = useState("CASH");
+   311→  const [paymentStatus, setPaymentStatus] = useState("PAID");
+   312→  const [notes, setNotes] = useState("");
+   313→
+   314→  const customers = useQuery<Customer[]>({
+   315→    queryKey: ["customers"],
+   316→    queryFn: () => api.get("/customers"),
+   317→    staleTime: 60_000,
+   318→  });
+   319→
+   320→  const productSearch = useQuery<{ data: Product[] }>({
+   321→    queryKey: ["products-pos", search],
+   322→    queryFn: () => api.get(`/products?q=${encodeURIComponent(search)}&pageSize=10`),
+   323→    enabled: open && search.length > 0,
+   324→    staleTime: 10_000,
+   325→  });
+   326→
+   327→  const resetForm = () => {
+   328→    setCustomerId(""); setCart([]); setSearch(""); setOverallDiscount(0);
+   329→    setTax(0); setPaymentMethod("CASH"); setPaymentStatus("PAID"); setNotes("");
+   330→  };
+   331→  const handleOpenChange = (o: boolean) => {
+   332→    if (!o) resetForm();
+   333→    onOpenChange(o);
+   334→  };
+   335→
+   336→  const totals = useMemo(() => {
+   337→    const subtotal = cart.reduce((s, l) => s + l.qty * l.price, 0);
+   338→    const lineDiscounts = cart.reduce((s, l) => s + l.discount, 0);
+   339→    const cost = cart.reduce((s, l) => s + l.qty * l.cost, 0);
+   340→    const net = subtotal - lineDiscounts - overallDiscount;
+   341→    const total = Math.max(0, net + tax);
+   342→    const profit = net - cost;
+   343→    return { subtotal, lineDiscounts, cost, net, total, profit };
+   344→  }, [cart, overallDiscount, tax]);
+   345→
+   346→  const addToCart = (p: Product) => {
+   347→    setCart((prev) => {
+   348→      const existing = prev.find((l) => l.productId === p.id);
+   349→      if (existing) {
+   350→        return prev.map((l) => l.productId === p.id ? { ...l, qty: l.qty + 1 } : l);
+   351→      }
+   352→      return [...prev, {
+   353→        key: p.id, productId: p.id, name: p.name, sku: p.sku,
+   354→        qty: 1, price: p.sellingPrice, cost: p.purchasePrice, discount: 0, stock: p.stock,
+   355→      }];
+   356→    });
+   357→    setSearch("");
+   358→  };
+   359→
+   360→  const updateLine = (key: string, patch: Partial<CartLine>) => {
+   361→    setCart((prev) => prev.map((l) => l.key === key ? { ...l, ...patch } : l));
+   362→  };
+   363→  const removeLine = (key: string) => setCart((prev) => prev.filter((l) => l.key !== key));
+   364→
+   365→  const createSale = useMutation({
+   366→    mutationFn: () => api.post<Sale>("/sales", {
+   367→      customerId: customerId || undefined,
+   368→      items: cart.map((l) => ({ productId: l.productId, qty: l.qty, price: l.price, discount: l.discount })),
+   369→      discount: overallDiscount,
+   370→      tax,
+   371→      paymentMethod,
+   372→      paymentStatus,
+   373→      notes,
+   374→    }),
+   375→    onSuccess: (sale) => {
+   376→      toast.success(`Sale ${sale.invoiceNo} created`);
+   377→      qc.invalidateQueries({ queryKey: ["sales"] });
+   378→      qc.invalidateQueries({ queryKey: ["products"] });
+   379→      onOpenChange(false);
+   380→      onCreated(sale);
+   381→    },
+   382→    onError: (e: Error) => toast.error(e.message),
+   383→  });
+   384→
+   385→  const canSubmit = cart.length > 0 && !createSale.isPending;
+   386→
+   387→  return (
+   388→    <Dialog open={open} onOpenChange={handleOpenChange}>
+   389→      <DialogContent className="sm:max-w-4xl max-h-[92vh] overflow-hidden p-0 gap-0">
+   390→        <DialogHeader className="px-6 py-4 border-b bg-muted/30">
+   391→          <DialogTitle className="flex items-center gap-2">
+   392→            <ShoppingCart className="h-5 w-5 text-primary" /> New Sale
+   393→          </DialogTitle>
+   394→          <DialogDescription>Add products to cart and checkout. Stock is deducted automatically.</DialogDescription>
+   395→        </DialogHeader>
+   396→
+   397→        <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] overflow-hidden">
+   398→          {/* Left: product search + cart */}
+   399→          <div className="flex flex-col overflow-hidden border-r">
+   400→            {/* Search */}
+   401→            <div className="p-4 border-b">
+   402→              <div className="relative">
+   403→                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+   404→                <Input
+   405→                  value={search}
+   406→                  onChange={(e) => setSearch(e.target.value)}
+   407→                  placeholder="Search products by name, SKU, barcode…"
+   408→                  className="pl-9"
+   409→                  autoFocus
+   410→                />
+   411→              </div>
+   412→              {/* Search results */}
+   413→              {search && (
+   414→                <div className="mt-2 max-h-64 overflow-y-auto rounded-lg border bg-popover shadow-sm">
+   415→                  {productSearch.isLoading && (
+   416→                    <div className="p-3 text-xs text-muted-foreground flex items-center gap-2">
+   417→                      <Loader2 className="h-3 w-3 animate-spin" /> Searching…
+   418→                    </div>
+   419→                  )}
+   420→                  {!productSearch.isLoading && (productSearch.data?.data ?? []).length === 0 && (
+   421→                    <div className="p-3 text-xs text-muted-foreground">No products found.</div>
+   422→                  )}
+   423→                  <AnimatePresence>
+   424→                    {(productSearch.data?.data ?? []).map((p) => (
+   425→                      <motion.button
+   426→                        key={p.id}
+   427→                        initial={{ opacity: 0, y: -4 }}
+   428→                        animate={{ opacity: 1, y: 0 }}
+   429→                        exit={{ opacity: 0 }}
+   430→                        onClick={() => addToCart(p)}
+   431→                        className="flex w-full items-center gap-3 border-b px-3 py-2 text-left last:border-b-0 hover:bg-accent transition"
+   432→                      >
+   433→                        <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 text-primary">
+   434→                          <Package className="h-4 w-4" />
+   435→                        </div>
+   436→                        <div className="min-w-0 flex-1">
+   437→                          <p className="truncate text-sm font-medium">{p.name}</p>
+   438→                          <p className="text-[11px] text-muted-foreground">
+   439→                            {p.sku} · {p.brand?.name ?? ""} {p.model?.name ?? ""}
+   440→                          </p>
+   441→                        </div>
+   442→                        <div className="text-right">
+   443→                          <p className="text-sm font-semibold text-emerald-600">{formatCurrency(p.sellingPrice)}</p>
+   444→                          <p className="text-[11px] text-muted-foreground">{p.stock} in stock</p>
+   445→                        </div>
+   446→                        <Plus className="h-4 w-4 text-muted-foreground" />
+   447→                      </motion.button>
+   448→                    ))}
+   449→                  </AnimatePresence>
+   450→                </div>
+   451→              )}
+   452→            </div>
+   453→
+   454→            {/* Cart list */}
+   455→            <div className="flex-1 overflow-hidden">
+   456→              {cart.length === 0 ? (
+   457→                <div className="flex h-full flex-col items-center justify-center px-6 py-12 text-center">
+   458→                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
+   459→                    <ShoppingCart className="h-6 w-6" />
+   460→                  </div>
+   461→                  <h3 className="mt-3 text-sm font-semibold">Cart is empty</h3>
+   462→                  <p className="mt-1 text-xs text-muted-foreground">Search products above and add them to the cart.</p>
+   463→                </div>
+   464→              ) : (
+   465→                <ScrollArea className="h-full max-h-[42vh]">
+   466→                  <div className="space-y-2 p-3">
+   467→                    <AnimatePresence initial={false}>
+   468→                      {cart.map((l) => (
+   469→                        <motion.div
+   470→                          key={l.key}
+   471→                          layout
+   472→                          initial={{ opacity: 0, y: -4 }}
+   473→                          animate={{ opacity: 1, y: 0 }}
+   474→                          exit={{ opacity: 0, x: -10 }}
+   475→                          className="rounded-lg border bg-card p-3"
+   476→                        >
+   477→                          <div className="flex items-start gap-2">
+   478→                            <div className="min-w-0 flex-1">
+   479→                              <p className="truncate text-sm font-medium">{l.name}</p>
+   480→                              <p className="text-[11px] text-muted-foreground">
+   481→                                {l.sku} · cost {formatCurrency(l.cost)} · {l.stock} in stock
+   482→                              </p>
+   483→                            </div>
+   484→                            <button
+   485→                              onClick={() => removeLine(l.key)}
+   486→                              className="rounded-md p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+   487→                            >
+   488→                              <Trash2 className="h-4 w-4" />
+   489→                            </button>
+   490→                          </div>
+   491→                          <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+   492→                            <div>
+   493→                              <Label className="text-[10px] uppercase text-muted-foreground">Qty</Label>
+   494→                              <div className="flex items-center gap-1">
+   495→                                <Button size="icon" variant="outline" className="h-7 w-7" type="button"
+   496→                                  onClick={() => updateLine(l.key, { qty: Math.max(1, l.qty - 1) })}>
+   497→                                  <Minus className="h-3 w-3" />
+   498→                                </Button>
+   499→                                <Input
+   500→                                  type="number" min={1} max={l.stock}
+   501→                                  value={l.qty}
+   502→                                  onChange={(e) => {
+   503→                                    const v = Math.max(1, Math.min(l.stock, Number(e.target.value) || 1));
+   504→                                    updateLine(l.key, { qty: v });
+   505→                                  }}
+   506→                                  className="h-7 px-2 text-center"
+   507→                                />
+   508→                                <Button size="icon" variant="outline" className="h-7 w-7" type="button"
+   509→                                  onClick={() => updateLine(l.key, { qty: Math.min(l.stock, l.qty + 1) })}>
+   510→                                  <Plus className="h-3 w-3" />
+   511→                                </Button>
+   512→                              </div>
+   513→                            </div>
+   514→                            <div>
+   515→                              <Label className="text-[10px] uppercase text-muted-foreground">Price</Label>
+   516→                              <Input
+   517→                                type="number" min={0} step="any"
+   518→                                value={l.price}
+   519→                                onChange={(e) => updateLine(l.key, { price: Math.max(0, Number(e.target.value) || 0) })}
+   520→                                className="h-7 px-2"
+   521→                              />
+   522→                            </div>
+   523→                            <div>
+   524→                              <Label className="text-[10px] uppercase text-muted-foreground">Discount</Label>
+   525→                              <Input
+   526→                                type="number" min={0} step="any"
+   527→                                value={l.discount}
+   528→                                onChange={(e) => updateLine(l.key, { discount: Math.max(0, Number(e.target.value) || 0) })}
+   529→                                className="h-7 px-2"
+   530→                              />
+   531→                            </div>
+   532→                            <div>
+   533→                              <Label className="text-[10px] uppercase text-muted-foreground">Total</Label>
+   534→                              <p className="flex h-7 items-center text-sm font-bold text-foreground">
+   535→                                {formatCurrency(Math.max(0, l.qty * l.price - l.discount))}
+   536→                              </p>
+   537→                            </div>
+   538→                          </div>
+   539→                          {l.qty > l.stock && (
+   540→                            <p className="mt-1 text-[11px] text-rose-600">⚠ Exceeds available stock ({l.stock})</p>
+   541→                          )}
+   542→                        </motion.div>
+   543→                      ))}
+   544→                    </AnimatePresence>
+   545→                  </div>
+   546→                </ScrollArea>
+   547→              )}
+   548→            </div>
+   549→          </div>
+   550→
+   551→          {/* Right: checkout panel */}
+   552→          <div className="flex flex-col overflow-hidden bg-muted/20">
+   553→            <ScrollArea className="flex-1 max-h-[58vh]">
+   554→              <div className="space-y-4 p-4">
+   555→                {/* Customer */}
+   556→                <div>
+   557→                  <Label className="text-xs font-medium">Customer <span className="text-muted-foreground">(optional — walk-in if blank)</span></Label>
+   558→                  <Select value={customerId || "walkin"} onValueChange={(v) => setCustomerId(v === "walkin" ? "" : v)}>
+   559→                    <SelectTrigger className="mt-1 w-full"><SelectValue placeholder="Walk-in Customer" /></SelectTrigger>
+   560→                    <SelectContent>
+   561→                      <SelectItem value="walkin">Walk-in Customer</SelectItem>
+   562→                      {(customers.data ?? []).map((c) => (
+   563→                        <SelectItem key={c.id} value={c.id}>{c.name}{c.phone ? ` · ${c.phone}` : ""}</SelectItem>
+   564→                      ))}
+   565→                    </SelectContent>
+   566→                  </Select>
+   567→                </div>
+   568→
+   569→                {/* Payment method */}
+   570→                <div>
+   571→                  <Label className="text-xs font-medium">Payment Method</Label>
+   572→                  <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+   573→                    <SelectTrigger className="mt-1 w-full"><SelectValue /></SelectTrigger>
+   574→                    <SelectContent>
+   575→                      {PAYMENT_METHODS.map((m) => <SelectItem key={m} value={m}>{m.charAt(0) + m.slice(1).toLowerCase()}</SelectItem>)}
+   576→                    </SelectContent>
+   577→                  </Select>
+   578→                </div>
+   579→
+   580→                {/* Payment status */}
+   581→                <div>
+   582→                  <Label className="text-xs font-medium">Payment Status</Label>
+   583→                  <Select value={paymentStatus} onValueChange={setPaymentStatus}>
+   584→                    <SelectTrigger className="mt-1 w-full"><SelectValue /></SelectTrigger>
+   585→                    <SelectContent>
+   586→                      {PAYMENT_STATUSES.map((s) => <SelectItem key={s} value={s}>{s.charAt(0) + s.slice(1).toLowerCase()}</SelectItem>)}
+   587→                    </SelectContent>
+   588→                  </Select>
+   589→                </div>
+   590→
+   591→                {/* Discount + Tax */}
+   592→                <div className="grid grid-cols-2 gap-2">
+   593→                  <div>
+   594→                    <Label className="text-xs font-medium">Discount</Label>
+   595→                    <Input type="number" min={0} step="any" value={overallDiscount}
+   596→                      onChange={(e) => setOverallDiscount(Math.max(0, Number(e.target.value) || 0))} className="mt-1" />
+   597→                  </div>
+   598→                  <div>
+   599→                    <Label className="text-xs font-medium">Tax</Label>
+   600→                    <Input type="number" min={0} step="any" value={tax}
+   601→                      onChange={(e) => setTax(Math.max(0, Number(e.target.value) || 0))} className="mt-1" />
+   602→                  </div>
+   603→                </div>
+   604→
+   605→                {/* Notes */}
+   606→                <div>
+   607→                  <Label className="text-xs font-medium">Notes</Label>
+   608→                  <Textarea value={notes} onChange={(e) => setNotes(e.target.value)}
+   609→                    rows={2} placeholder="Optional invoice notes…" className="mt-1 resize-none" />
+   610→                </div>
+   611→              </div>
+   612→            </ScrollArea>
+   613→
+   614→            {/* Totals + submit */}
+   615→            <div className="border-t bg-background p-4 space-y-2">
+   616→              <div className="flex justify-between text-sm">
+   617→                <span className="text-muted-foreground">Subtotal</span>
+   618→                <span className="font-medium">{formatCurrency(totals.subtotal)}</span>
+   619→              </div>
+   620→              {totals.lineDiscounts > 0 && (
+   621→                <div className="flex justify-between text-sm text-amber-600">
+   622→                  <span>Line discounts</span>
+   623→                  <span>− {formatCurrency(totals.lineDiscounts)}</span>
+   624→                </div>
+   625→              )}
+   626→              {overallDiscount > 0 && (
+   627→                <div className="flex justify-between text-sm text-amber-600">
+   628→                  <span>Discount</span>
+   629→                  <span>− {formatCurrency(overallDiscount)}</span>
+   630→                </div>
+   631→              )}
+   632→              {tax > 0 && (
+   633→                <div className="flex justify-between text-sm">
+   634→                  <span className="text-muted-foreground">Tax</span>
+   635→                  <span className="font-medium">+ {formatCurrency(tax)}</span>
+   636→                </div>
+   637→              )}
+   638→              <div className="my-1 border-t" />
+   639→              <div className="flex justify-between text-base">
+   640→                <span className="font-semibold">Total</span>
+   641→                <span className="text-lg font-bold text-primary">{formatCurrency(totals.total)}</span>
+   642→              </div>
+   643→              <div className="flex justify-between text-xs">
+   644→                <span className="text-muted-foreground">Est. profit</span>
+   645→                <span className={`font-semibold ${totals.profit >= 0 ? "text-emerald-600" : "text-rose-600"}`}>
+   646→                  {formatCurrency(totals.profit)}
+   647→                </span>
+   648→              </div>
+   649→              <Button
+   650→                className="mt-2 w-full gap-1.5" size="lg"
+   651→                disabled={!canSubmit}
+   652→                onClick={() => createSale.mutate()}
+   653→              >
+   654→                {createSale.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Receipt className="h-4 w-4" />}
+   655→                {createSale.isPending ? "Creating…" : "Complete Sale"}
+   656→              </Button>
+   657→            </div>
+   658→          </div>
+   659→        </div>
+   660→      </DialogContent>
+   661→    </Dialog>
+   662→  );
+   663→}
+   664→
+   665→// ────────────────────────────────────────────────────────────────────────────
+   666→// Invoice Dialog (view + print)
+   667→// ────────────────────────────────────────────────────────────────────────────
+   668→function InvoiceDialog({
+   669→  sale, onOpenChange,
+   670→}: {
+   671→  sale: Sale | null;
+   672→  onOpenChange: (o: boolean) => void;
+   673→}) {
+   674→  const open = !!sale;
+   675→  const qc = useQueryClient();
+   676→
+   677→  const handlePrint = () => {
+   678→    if (!sale) return;
+   679→    const rows = sale.items.map((it) => `
+   680→      <tr>
+   681→        <td style="padding:8px 6px;border-bottom:1px solid #eee;font-size:12px">${escapeHtml(it.name)}</td>
+   682→        <td style="padding:8px 6px;border-bottom:1px solid #eee;font-size:12px;text-align:center">${it.qty}</td>
+   683→        <td style="padding:8px 6px;border-bottom:1px solid #eee;font-size:12px;text-align:right">${formatCurrency(it.price, sale.business?.currencySymbol ?? "Rs")}</td>
+   684→        <td style="padding:8px 6px;border-bottom:1px solid #eee;font-size:12px;text-align:right">${it.discount ? "− " + formatCurrency(it.discount, sale.business?.currencySymbol ?? "Rs") : "—"}</td>
+   685→        <td style="padding:8px 6px;border-bottom:1px solid #eee;font-size:12px;text-align:right;font-weight:600">${formatCurrency(it.total, sale.business?.currencySymbol ?? "Rs")}</td>
+   686→      </tr>
+   687→    `).join("");
+   688→
+   689→    const biz = sale.business;
+   690→    const html = `<!doctype html><html><head><meta charset="utf-8"><title>${sale.invoiceNo}</title>
+   691→      <style>
+   692→        * { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #0f172a; }
+   693→        body { padding: 32px; max-width: 720px; margin: 0 auto; }
+   694→        h1 { font-size: 22px; margin: 0; color: #059669; }
+   695→        .muted { color: #64748b; font-size: 12px; }
+   696→        .head { display:flex; justify-content:space-between; align-items:flex-start; border-bottom: 2px solid #059669; padding-bottom: 16px; margin-bottom: 16px; }
+   697→        .meta { text-align: right; }
+   698→        table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+   699→        th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: #64748b; padding: 8px 6px; border-bottom: 2px solid #e2e8f0; }
+   700→        .totals { margin-left: auto; width: 280px; font-size: 13px; }
+   701→        .totals div { display:flex; justify-content:space-between; padding: 4px 0; }
+   702→        .totals .grand { font-size: 16px; font-weight: 700; border-top: 2px solid #0f172a; margin-top: 8px; padding-top: 8px; }
+   703→        .footer { margin-top: 32px; padding-top: 16px; border-top: 1px dashed #cbd5e1; text-align: center; font-size: 11px; color: #64748b; }
+   704→      </style></head><body>
+   705→      <div class="head">
+   706→        <div>
+   707→          <h1>${escapeHtml(biz?.name ?? "PartsHub")}</h1>
+   708→          <p class="muted">${escapeHtml(biz?.address ?? "")}</p>
+   709→          <p class="muted">${biz?.phone ? "Tel: " + escapeHtml(biz.phone) : ""} ${biz?.email ? " · " + escapeHtml(biz.email) : ""}</p>
+   710→        </div>
+   711→        <div class="meta">
+   712→          <h2 style="margin:0;font-size:18px">INVOICE</h2>
+   713→          <p class="muted"><strong>${escapeHtml(sale.invoiceNo)}</strong></p>
+   714→          <p class="muted">${formatDateTime(sale.createdAt)}</p>
+   715→        </div>
+   716→      </div>
+   717→      <div style="display:flex;justify-content:space-between;margin-bottom:16px">
+   718→        <div>
+   719→          <p style="margin:0;font-size:11px;text-transform:uppercase;color:#64748b">Bill To</p>
+   720→          <p style="margin:2px 0 0;font-weight:600">${escapeHtml(sale.customer?.name ?? "Walk-in Customer")}</p>
+   721→          ${sale.customer?.phone ? `<p class="muted">${escapeHtml(sale.customer.phone)}</p>` : ""}
+   722→          ${sale.customer?.address ? `<p class="muted">${escapeHtml(sale.customer.address)}</p>` : ""}
+   723→        </div>
+   724→        <div style="text-align:right">
+   725→          <p style="margin:0;font-size:11px;text-transform:uppercase;color:#64748b">Payment</p>
+   726→          <p style="margin:2px 0 0;font-weight:600">${sale.paymentMethod}</p>
+   727→          <p class="muted">${sale.paymentStatus}</p>
+   728→        </div>
+   729→      </div>
+   730→      <table>
+   731→        <thead>
+   732→          <tr>
+   733→            <th style="text-align:left">Item</th>
+   734→            <th style="text-align:center">Qty</th>
+   735→            <th style="text-align:right">Price</th>
+   736→            <th style="text-align:right">Disc</th>
+   737→            <th style="text-align:right">Total</th>
+   738→          </tr>
+   739→        </thead>
+   740→        <tbody>${rows}</tbody>
+   741→      </table>
+   742→      <div class="totals">
+   743→        <div><span>Subtotal</span><span>${formatCurrency(sale.subtotal, sale.business?.currencySymbol ?? "Rs")}</span></div>
+   744→        ${sale.discount ? `<div><span>Discount</span><span>− ${formatCurrency(sale.discount, sale.business?.currencySymbol ?? "Rs")}</span></div>` : ""}
+   745→        ${sale.tax ? `<div><span>Tax</span><span>+ ${formatCurrency(sale.tax, sale.business?.currencySymbol ?? "Rs")}</span></div>` : ""}
+   746→        <div class="grand"><span>Total</span><span>${formatCurrency(sale.total, sale.business?.currencySymbol ?? "Rs")}</span></div>
+   747→        ${sale.paid > 0 ? `<div><span>Paid</span><span>${formatCurrency(sale.paid, sale.business?.currencySymbol ?? "Rs")}</span></div>` : ""}
+   748→        ${sale.total - sale.paid > 0 ? `<div><span>Balance Due</span><span>${formatCurrency(sale.total - sale.paid, sale.business?.currencySymbol ?? "Rs")}</span></div>` : ""}
+   749→      </div>
+   750→      ${sale.notes ? `<div style="margin-top:16px;padding:12px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc"><p style="margin:0;font-size:11px;text-transform:uppercase;color:#64748b">Notes</p><p style="margin:4px 0 0;font-size:12px">${escapeHtml(sale.notes)}</p></div>` : ""}
+   751→      <div class="footer">
+   752→        <p>Thank you for your business!</p>
+   753→        <p style="margin-top:4px">This is a computer-generated invoice and is valid without signature.</p>
+   754→      </div>
+   755→      </body></html>`;
+   756→    const w = window.open("", "_blank", "width=820,height=720");
+   757→    if (!w) { toast.error("Please allow pop-ups to print invoices"); return; }
+   758→    w.document.write(html);
+   759→    w.document.close();
+   760→    w.focus();
+   761→    setTimeout(() => { w.print(); }, 400);
+   762→  };
+   763→
+   764→  const handleReturn = async () => {
+   765→    if (!sale) return;
+   766→    if (!confirm(`Mark invoice ${sale.invoiceNo} as RETURNED? Items will be restocked.`)) return;
+   767→    try {
+   768→      await api.put(`/sales/${sale.id}`, { status: "RETURNED" });
+   769→      qc.invalidateQueries({ queryKey: ["sales"] });
+   770→      qc.invalidateQueries({ queryKey: ["products"] });
+   771→      toast.success(`Invoice ${sale.invoiceNo} marked as returned.`);
+   772→      onOpenChange(false);
+   773→    } catch (e) {
+   774→      toast.error((e as Error).message);
+   775→    }
+   776→  };
+   777→
+   778→  return (
+   779→    <Dialog open={open} onOpenChange={onOpenChange}>
+   780→      <DialogContent className="sm:max-w-3xl max-h-[92vh] overflow-hidden p-0 gap-0">
+   781→        <DialogHeader className="px-6 py-4 border-b bg-muted/30">
+   782→          <div className="flex items-center justify-between">
+   783→            <div>
+   784→              <DialogTitle className="flex items-center gap-2">
+   785→                <Receipt className="h-5 w-5 text-primary" /> Invoice {sale?.invoiceNo}
+   786→              </DialogTitle>
+   787→              <DialogDescription>{sale ? formatDateTime(sale.createdAt) : ""}</DialogDescription>
+   788→            </div>
+   789→            <div className="flex gap-2">
+   790→              {sale && sale.status !== "RETURNED" && (
+   791→                <Button variant="outline" size="sm" className="gap-1.5 text-amber-600" onClick={handleReturn}>
+   792→                  <Undo2 className="h-4 w-4" /> Return
+   793→                </Button>
+   794→              )}
+   795→              <Button size="sm" className="gap-1.5" onClick={handlePrint}>
+   796→                <Printer className="h-4 w-4" /> Print
+   797→              </Button>
+   798→            </div>
+   799→          </div>
+   800→        </DialogHeader>
+   801→
+   802→        {sale && (
+   803→          <ScrollArea className="max-h-[80vh]">
+   804→            <div className="p-6 space-y-5">
+   805→              {/* Header: business + customer */}
+   806→              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+   807→                <div>
+   808→                  <h3 className="text-lg font-bold text-primary">{sale.business?.name ?? "PartsHub"}</h3>
+   809→                  <p className="text-xs text-muted-foreground">{sale.business?.address}</p>
+   810→                  <p className="text-xs text-muted-foreground">
+   811→                    {sale.business?.phone ? `Tel: ${sale.business.phone}` : ""}
+   812→                    {sale.business?.email ? ` · ${sale.business.email}` : ""}
+   813→                  </p>
+   814→                </div>
+   815→                <div className="text-left sm:text-right">
+   816→                  <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Bill To</p>
+   817→                  <p className="text-sm font-semibold">{sale.customer?.name ?? "Walk-in Customer"}</p>
+   818→                  {sale.customer?.phone && <p className="text-xs text-muted-foreground">{sale.customer.phone}</p>}
+   819→                  {sale.customer?.address && <p className="text-xs text-muted-foreground">{sale.customer.address}</p>}
+   820→                </div>
+   821→              </div>
+   822→
+   823→              <div className="flex flex-wrap items-center gap-3 rounded-lg border bg-muted/30 p-3">
+   824→                <Badge variant="outline" className="font-mono">{sale.invoiceNo}</Badge>
+   825→                <PaymentMethodBadge method={sale.paymentMethod} />
+   826→                <PaymentStatusBadge status={sale.paymentStatus} />
+   827→                {sale.status === "RETURNED" ? (
+   828→                  <Badge variant="outline" className="bg-rose-500/10 text-rose-600 dark:text-rose-400">Returned</Badge>
+   829→                ) : (
+   830→                  <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">Completed</Badge>
+   831→                )}
+   832→                <div className="ml-auto flex items-center gap-2">
+   833→                  <QrDisplay value={sale.invoiceNo} size={64} />
+   834→                </div>
+   835→              </div>
+   836→
+   837→              {/* Items table */}
+   838→              <div className="overflow-hidden rounded-lg border">
+   839→                <table className="w-full text-sm">
+   840→                  <thead className="bg-muted/40">
+   841→                    <tr>
+   842→                      <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase text-muted-foreground">Item</th>
+   843→                      <th className="px-3 py-2 text-center text-[11px] font-semibold uppercase text-muted-foreground">Qty</th>
+   844→                      <th className="px-3 py-2 text-right text-[11px] font-semibold uppercase text-muted-foreground">Price</th>
+   845→                      <th className="px-3 py-2 text-right text-[11px] font-semibold uppercase text-muted-foreground">Disc</th>
+   846→                      <th className="px-3 py-2 text-right text-[11px] font-semibold uppercase text-muted-foreground">Total</th>
+   847→                    </tr>
+   848→                  </thead>
+   849→                  <tbody>
+   850→                    {sale.items.map((it) => (
+   851→                      <tr key={it.id} className="border-t">
+   852→                        <td className="px-3 py-2">
+   853→                          <p className="font-medium">{it.name}</p>
+   854→                          <p className="text-[11px] text-muted-foreground">{it.product?.sku ?? ""}</p>
+   855→                        </td>
+   856→                        <td className="px-3 py-2 text-center">{it.qty}</td>
+   857→                        <td className="px-3 py-2 text-right">{formatCurrency(it.price, sale.business?.currencySymbol ?? "Rs")}</td>
+   858→                        <td className="px-3 py-2 text-right">{it.discount ? "− " + formatCurrency(it.discount, sale.business?.currencySymbol ?? "Rs") : "—"}</td>
+   859→                        <td className="px-3 py-2 text-right font-semibold">{formatCurrency(it.total, sale.business?.currencySymbol ?? "Rs")}</td>
+   860→                      </tr>
+   861→                    ))}
+   862→                  </tbody>
+   863→                </table>
+   864→              </div>
+   865→
+   866→              {/* Totals */}
+   867→              <div className="ml-auto w-full max-w-xs space-y-1.5 text-sm">
+   868→                <Row label="Subtotal" value={formatCurrency(sale.subtotal, sale.business?.currencySymbol ?? "Rs")} />
+   869→                {sale.discount > 0 && <Row label="Discount" value={`− ${formatCurrency(sale.discount, sale.business?.currencySymbol ?? "Rs")}`} muted />}
+   870→                {sale.tax > 0 && <Row label="Tax" value={`+ ${formatCurrency(sale.tax, sale.business?.currencySymbol ?? "Rs")}`} />}
+   871→                <div className="my-1 border-t" />
+   872→                <div className="flex items-center justify-between">
+   873→                  <span className="font-semibold">Total</span>
+   874→                  <span className="text-lg font-bold text-primary">{formatCurrency(sale.total, sale.business?.currencySymbol ?? "Rs")}</span>
+   875→                </div>
+   876→                {sale.paid > 0 && <Row label="Paid" value={formatCurrency(sale.paid, sale.business?.currencySymbol ?? "Rs")} />}
+   877→                {sale.total - sale.paid > 0 && (
+   878→                  <div className="flex items-center justify-between rounded-md bg-amber-500/10 px-2 py-1.5 text-amber-700 dark:text-amber-400">
+   879→                    <span className="text-xs font-medium">Balance Due</span>
+   880→                    <span className="font-semibold">{formatCurrency(sale.total - sale.paid, sale.business?.currencySymbol ?? "Rs")}</span>
+   881→                  </div>
+   882→                )}
+   883→                <div className="flex items-center justify-between pt-1 text-xs">
+   884→                  <span className="text-muted-foreground">Est. profit</span>
+   885→                  <span className={`font-semibold ${sale.profit >= 0 ? "text-emerald-600" : "text-rose-600"}`}>
+   886→                    {formatCurrency(sale.profit, sale.business?.currencySymbol ?? "Rs")}
+   887→                  </span>
+   888→                </div>
+   889→              </div>
+   890→
+   891→              {sale.notes && (
+   892→                <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3">
+   893→                  <p className="mb-1 text-[11px] font-semibold uppercase text-amber-600">Notes</p>
+   894→                  <p className="text-sm">{sale.notes}</p>
+   895→                </div>
+   896→              )}
+   897→
+   898→              {sale.user && (
+   899→                <p className="text-center text-[11px] text-muted-foreground">Served by {sale.user.name}</p>
+   900→              )}
+   901→            </div>
+   902→          </ScrollArea>
+   903→        )}
+   904→      </DialogContent>
+   905→    </Dialog>
+   906→  );
+   907→}
+   908→
+   909→// ────────────────────────────────────────────────────────────────────────────
+   910→// Helpers
+   911→// ────────────────────────────────────────────────────────────────────────────
+   912→function Row({ label, value, muted }: { label: string; value: string; muted?: boolean }) {
+   913→  return (
+   914→    <div className="flex items-center justify-between">
+   915→      <span className={muted ? "text-amber-600" : "text-muted-foreground"}>{label}</span>
+   916→      <span className="font-medium">{value}</span>
+   917→    </div>
+   918→  );
+   919→}
+   920→
+   921→function escapeHtml(s: string): string {
+   922→  return s
+   923→    .replace(/&/g, "&amp;")
+   924→    .replace(/</g, "&lt;")
+   925→    .replace(/>/g, "&gt;")
+   926→    .replace(/"/g, "&quot;")
+   927→    .replace(/'/g, "&#039;");
+   928→}
+   929→

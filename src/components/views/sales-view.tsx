@@ -8,6 +8,7 @@ import { StatCard } from "@/components/shared/stat-card";
 import { DataTable, type Column } from "@/components/shared/data-table";
 import { PaymentStatusBadge, PaymentMethodBadge } from "@/components/shared/badges";
 import { QrDisplay } from "@/components/shared/qr-barcode";
+import { ScannerButton } from "@/components/shared/scanner-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -357,6 +358,29 @@ function SaleFormDialog({
     setSearch("");
   };
 
+  // ── Scan handler — search by detected code & auto-add if exactly one match ─
+  const handleScanDetected = async (code: string) => {
+    const trimmed = code.trim();
+    if (!trimmed) return;
+    try {
+      const res = await api.get<{ data: Product[] }>(
+        `/products?q=${encodeURIComponent(trimmed)}&pageSize=10`,
+      );
+      const matches = res?.data ?? [];
+      if (matches.length === 1) {
+        addToCart(matches[0]);
+        toast.success(`Added "${matches[0].name}" to cart`);
+      } else if (matches.length > 1) {
+        setSearch(trimmed);
+        toast.info(`${matches.length} products match code "${trimmed}" — pick one below.`);
+      } else {
+        toast.error(`No product found for code "${trimmed}"`);
+      }
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+  };
+
   const updateLine = (key: string, patch: Partial<CartLine>) => {
     setCart((prev) => prev.map((l) => l.key === key ? { ...l, ...patch } : l));
   };
@@ -399,14 +423,21 @@ function SaleFormDialog({
           <div className="flex flex-col overflow-hidden border-r">
             {/* Search */}
             <div className="p-4 border-b">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search products by name, SKU, barcode…"
-                  className="pl-9"
-                  autoFocus
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Search products by name, SKU, barcode…"
+                    className="pl-9"
+                    autoFocus
+                  />
+                </div>
+                <ScannerButton
+                  label="Scan"
+                  onDetected={handleScanDetected}
+                  className="shrink-0"
                 />
               </div>
               {/* Search results */}

@@ -17,6 +17,7 @@ import { Package, Plus, Filter, Download, AlertTriangle, X } from "lucide-react"
 import { formatCurrency, downloadBlob, toCSV } from "@/lib/format";
 import { toast } from "sonner";
 import { useAppStore } from "@/lib/store";
+import { ScannerButton } from "@/components/shared/scanner-button";
 
 interface Product {
   id: string; sku: string; barcode: string | null; name: string;
@@ -81,6 +82,30 @@ export function InventoryView() {
     }));
     downloadBlob(toCSV(rows), `inventory-${Date.now()}.csv`, "text/csv");
     toast.success("CSV exported");
+  };
+
+  // ── Scan handler — search by detected code & open detail if exactly one match ─
+  const handleScanDetected = async (code: string) => {
+    const trimmed = code.trim();
+    if (!trimmed) return;
+    try {
+      const res = await api.get<{ data: Product[]; total: number }>(
+        `/products?q=${encodeURIComponent(trimmed)}&pageSize=10`,
+      );
+      const matches = res?.data ?? [];
+      if (matches.length === 1) {
+        setDetail(matches[0]);
+        toast.success(`Found "${matches[0].name}"`);
+      } else if (matches.length > 1) {
+        setQ(trimmed);
+        setPage(1);
+        toast.info(`${matches.length} products match code "${trimmed}" — see results below.`);
+      } else {
+        toast.error(`No product found for code "${trimmed}"`);
+      }
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
   };
 
   const columns: Column<Product>[] = [
@@ -148,13 +173,20 @@ export function InventoryView() {
       {/* Filters */}
       <Card className="p-4 shadow-soft">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-          <div className="relative flex-1">
-            <Filter className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={q}
-              onChange={(e) => { setQ(e.target.value); setPage(1); }}
-              placeholder="Search by name, SKU, barcode, LCD code, model…"
-              className="pl-9"
+          <div className="flex flex-1 gap-2">
+            <div className="relative flex-1">
+              <Filter className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={q}
+                onChange={(e) => { setQ(e.target.value); setPage(1); }}
+                placeholder="Search by name, SKU, barcode, LCD code, model…"
+                className="pl-9"
+              />
+            </div>
+            <ScannerButton
+              label="Scan"
+              onDetected={handleScanDetected}
+              className="shrink-0"
             />
           </div>
           <div className="flex flex-wrap gap-2">

@@ -1,0 +1,649 @@
+     1→"use client";
+     2→
+     3→import { useState, useMemo } from "react";
+     4→import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+     5→import { api } from "@/lib/api";
+     6→import { PageHeader } from "@/components/shared/page-header";
+     7→import { StatCard } from "@/components/shared/stat-card";
+     8→import { DataTable, type Column } from "@/components/shared/data-table";
+     9→import { EmptyState } from "@/components/shared/states";
+    10→import { PaymentStatusBadge, RepairStatusBadge } from "@/components/shared/badges";
+    11→import { Button } from "@/components/ui/button";
+    12→import { Input } from "@/components/ui/input";
+    13→import { Label } from "@/components/ui/label";
+    14→import { Textarea } from "@/components/ui/textarea";
+    15→import { Badge } from "@/components/ui/badge";
+    16→import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+    17→import { Card } from "@/components/ui/card";
+    18→import {
+    19→  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+    20→} from "@/components/ui/dialog";
+    21→import {
+    22→  Sheet, SheetContent, SheetHeader, SheetTitle,
+    23→} from "@/components/ui/sheet";
+    24→import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+    25→import { ScrollArea } from "@/components/ui/scroll-area";
+    26→import {
+    27→  Users, Plus, Search, Phone, MessageCircle, Mail, MapPin, Building2,
+    28→  Pencil, Trash2, Loader2, Save, ShoppingCart, Wrench, Wallet,
+    29→  RotateCcw, Receipt,
+    30→} from "lucide-react";
+    31→import { formatCurrency, formatDate, formatDateTime, initials } from "@/lib/format";
+    32→import { toast } from "sonner";
+    33→
+    34→// ─── Types ───────────────────────────────────────────────────────────────
+    35→interface Customer {
+    36→  id: string;
+    37→  name: string;
+    38→  phone: string | null;
+    39→  whatsapp: string | null;
+    40→  email: string | null;
+    41→  address: string | null;
+    42→  company: string | null;
+    43→  balance: number;
+    44→  notes: string | null;
+    45→  active: boolean;
+    46→  createdAt: string;
+    47→  updatedAt: string;
+    48→  outstandingBalance: number;
+    49→  _count?: { sales: number; repairJobs: number };
+    50→}
+    51→
+    52→interface SaleItem {
+    53→  id: string;
+    54→  name: string;
+    55→  qty: number;
+    56→  price: number;
+    57→  total: number;
+    58→  product?: { name: string; sku: string } | null;
+    59→}
+    60→
+    61→interface Sale {
+    62→  id: string;
+    63→  invoiceNo: string;
+    64→  total: number;
+    65→  paid: number;
+    66→  profit: number;
+    67→  paymentStatus: string;
+    68→  status: string;
+    69→  paymentMethod: string;
+    70→  createdAt: string;
+    71→  items: SaleItem[];
+    72→}
+    73→
+    74→interface RepairJob {
+    75→  id: string;
+    76→  ticketNo: string;
+    77→  problem: string;
+    78→  status: string;
+    79→  paymentStatus: string;
+    80→  total: number;
+    81→  paid: number;
+    82→  createdAt: string;
+    83→  model?: { name: string; brand?: { name: string } | null } | null;
+    84→}
+    85→
+    86→interface CustomerDetail extends Customer {
+    87→  sales: Sale[];
+    88→  repairJobs: RepairJob[];
+    89→}
+    90→
+    91→// ─── Helpers ─────────────────────────────────────────────────────────────
+    92→function sanitizePhone(raw: string | null | undefined): string {
+    93→  if (!raw) return "";
+    94→  return raw.replace(/[^\d+]/g, "").replace(/(^\+?)(\+)+/, "$1");
+    95→}
+    96→
+    97→function whatsappLink(raw: string | null | undefined): string {
+    98→  const digits = sanitizePhone(raw).replace(/^\+/, "").replace(/^0+/, "");
+    99→  return `https://wa.me/${digits}`;
+   100→}
+   101→
+   102→function telLink(raw: string | null | undefined): string {
+   103→  return `tel:${sanitizePhone(raw)}`;
+   104→}
+   105→
+   106→// ─── Main View ───────────────────────────────────────────────────────────
+   107→export function CustomersView() {
+   108→  const qc = useQueryClient();
+   109→  const [q, setQ] = useState("");
+   110→  const [formOpen, setFormOpen] = useState(false);
+   111→  const [editing, setEditing] = useState<Customer | null>(null);
+   112→  const [detailId, setDetailId] = useState<string | null>(null);
+   113→
+   114→  const queryStr = useMemo(() => {
+   115→    const p = new URLSearchParams();
+   116→    if (q) p.set("q", q);
+   117→    return p.toString();
+   118→  }, [q]);
+   119→
+   120→  const { data: customers = [], isLoading } = useQuery<Customer[]>({
+   121→    queryKey: ["customers", queryStr],
+   122→    queryFn: () => api.get<Customer[]>(`/customers${queryStr ? `?${queryStr}` : ""}`),
+   123→  });
+   124→
+   125→  // Stats
+   126→  const totalCustomers = customers.length;
+   127→  const totalOutstanding = customers.reduce((s, c) => s + (c.outstandingBalance ?? 0), 0);
+   128→  const returning = customers.filter(
+   129→    (c) => (c._count?.sales ?? 0) + (c._count?.repairJobs ?? 0) >= 2
+   130→  ).length;
+   131→
+   132→  const openAdd = () => { setEditing(null); setFormOpen(true); };
+   133→  const openEdit = (c: Customer) => { setEditing(c); setFormOpen(true); };
+   134→
+   135→  const onDelete = async (c: Customer) => {
+   136→    if (!confirm(`Deactivate customer "${c.name}"? This will hide them from selection lists.`)) return;
+   137→    try {
+   138→      await api.del(`/customers/${c.id}`);
+   139→      qc.invalidateQueries({ queryKey: ["customers"] });
+   140→      toast.success("Customer deactivated");
+   141→    } catch (e) {
+   142→      toast.error((e as Error).message);
+   143→    }
+   144→  };
+   145→
+   146→  const columns: Column<Customer>[] = [
+   147→    {
+   148→      key: "name", header: "Customer", className: "min-w-[220px]",
+   149→      render: (c) => (
+   150→        <div className="flex items-center gap-3">
+   151→          <Avatar className="h-10 w-10 bg-primary/10 text-primary">
+   152→            <AvatarFallback className="bg-primary/10 text-xs font-semibold text-primary">
+   153→              {initials(c.name)}
+   154→            </AvatarFallback>
+   155→          </Avatar>
+   156→          <div className="min-w-0">
+   157→            <p className="truncate text-sm font-medium">{c.name}</p>
+   158→            <p className="truncate text-xs text-muted-foreground">
+   159→              {c.company ?? "—"}{c.email ? ` · ${c.email}` : ""}
+   160→            </p>
+   161→          </div>
+   162→        </div>
+   163→      ),
+   164→    },
+   165→    {
+   166→      key: "phone", header: "Phone / WhatsApp", className: "min-w-[170px]",
+   167→      render: (c) => (
+   168→        <div className="flex flex-col gap-0.5 text-xs">
+   169→          {c.phone ? (
+   170→            <a href={telLink(c.phone)} className="inline-flex items-center gap-1.5 text-foreground hover:text-primary" onClick={(e) => e.stopPropagation()}>
+   171→              <Phone className="h-3 w-3 text-muted-foreground" /> {c.phone}
+   172→            </a>
+   173→          ) : <span className="text-muted-foreground">No phone</span>}
+   174→          {c.whatsapp && (
+   175→            <a href={whatsappLink(c.whatsapp)} target="_blank" rel="noreferrer"
+   176→               className="inline-flex items-center gap-1.5 text-emerald-600 hover:underline"
+   177→               onClick={(e) => e.stopPropagation()}>
+   178→              <MessageCircle className="h-3 w-3" /> WhatsApp
+   179→            </a>
+   180→          )}
+   181→        </div>
+   182→      ),
+   183→    },
+   184→    {
+   185→      key: "purchases", header: "Purchases", className: "text-center",
+   186→      render: (c) => (
+   187→        <div className="text-center">
+   188→          <p className="text-sm font-semibold">{c._count?.sales ?? 0}</p>
+   189→          <p className="text-[11px] text-muted-foreground">orders</p>
+   190→        </div>
+   191→      ),
+   192→    },
+   193→    {
+   194→      key: "repairs", header: "Repairs", className: "text-center",
+   195→      render: (c) => (
+   196→        <div className="text-center">
+   197→          <p className="text-sm font-semibold">{c._count?.repairJobs ?? 0}</p>
+   198→          <p className="text-[11px] text-muted-foreground">jobs</p>
+   199→        </div>
+   200→      ),
+   201→    },
+   202→    {
+   203→      key: "outstanding", header: "Outstanding", className: "text-right",
+   204→      render: (c) => {
+   205→        const amt = c.outstandingBalance ?? 0;
+   206→        return (
+   207→          <div className="text-right">
+   208→            <p className={`text-sm font-semibold ${amt > 0 ? "text-amber-600 dark:text-amber-400" : "text-emerald-600"}`}>
+   209→              {formatCurrency(amt)}
+   210→            </p>
+   211→            <p className="text-[11px] text-muted-foreground">{amt > 0 ? "receivable" : "settled"}</p>
+   212→          </div>
+   213→        );
+   214→      },
+   215→    },
+   216→    {
+   217→      key: "actions", header: "", className: "text-right",
+   218→      render: (c) => (
+   219→        <div className="flex justify-end gap-1">
+   220→          <Button size="sm" variant="ghost" className="h-8" onClick={(e) => { e.stopPropagation(); setDetailId(c.id); }}>View</Button>
+   221→          <Button size="sm" variant="ghost" className="h-8" onClick={(e) => { e.stopPropagation(); openEdit(c); }}>
+   222→            <Pencil className="h-3.5 w-3.5" />
+   223→          </Button>
+   224→          <Button size="sm" variant="ghost" className="h-8 text-destructive" onClick={(e) => { e.stopPropagation(); onDelete(c); }}>
+   225→            <Trash2 className="h-3.5 w-3.5" />
+   226→          </Button>
+   227→        </div>
+   228→      ),
+   229→    },
+   230→  ];
+   231→
+   232→  return (
+   233→    <div className="space-y-5">
+   234→      <PageHeader
+   235→        title="Customers"
+   236→        description="Manage buyers, track receivables, purchase and repair history"
+   237→        icon={Users}
+   238→        actions={
+   239→          <Button size="sm" className="gap-1.5" onClick={openAdd}>
+   240→            <Plus className="h-4 w-4" /> Add Customer
+   241→          </Button>
+   242→        }
+   243→      />
+   244→
+   245→      {/* Stats */}
+   246→      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+   247→        <StatCard
+   248→          label="Total Customers"
+   249→          value={totalCustomers}
+   250→          icon={Users}
+   251→          accent="emerald"
+   252→          subtitle="Active buyers"
+   253→        />
+   254→        <StatCard
+   255→          label="Outstanding Receivable"
+   256→          value={formatCurrency(totalOutstanding)}
+   257→          icon={Wallet}
+   258→          accent={totalOutstanding > 0 ? "amber" : "emerald"}
+   259→          subtitle="Across all customers"
+   260→        />
+   261→        <StatCard
+   262→          label="Returning Customers"
+   263→          value={returning}
+   264→          icon={RotateCcw}
+   265→          accent="teal"
+   266→          subtitle={totalCustomers ? `${Math.round((returning / totalCustomers) * 100)}% of base` : "No data yet"}
+   267→        />
+   268→      </div>
+   269→
+   270→      {/* Search */}
+   271→      <Card className="p-4 shadow-soft">
+   272→        <div className="relative max-w-sm">
+   273→          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+   274→          <Input
+   275→            value={q}
+   276→            onChange={(e) => setQ(e.target.value)}
+   277→            placeholder="Search by name, company, phone, email…"
+   278→            className="pl-9"
+   279→          />
+   280→        </div>
+   281→      </Card>
+   282→
+   283→      <DataTable
+   284→        columns={columns}
+   285→        data={customers}
+   286→        loading={isLoading}
+   287→        onRowClick={(c) => setDetailId(c.id)}
+   288→        rowKey={(c) => c.id}
+   289→        emptyTitle="No customers found"
+   290→        emptyDescription={q ? "Try a different search term." : "Add your first customer to start tracking sales & repairs."}
+   291→      />
+   292→
+   293→      <CustomerFormDialog
+   294→        open={formOpen}
+   295→        onOpenChange={setFormOpen}
+   296→        customer={editing}
+   297→      />
+   298→
+   299→      <CustomerDetailSheet
+   300→        customerId={detailId}
+   301→        onOpenChange={(o) => !o && setDetailId(null)}
+   302→        onEdit={(c) => { setDetailId(null); openEdit(c); }}
+   303→      />
+   304→    </div>
+   305→  );
+   306→}
+   307→
+   308→// ─── Customer Form Dialog ────────────────────────────────────────────────
+   309→interface CustomerFormValues {
+   310→  id?: string;
+   311→  name: string;
+   312→  phone: string;
+   313→  whatsapp: string;
+   314→  email: string;
+   315→  address: string;
+   316→  company: string;
+   317→  notes: string;
+   318→}
+   319→
+   320→const emptyForm: CustomerFormValues = {
+   321→  name: "", phone: "", whatsapp: "", email: "", address: "", company: "", notes: "",
+   322→};
+   323→
+   324→function CustomerFormDialog({
+   325→  open, onOpenChange, customer,
+   326→}: {
+   327→  open: boolean;
+   328→  onOpenChange: (o: boolean) => void;
+   329→  customer: Customer | null;
+   330→}) {
+   331→  // Keyed remount strategy: the inner form holds its own state initialized
+   332→  // from `customer`. When `customer` (or open state) changes, React remounts
+   333→  // the inner form, resetting state cleanly without setState-in-effect.
+   334→  return (
+   335→    <Dialog open={open} onOpenChange={onOpenChange}>
+   336→      <DialogContent className="max-w-2xl gap-0 p-0">
+   337→        <CustomerFormInner
+   338→          key={open ? (customer?.id ?? "new") : "closed"}
+   339→          customer={customer}
+   340→          onOpenChange={onOpenChange}
+   341→        />
+   342→      </DialogContent>
+   343→    </Dialog>
+   344→  );
+   345→}
+   346→
+   347→function CustomerFormInner({
+   348→  customer, onOpenChange,
+   349→}: {
+   350→  customer: Customer | null;
+   351→  onOpenChange: (o: boolean) => void;
+   352→}) {
+   353→  const qc = useQueryClient();
+   354→  const [form, setForm] = useState<CustomerFormValues>(() =>
+   355→    customer
+   356→      ? {
+   357→          id: customer.id,
+   358→          name: customer.name,
+   359→          phone: customer.phone ?? "",
+   360→          whatsapp: customer.whatsapp ?? "",
+   361→          email: customer.email ?? "",
+   362→          address: customer.address ?? "",
+   363→          company: customer.company ?? "",
+   364→          notes: customer.notes ?? "",
+   365→        }
+   366→      : emptyForm
+   367→  );
+   368→
+   369→  const save = useMutation({
+   370→    mutationFn: async () => {
+   371→      if (form.id) return api.put(`/customers/${form.id}`, form);
+   372→      return api.post("/customers", form);
+   373→    },
+   374→    onSuccess: () => {
+   375→      qc.invalidateQueries({ queryKey: ["customers"] });
+   376→      toast.success(form.id ? "Customer updated" : "Customer created");
+   377→      onOpenChange(false);
+   378→    },
+   379→    onError: (e: Error) => toast.error(e.message),
+   380→  });
+   381→
+   382→  const set = (k: keyof CustomerFormValues, v: string) =>
+   383→    setForm((f) => ({ ...f, [k]: v }));
+   384→
+   385→  return (
+   386→    <>
+   387→      <DialogHeader className="border-b px-6 py-4">
+   388→        <DialogTitle>{form.id ? "Edit Customer" : "New Customer"}</DialogTitle>
+   389→      </DialogHeader>
+   390→        <ScrollArea className="max-h-[70vh]">
+   391→          <div className="space-y-4 px-6 py-5">
+   392→            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+   393→              <Field label="Customer Name *">
+   394→                <Input value={form.name} onChange={(e) => set("name", e.target.value)} placeholder="e.g. John Doe" />
+   395→              </Field>
+   396→              <Field label="Company">
+   397→                <Input value={form.company} onChange={(e) => set("company", e.target.value)} placeholder="Shop / business name" />
+   398→              </Field>
+   399→              <Field label="Phone">
+   400→                <Input value={form.phone} onChange={(e) => set("phone", e.target.value)} placeholder="+92 300 1234567" />
+   401→              </Field>
+   402→              <Field label="WhatsApp">
+   403→                <Input value={form.whatsapp} onChange={(e) => set("whatsapp", e.target.value)} placeholder="+92 300 1234567" />
+   404→              </Field>
+   405→              <Field label="Email" className="sm:col-span-2">
+   406→                <Input type="email" value={form.email} onChange={(e) => set("email", e.target.value)} placeholder="customer@email.com" />
+   407→              </Field>
+   408→              <Field label="Address" className="sm:col-span-2">
+   409→                <Input value={form.address} onChange={(e) => set("address", e.target.value)} placeholder="Street, City, Country" />
+   410→              </Field>
+   411→              <Field label="Notes" className="sm:col-span-2">
+   412→                <Textarea rows={3} value={form.notes} onChange={(e) => set("notes", e.target.value)} placeholder="Preferences, payment habits, special instructions…" />
+   413→              </Field>
+   414→            </div>
+   415→          </div>
+   416→        </ScrollArea>
+   417→        <DialogFooter className="border-t px-6 py-4">
+   418→          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+   419→          <Button onClick={() => save.mutate()} disabled={save.isPending || !form.name.trim()}>
+   420→            {save.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+   421→            {form.id ? "Save Changes" : "Create Customer"}
+   422→          </Button>
+   423→        </DialogFooter>
+   424→    </>
+   425→  );
+   426→}
+   427→
+   428→// ─── Customer Detail Sheet ───────────────────────────────────────────────
+   429→function CustomerDetailSheet({
+   430→  customerId, onOpenChange, onEdit,
+   431→}: {
+   432→  customerId: string | null;
+   433→  onOpenChange: (o: boolean) => void;
+   434→  onEdit: (c: Customer) => void;
+   435→}) {
+   436→  const open = !!customerId;
+   437→  const { data: customer, isLoading } = useQuery<CustomerDetail>({
+   438→    queryKey: ["customer", customerId],
+   439→    queryFn: () => api.get<CustomerDetail>(`/customers/${customerId!}`),
+   440→    enabled: !!customerId,
+   441→  });
+   442→
+   443→  return (
+   444→    <Sheet open={open} onOpenChange={onOpenChange}>
+   445→      <SheetContent side="right" className="w-full overflow-hidden p-0 sm:max-w-2xl">
+   446→        {isLoading && (
+   447→          <div className="flex h-full items-center justify-center">
+   448→            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+   449→          </div>
+   450→        )}
+   451→        {customer && (
+   452→          <>
+   453→            <SheetHeader className="border-b px-6 py-4">
+   454→              <div className="flex items-start justify-between gap-3">
+   455→                <div className="flex min-w-0 items-start gap-3">
+   456→                  <Avatar className="h-12 w-12 bg-primary/10 text-primary">
+   457→                    <AvatarFallback className="bg-primary/10 text-sm font-semibold text-primary">
+   458→                      {initials(customer.name)}
+   459→                    </AvatarFallback>
+   460→                  </Avatar>
+   461→                  <div className="min-w-0">
+   462→                    <SheetTitle className="text-base">{customer.name}</SheetTitle>
+   463→                    <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+   464→                      {customer.company && (
+   465→                        <span className="inline-flex items-center gap-1"><Building2 className="h-3 w-3" /> {customer.company}</span>
+   466→                      )}
+   467→                      <span className="text-muted-foreground/70">Since {formatDate(customer.createdAt)}</span>
+   468→                      {!customer.active && <Badge variant="outline" className="text-rose-600">Inactive</Badge>}
+   469→                    </div>
+   470→                  </div>
+   471→                </div>
+   472→                <Button size="sm" variant="outline" className="gap-1.5" onClick={() => onEdit(customer)}>
+   473→                  <Pencil className="h-3.5 w-3.5" /> Edit
+   474→                </Button>
+   475→              </div>
+   476→            </SheetHeader>
+   477→
+   478→            <ScrollArea className="h-[calc(100vh-90px)]">
+   479→              <div className="px-6 py-5">
+   480→                {/* Summary cards */}
+   481→                <div className="grid grid-cols-3 gap-3">
+   482→                  <div className="rounded-xl border p-3">
+   483→                    <p className="text-[11px] text-muted-foreground">Outstanding</p>
+   484→                    <p className={`mt-1 text-lg font-bold ${(customer.outstandingBalance ?? 0) > 0 ? "text-amber-600 dark:text-amber-400" : "text-emerald-600"}`}>
+   485→                      {formatCurrency(customer.outstandingBalance ?? 0)}
+   486→                    </p>
+   487→                  </div>
+   488→                  <div className="rounded-xl border p-3">
+   489→                    <p className="text-[11px] text-muted-foreground">Sales</p>
+   490→                    <p className="mt-1 text-lg font-bold">{customer._count?.sales ?? customer.sales?.length ?? 0}</p>
+   491→                  </div>
+   492→                  <div className="rounded-xl border p-3">
+   493→                    <p className="text-[11px] text-muted-foreground">Repairs</p>
+   494→                    <p className="mt-1 text-lg font-bold">{customer._count?.repairJobs ?? customer.repairJobs?.length ?? 0}</p>
+   495→                  </div>
+   496→                </div>
+   497→
+   498→                {/* Contact info */}
+   499→                <div className="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-2">
+   500→                  {customer.phone && (
+   501→                    <a href={telLink(customer.phone)} className="flex items-center gap-3 rounded-lg border p-3 hover:border-primary/40 hover:bg-muted/40">
+   502→                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600"><Phone className="h-4 w-4" /></div>
+   503→                      <div className="min-w-0">
+   504→                        <p className="text-[11px] text-muted-foreground">Phone</p>
+   505→                        <p className="truncate text-sm font-medium">{customer.phone}</p>
+   506→                      </div>
+   507→                    </a>
+   508→                  )}
+   509→                  {customer.whatsapp && (
+   510→                    <a href={whatsappLink(customer.whatsapp)} target="_blank" rel="noreferrer" className="flex items-center gap-3 rounded-lg border p-3 hover:border-primary/40 hover:bg-muted/40">
+   511→                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600"><MessageCircle className="h-4 w-4" /></div>
+   512→                      <div className="min-w-0">
+   513→                        <p className="text-[11px] text-muted-foreground">WhatsApp</p>
+   514→                        <p className="truncate text-sm font-medium">{customer.whatsapp}</p>
+   515→                      </div>
+   516→                    </a>
+   517→                  )}
+   518→                  {customer.email && (
+   519→                    <a href={`mailto:${customer.email}`} className="flex items-center gap-3 rounded-lg border p-3 hover:border-primary/40 hover:bg-muted/40">
+   520→                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-teal-500/10 text-teal-600"><Mail className="h-4 w-4" /></div>
+   521→                      <div className="min-w-0">
+   522→                        <p className="text-[11px] text-muted-foreground">Email</p>
+   523→                        <p className="truncate text-sm font-medium">{customer.email}</p>
+   524→                      </div>
+   525→                    </a>
+   526→                  )}
+   527→                  {customer.address && (
+   528→                    <div className="flex items-center gap-3 rounded-lg border p-3">
+   529→                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600"><MapPin className="h-4 w-4" /></div>
+   530→                      <div className="min-w-0">
+   531→                        <p className="text-[11px] text-muted-foreground">Address</p>
+   532→                        <p className="truncate text-sm font-medium">{customer.address}</p>
+   533→                      </div>
+   534→                    </div>
+   535→                  )}
+   536→                  {customer.company && (
+   537→                    <div className="flex items-center gap-3 rounded-lg border p-3">
+   538→                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-purple-500/10 text-purple-600"><Building2 className="h-4 w-4" /></div>
+   539→                      <div className="min-w-0">
+   540→                        <p className="text-[11px] text-muted-foreground">Company</p>
+   541→                        <p className="truncate text-sm font-medium">{customer.company}</p>
+   542→                      </div>
+   543→                    </div>
+   544→                  )}
+   545→                </div>
+   546→
+   547→                {/* Notes */}
+   548→                {customer.notes && (
+   549→                  <div className="mt-4 rounded-xl border border-amber-500/20 bg-amber-500/5 p-4">
+   550→                    <p className="mb-1 text-xs font-semibold text-amber-600">Notes</p>
+   551→                    <p className="text-sm">{customer.notes}</p>
+   552→                  </div>
+   553→                )}
+   554→
+   555→                {/* Tabs */}
+   556→                <Tabs defaultValue="sales" className="mt-5">
+   557→                  <TabsList className="mb-4">
+   558→                    <TabsTrigger value="sales">Purchase History</TabsTrigger>
+   559→                    <TabsTrigger value="repairs">Repair History</TabsTrigger>
+   560→                  </TabsList>
+   561→
+   562→                  <TabsContent value="sales">
+   563→                    {!customer.sales?.length ? (
+   564→                      <EmptyState icon={Receipt} title="No purchases yet" description="Sales invoices for this customer will appear here." />
+   565→                    ) : (
+   566→                      <div className="space-y-2">
+   567→                        {customer.sales.map((s) => (
+   568→                          <div key={s.id} className="rounded-lg border p-3">
+   569→                            <div className="flex items-center justify-between gap-2">
+   570→                              <div className="min-w-0">
+   571→                                <div className="flex items-center gap-2">
+   572→                                  <p className="text-sm font-semibold">{s.invoiceNo}</p>
+   573→                                  <PaymentStatusBadge status={s.paymentStatus} />
+   574→                                  <Badge variant="secondary" className="text-[10px]">{s.status}</Badge>
+   575→                                  <Badge variant="outline" className="text-[10px]">{s.paymentMethod}</Badge>
+   576→                                </div>
+   577→                                <p className="text-[11px] text-muted-foreground">{formatDateTime(s.createdAt)} · {s.items?.length ?? 0} items</p>
+   578→                              </div>
+   579→                              <div className="text-right">
+   580→                                <p className="text-sm font-semibold">{formatCurrency(s.total)}</p>
+   581→                                <p className="text-[11px] text-muted-foreground">paid {formatCurrency(s.paid)}</p>
+   582→                              </div>
+   583→                            </div>
+   584→                            {s.items?.length > 0 && (
+   585→                              <div className="mt-2 space-y-1 border-t pt-2">
+   586→                                {s.items.map((it) => (
+   587→                                  <div key={it.id} className="flex items-center justify-between text-xs text-muted-foreground">
+   588→                                    <span className="truncate">{it.name} <span className="text-[10px]">×{it.qty}</span></span>
+   589→                                    <span className="font-medium text-foreground">{formatCurrency(it.total)}</span>
+   590→                                  </div>
+   591→                                ))}
+   592→                              </div>
+   593→                            )}
+   594→                          </div>
+   595→                        ))}
+   596→                      </div>
+   597→                    )}
+   598→                  </TabsContent>
+   599→
+   600→                  <TabsContent value="repairs">
+   601→                    {!customer.repairJobs?.length ? (
+   602→                      <EmptyState icon={Wrench} title="No repair jobs yet" description="Repair tickets for this customer will appear here." />
+   603→                    ) : (
+   604→                      <div className="space-y-2">
+   605→                        {customer.repairJobs.map((r) => (
+   606→                          <div key={r.id} className="rounded-lg border p-3">
+   607→                            <div className="flex items-start justify-between gap-2">
+   608→                              <div className="min-w-0">
+   609→                                <div className="flex items-center gap-2">
+   610→                                  <p className="text-sm font-semibold">{r.ticketNo}</p>
+   611→                                  <RepairStatusBadge status={r.status} />
+   612→                                  <PaymentStatusBadge status={r.paymentStatus} />
+   613→                                </div>
+   614→                                <p className="mt-0.5 truncate text-xs font-medium">{r.problem}</p>
+   615→                                <p className="text-[11px] text-muted-foreground">
+   616→                                  {formatDate(r.createdAt)}
+   617→                                  {r.model?.name ? ` · ${r.model.brand?.name ?? ""} ${r.model.name}` : ""}
+   618→                                </p>
+   619→                              </div>
+   620→                              <div className="text-right">
+   621→                                <p className="text-sm font-semibold">{formatCurrency(r.total)}</p>
+   622→                                <p className="text-[11px] text-muted-foreground">paid {formatCurrency(r.paid)}</p>
+   623→                              </div>
+   624→                            </div>
+   625→                          </div>
+   626→                        ))}
+   627→                      </div>
+   628→                    )}
+   629→                  </TabsContent>
+   630→                </Tabs>
+   631→              </div>
+   632→            </ScrollArea>
+   633→          </>
+   634→        )}
+   635→      </SheetContent>
+   636→    </Sheet>
+   637→  );
+   638→}
+   639→
+   640→// ─── Small Field helper ──────────────────────────────────────────────────
+   641→function Field({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) {
+   642→  return (
+   643→    <div className={className}>
+   644→      <Label className="mb-1.5 block text-xs font-medium">{label}</Label>
+   645→      {children}
+   646→    </div>
+   647→  );
+   648→}
+   649→

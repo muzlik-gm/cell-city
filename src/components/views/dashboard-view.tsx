@@ -97,17 +97,17 @@ export function DashboardView() {
               <h3 className="text-sm font-semibold">Revenue & Profit</h3>
               <p className="text-xs text-muted-foreground">Last 30 days</p>
             </div>
-            <div className="flex items-center gap-3 text-xs">
+            <div className="flex items-center gap-3 rounded-lg border bg-muted/40 px-2.5 py-1 text-xs">
               <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-primary" />Revenue</span>
               <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-amber-500" />Profit</span>
             </div>
           </div>
-          <div className="h-[260px]">
+          <div className="h-[280px]">
             {charts.isLoading ? (
               <div className="h-full animate-pulse rounded-lg bg-muted" />
             ) : (
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={charts.data?.days ?? []} margin={{ left: -16, right: 8, top: 8 }}>
+                <AreaChart data={charts.data?.days ?? []} margin={{ left: 0, right: 12, top: 24, bottom: 8 }}>
                   <defs>
                     <linearGradient id="rev" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="oklch(0.55 0.13 162)" stopOpacity={0.3} />
@@ -119,14 +119,14 @@ export function DashboardView() {
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-muted" vertical={false} />
-                  <XAxis dataKey="label" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} interval={4} />
-                  <YAxis tick={{ fontSize: 11 }} tickLine={false} axisLine={false} tickFormatter={(v) => (v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v)} />
+                  <XAxis dataKey="label" tick={{ fontSize: 10, fill: "currentColor" }} className="fill-muted-foreground" tickLine={false} axisLine={false} interval="preserveStartEnd" minTickGap={32} height={20} />
+                  <YAxis tick={{ fontSize: 10, fill: "currentColor" }} className="fill-muted-foreground" tickLine={false} axisLine={false} tickFormatter={(v) => (v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v)} width={44} domain={[0, "dataMax + 1000"]} />
                   <Tooltip
                     contentStyle={{ borderRadius: 12, border: "1px solid var(--border)", background: "var(--popover)", fontSize: 12, boxShadow: "0 8px 24px -8px rgb(0 0 0 / 0.15)" }}
                     formatter={(v: number) => formatCurrency(v)}
                   />
-                  <Area type="monotone" dataKey="revenue" stroke="oklch(0.55 0.13 162)" strokeWidth={2} fill="url(#rev)" />
-                  <Area type="monotone" dataKey="profit" stroke="oklch(0.65 0.18 60)" strokeWidth={2} fill="url(#prof)" />
+                  <Area type="monotone" dataKey="revenue" stroke="oklch(0.55 0.13 162)" strokeWidth={2} fill="url(#rev)" dot={false} activeDot={{ r: 4, strokeWidth: 0 }} />
+                  <Area type="monotone" dataKey="profit" stroke="oklch(0.65 0.18 60)" strokeWidth={2} fill="url(#prof)" dot={false} activeDot={{ r: 4, strokeWidth: 0 }} />
                 </AreaChart>
               </ResponsiveContainer>
             )}
@@ -149,12 +149,12 @@ export function DashboardView() {
               <p className="py-8 text-center text-xs text-muted-foreground">No sales data yet</p>
             ) : (
               (charts.data?.topProducts ?? []).slice(0, 5).map((p: any, i: number) => (
-                <div key={i} className="flex items-center gap-3">
+                <div key={i} className="group flex items-center gap-3 rounded-lg p-1.5 transition hover:bg-muted/50">
                   <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-xs font-bold text-primary">
                     {i + 1}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-xs font-medium">{p.name}</p>
+                    <p className="truncate text-xs font-medium" title={p.name}>{p.name}</p>
                     <p className="text-[11px] text-muted-foreground">{formatCurrency(p.revenue)} revenue</p>
                   </div>
                   <Badge variant="secondary" className="font-semibold">{p.qty} sold</Badge>

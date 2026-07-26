@@ -8,10 +8,12 @@ import {
   Package,
   Shuffle,
   Boxes,
+  ArrowLeftRight,
   ShoppingCart,
   Truck,
   Users,
   UserCog,
+  Wallet,
   Wrench,
   ScanEye,
   FileBarChart,
@@ -35,11 +37,13 @@ const NAV: NavItem[] = [
   { key: "inventory", label: "Inventory", icon: Package, group: "Catalog" },
   { key: "products", label: "Products", icon: Boxes, group: "Catalog" },
   { key: "compatibility", label: "Compatibility", icon: Shuffle, group: "Catalog" },
+  { key: "transfers", label: "Transfers", icon: ArrowLeftRight, group: "Catalog" },
   { key: "ai", label: "AI Identification", icon: ScanEye, group: "Catalog" },
   { key: "sales", label: "Sales", icon: ShoppingCart, group: "Commerce" },
   { key: "purchases", label: "Purchases", icon: Truck, group: "Commerce" },
   { key: "suppliers", label: "Suppliers", icon: Users, group: "Commerce" },
   { key: "customers", label: "Customers", icon: UserCog, group: "Commerce" },
+  { key: "payments", label: "Payments", icon: Wallet, group: "Commerce" },
   { key: "repairs", label: "Repair Jobs", icon: Wrench, group: "Service" },
   { key: "reports", label: "Reports", icon: FileBarChart, group: "Insights" },
   { key: "analytics", label: "Analytics", icon: BarChart3, group: "Insights" },
@@ -100,7 +104,7 @@ export function Sidebar() {
                     )}
                   >
                     <Icon className={cn("h-[18px] w-[18px] shrink-0", active && "text-primary")} />
-                    {!sidebarCollapsed && <span className="truncate">{item.label}</span>}
+                    {!sidebarCollapsed && <span className="truncate min-w-0 flex-1 text-left">{item.label}</span>}
                     {!sidebarCollapsed && active && (
                       <span className="ml-auto h-1.5 w-1.5 rounded-full bg-primary" />
                     )}
