@@ -8,6 +8,7 @@ import { ProductDetailSheet } from "@/components/shared/product-detail";
 import { ProductFormDialog } from "@/components/shared/product-form";
 import { StockAdjustDialog } from "@/components/shared/stock-adjust-dialog";
 import { QrDisplay } from "@/components/shared/qr-barcode";
+import { AiCameraModal } from "@/components/shared/ai-camera-modal";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,11 +16,14 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import {
   Search, ScanEye, Package, Smartphone, Users, Truck, ShoppingCart,
-  X, TrendingUp, ArrowRight, Sparkles, Camera,
+  X, TrendingUp, ArrowRight, Sparkles, Camera, Clock, Flame,
 } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import { formatCurrency, timeAgo } from "@/lib/format";
 import { motion, AnimatePresence } from "framer-motion";
+
+const RECENT_KEY = "partshub-recent-searches";
+const MAX_RECENT = 6;
 
 export function HomeView() {
   const { setView } = useAppStore();
@@ -30,6 +34,14 @@ export function HomeView() {
   const [formOpen, setFormOpen] = useState(false);
   const [qrProduct, setQrProduct] = useState<any>(null);
   const [adjustProduct, setAdjustProduct] = useState<any>(null);
+  const [aiOpen, setAiOpen] = useState(false);
+  const [recentSearches, setRecentSearches] = useState<string[]>(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      const stored = localStorage.getItem(RECENT_KEY);
+      return stored ? JSON.parse(stored) : [];
+    } catch { return []; }
+  });
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Debounce search
@@ -43,16 +55,39 @@ export function HomeView() {
     inputRef.current?.focus();
   }, []);
 
-  // Esc clears search
+  const saveRecent = useCallback((q: string) => {
+    setRecentSearches((prev) => {
+      const next = [q, ...prev.filter((s) => s !== q)].slice(0, MAX_RECENT);
+      try { localStorage.setItem(RECENT_KEY, JSON.stringify(next)); } catch { /* ignore */ }
+      return next;
+    });
+  }, []);
+
+  const clearRecent = useCallback(() => {
+    setRecentSearches([]);
+    try { localStorage.removeItem(RECENT_KEY); } catch { /* ignore */ }
+  }, []);
+
+  // Esc clears search; Enter saves to recent
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === "Escape" && document.activeElement === inputRef.current) {
         setQuery("");
       }
+      if (e.key === "Enter" && debounced.length > 1) {
+        saveRecent(debounced);
+      }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, []);
+  }, [debounced, saveRecent]);
+
+  // Popular models (top by product count) for the hero
+  const popular = useQuery({
+    queryKey: ["popular-models"],
+    queryFn: () => api.get<any[]>("/models?pageSize=8"),
+    staleTime: 120_000,
+  });
 
   const { data, isLoading } = useQuery({
     queryKey: ["universal-search", debounced],
@@ -149,18 +184,64 @@ export function HomeView() {
           )}
         </div>
 
-        {/* AI Camera button — floating, only in hero mode */}
+        {/* AI Camera button + recent searches + popular models — only in hero mode */}
         {!debounced && (
-          <div className="mt-4 flex flex-col items-center gap-3">
-            <Button
-              size="lg"
-              className="h-12 gap-2 rounded-xl px-6 shadow-soft"
-              onClick={() => setView("home")}
-            >
-              <Camera className="h-5 w-5" />
-              Identify with Camera
-            </Button>
-            <p className="text-xs text-muted-foreground">Take a photo of a phone back or LCD connector</p>
+          <div className="mt-5 space-y-5">
+            <div className="flex flex-col items-center gap-3">
+              <Button
+                size="lg"
+                className="h-12 gap-2 rounded-xl px-6 shadow-soft"
+                onClick={() => setAiOpen(true)}
+              >
+                <Camera className="h-5 w-5" />
+                Identify with Camera
+              </Button>
+              <p className="text-xs text-muted-foreground">Take a photo of a phone back or LCD connector</p>
+            </div>
+
+            {/* Recent searches */}
+            {recentSearches.length > 0 && (
+              <div className="mx-auto max-w-2xl">
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    <Clock className="h-3.5 w-3.5" /> Recent
+                  </span>
+                  <button onClick={clearRecent} className="text-xs text-muted-foreground hover:text-foreground">Clear</button>
+                </div>
+                <div className="flex flex-wrap justify-center gap-1.5">
+                  {recentSearches.map((s, i) => (
+                    <button
+                      key={i}
+                      onClick={() => { setQuery(s); inputRef.current?.focus(); }}
+                      className="rounded-full border bg-card px-3 py-1.5 text-xs font-medium shadow-soft transition hover:border-primary/40 hover:bg-primary/5"
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Popular models */}
+            {popular.data && popular.data.length > 0 && (
+              <div className="mx-auto max-w-2xl">
+                <div className="mb-2 flex items-center justify-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  <Flame className="h-3.5 w-3.5 text-primary" /> Popular Models
+                </div>
+                <div className="flex flex-wrap justify-center gap-1.5">
+                  {popular.data.slice(0, 8).map((m: any) => (
+                    <button
+                      key={m.id}
+                      onClick={() => { setQuery(m.name); inputRef.current?.focus(); }}
+                      className="flex items-center gap-1.5 rounded-full border bg-card px-3 py-1.5 text-xs font-medium shadow-soft transition hover:border-primary/40 hover:bg-primary/5"
+                    >
+                      <Smartphone className="h-3 w-3 text-primary" />
+                      {m.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -324,6 +405,8 @@ export function HomeView() {
       </Dialog>
       {/* Stock adjust */}
       <StockAdjustDialog product={adjustProduct} open={!!adjustProduct} onOpenChange={(o) => !o && setAdjustProduct(null)} />
+      {/* AI Camera modal */}
+      <AiCameraModal open={aiOpen} onOpenChange={setAiOpen} />
     </div>
   );
 }

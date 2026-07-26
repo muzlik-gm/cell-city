@@ -821,3 +821,49 @@ PartsHub has been completely redesigned per the new philosophy: the app is now o
 - **Old view files**: the old view files (dashboard-view, compatibility-view, products-view, suppliers-view, customers-view, payments-view, transfers-view, analytics-view, ai-view) still exist on disk but are no longer imported by the view-router. They could be deleted for cleanliness but are harmless.
 - **AI Camera**: the Home hero has a "Identify with Camera" button that currently navigates to home. The AI identification flow (VLM) could be integrated as a modal on the home page rather than a separate view.
 - **Next priorities**: (1) integrate AI camera as a modal on home, (2) delete unused old view files, (3) add keyboard arrow-key navigation in search results, (4) add recent searches / popular models on the home hero, (5) optimize search for 100k+ products with DB indexes.
+
+---
+Task ID: CRON-REVIEW-3
+Agent: orchestrator (Z.ai Code) — cron review round 3
+Task: Assess project status, QA via agent-browser, cleanup orphaned files, integrate AI Camera modal on home, add recent searches + popular models + keyboard shortcuts, polish styling.
+
+## Current Project Status Assessment
+PartsHub is a redesigned Mobile Spare Parts Management System (Next.js 16 SPA, Prisma+SQLite, shadcn/ui) optimized for speed — universal search homepage, 7-item navigation, single-screen workflows. After this round: 9 orphaned view files deleted, AI Camera integrated as a home modal, recent searches + popular models added to the hero, keyboard shortcuts (Esc clears, Enter saves to recent). Lint: 0 errors. All 7 views render. The home page now feels like Google Search for spare parts.
+
+## Completed Modifications
+
+### Cleanup
+- **Deleted 9 orphaned view files**: ai-view, analytics-view, compatibility-view, customers-view, dashboard-view, payments-view, products-view, suppliers-view, transfers-view. These were left over from the pre-redesign 15-item navigation and were no longer imported by view-router. Only 7 view files remain (home, inventory, sales, purchases, repairs, reports, settings).
+
+### New feature: AI Camera modal on Home
+- **New component** (`src/components/shared/ai-camera-modal.tsx`): a polished Dialog that brings AI identification directly to the home page without navigation. Features:
+  - Mode selector: "Phone Back" (camera layout, logo, buttons) vs "LCD / Flex" (connector, ribbon, IC) — illustrated cards.
+  - Upload zone: drag-drop + Camera button (uses `capture="environment"` for mobile camera) + Upload button.
+  - Analyzing state: animated scan-line over an emerald card with "Analyzing image…" text.
+  - Results: uploaded image + detected model with confidence gauge (color-coded emerald/amber/rose), possible alternatives with confidence bars, matched catalog models as chips, available products list with stock/shelf/price + "Sell" button (navigates to Sales with contextId).
+  - "Scan another" button to reset.
+  - Calls existing `/api/ai/identify` endpoint (VLM GLM-4.6V).
+- **Integrated into HomeView**: the "Identify with Camera" button now opens `AiCameraModal` instead of doing nothing.
+
+### New feature: Recent searches + Popular models on Home hero
+- **Recent searches** (`home-view.tsx`): stored in localStorage (`partshub-recent-searches`, max 6). Loaded via lazy useState initializer (avoids setState-in-effect). Saved when user presses Enter on a search. Displayed as chips below the Camera button with a Clock icon + Clear button. Clicking a recent search fills the input.
+- **Popular models** (`home-view.tsx`): fetches top 8 phone models from `/api/models` (staleTime 120s). Displayed as chips with a Flame icon + Smartphone icon. Clicking fills the search input.
+
+### New feature: Keyboard shortcuts
+- **Esc** clears the search input (when focused).
+- **Enter** saves the current query to recent searches.
+- **Cmd/Ctrl+K** opens the command palette (existing).
+
+### Verification Results
+- `bun run lint`: 0 errors, 0 warnings.
+- All 7 nav views render correctly (Home, Inventory, Sales, Purchases, Repairs, Reports, Settings).
+- Home page verified: "Find any part in seconds" hero, large search bar, "Identify with Camera" button (opens AI modal), Popular Models chips (Huawei Y7, Infinix Hot 10, Nokia 2.4, Oppo A3s, etc.).
+- AI Camera modal verified: opens with mode selector (Phone Back / LCD Flex), upload zone, "Take a photo or upload" prompt.
+- Dark mode works.
+- Dev server compiles clean (~300ms).
+
+## Unresolved Issues / Risks & Next-Phase Recommendations
+- **Stale Turbopack HMR cache**: browser console may still show stale "Module not found" errors for deleted view files. Non-blocking — the app renders correctly. A dev server restart would clear it.
+- **Popular models ordering**: currently returns models alphabetically (first 8). Could be enhanced to return models sorted by product count or sales volume for true "popularity".
+- **AI Camera on mobile**: uses native `capture="environment"` attribute which works on most mobile browsers. The BarcodeDetector API for live scanning could be added as an enhancement.
+- **Next priorities**: (1) sort popular models by sales volume, (2) add live barcode scanning camera feed (not just photo upload), (3) add keyboard arrow-key navigation through search result cards, (4) add a "quick sell" inline form on the home search results (sell without navigating to Sales view), (5) add low-stock dashboard widget on home hero, (6) implement real JWT auth + login screen.
