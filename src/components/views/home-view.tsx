@@ -13,6 +13,8 @@ import { QuickSellModal } from "@/components/shared/quick-sell-modal";
 import { LowStockWidget } from "@/components/shared/low-stock-widget";
 import { TodaySummaryWidget } from "@/components/shared/today-summary-widget";
 import { CustomerQuickSearch } from "@/components/shared/customer-quick-search";
+import { SupplierQuickSearch } from "@/components/shared/supplier-quick-search";
+import { RecentlySoldWidget } from "@/components/shared/recently-sold-widget";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -150,10 +152,10 @@ export function HomeView() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="flex flex-col items-center pt-12 sm:pt-20"
+            className="flex flex-col items-center pt-4 sm:pt-8"
           >
             {/* Today's business pulse — instant KPIs at the top of the hero */}
-            <div className="mb-6 w-full">
+            <div className="mb-4 w-full">
               <TodaySummaryWidget />
             </div>
             <div className="mb-3 flex items-center gap-2 rounded-full border bg-card px-3 py-1 text-xs font-medium text-muted-foreground shadow-soft">
@@ -255,8 +257,14 @@ export function HomeView() {
             {/* Low-stock alerts widget */}
             <LowStockWidget />
 
-            {/* Customer quick-search */}
-            <CustomerQuickSearch />
+            {/* Customer + Supplier quick-search side by side on large screens */}
+            <div className="grid w-full gap-4 sm:grid-cols-2">
+              <CustomerQuickSearch />
+              <SupplierQuickSearch />
+            </div>
+
+            {/* Recently sold widget */}
+            <RecentlySoldWidget />
           </div>
         )}
       </div>

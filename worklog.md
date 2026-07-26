@@ -1074,3 +1074,45 @@ PartsHub is a speed-optimized Mobile Spare Parts Management System (Next.js 16 S
 - **Home hero height**: with 7 widgets (Today's Summary, search, Camera, Recent, Popular Models, Low Stock, Customer Search), the hero is tall. Users scroll to see everything. Could make widgets collapsible or rearrange into a 2-column layout.
 - **Keyboard arrow navigation**: search result cards don't yet support arrow-key navigation. Could add for power users.
 - **Next priorities**: (1) implement real JWT auth + login screen, (2) add live barcode scanning camera feed, (3) optimize search DB indexes for 100k+ products, (4) make home widgets collapsible/personizable, (5) add keyboard arrow-key navigation through search result cards, (6) add supplier quick-search from home, (7) add a "recently sold" widget on home.
+
+---
+Task ID: CRON-REVIEW-7
+Agent: orchestrator (Z.ai Code) — cron review round 7
+Task: Assess project status, QA via agent-browser, add Recently Sold widget + Supplier Quick-Search, fix suppliers API bug, polish home hero spacing.
+
+## Current Project Status Assessment
+PartsHub is a speed-optimized Mobile Spare Parts Management System (Next.js 16 SPA, Prisma+SQLite, shadcn/ui) with universal search homepage, 7-item navigation, single-screen workflows, and a rich home command center. After this round: home hero now has Recently Sold widget + Supplier Quick-Search, suppliers API search bug fixed, hero spacing improved. Lint: 0 errors. All 7 views render. All APIs healthy.
+
+## Completed Modifications
+
+### Bug fix: suppliers API 500 on search
+- **`src/app/api/suppliers/route.ts`**: the `?q=` search was returning 500 because `{ email: { contains: q, mode: "insensitive" } }` uses Prisma's `mode: "insensitive"` which is PostgreSQL-only and not supported by SQLite. Removed the `mode` option. Verified: `GET /api/suppliers?q=shenzhen` now returns 200 (was 500).
+
+### New feature: Recently Sold widget
+- **`src/components/shared/recently-sold-widget.tsx`**: compact widget for the home hero showing the last 5 sales. Each row: invoice no, customer name, time-ago, total (emerald), item count badge. Clicking navigates to Sales. Loading skeleton, empty state ("No sales yet today"). Header with "View all" link. Fetches `/api/sales?pageSize=5`.
+
+### New feature: Supplier Quick-Search
+- **`src/components/shared/supplier-quick-search.tsx`**: Google-Search-like supplier lookup for the home hero. 200ms debounced search of `/api/suppliers?q=`. Dropdown results: initials avatar, name, phone, products-supplied count, "Active" badge. Clicking a supplier reveals "Receive Stock" (→ Purchases) + "View Purchases" buttons. Empty state. Click-outside-to-close.
+- Verified: searching "shenzhen" returns "Shenzhen Parts Hub" with phone and 25 products.
+
+### Polish: home hero layout
+- **`src/components/views/home-view.tsx`**: 
+  - Reduced hero top padding from `pt-12 sm:pt-20` to `pt-4 sm:pt-8` (fixes the awkward gap between KPI row and search block).
+  - Reduced KPI-to-search gap from `mb-6` to `mb-4`.
+  - Placed Customer Quick-Search + Supplier Quick-Search side by side in a 2-column grid on sm+ screens (saves vertical space).
+  - Added Recently Sold widget below the quick-searches.
+
+### Verification Results
+- `bun run lint`: 0 errors, 0 warnings.
+- All 7 nav views render correctly.
+- Recently Sold widget verified: shows recent sales with invoice no, customer, total, time-ago.
+- Supplier Quick-Search verified: searching "shenzhen" returns Shenzhen Parts Hub.
+- Suppliers API fix verified: `?q=shenzhen` returns 200 (was 500).
+- Home hero spacing improved: less empty space at top.
+- No console errors on fresh load.
+- Dark mode works.
+
+## Unresolved Issues / Risks & Next-Phase Recommendations
+- **Home hero is content-rich**: with 8 widgets now (Today's Summary, search, Camera, Recent Searches, Popular Models, Low Stock, Customer+Supplier Search, Recently Sold), the hero is comprehensive but tall. The 2-column layout for customer/supplier search helps. Could add a collapse/expand toggle for power users.
+- **Keyboard arrow navigation**: search result cards don't yet support arrow-key navigation.
+- **Next priorities**: (1) implement real JWT auth + login screen, (2) add live barcode scanning camera feed, (3) optimize search DB indexes for 100k+ products, (4) make home widgets collapsible/personizable, (5) add keyboard arrow-key navigation through search result cards, (6) add a "top parts by revenue" widget, (7) add low-stock email/notification alerts.
