@@ -653,3 +653,171 @@ PartsHub is a production-grade Mobile Spare Parts Management System (Next.js 16 
 - **Inventory table horizontal scroll**: with 9 columns the table requires horizontal scroll on narrower viewports — this is expected behavior (columns have min-widths). Could add column visibility toggles for mobile.
 - **Statement PDF**: uses window.print() approach (no external PDF lib). For native PDF generation, consider adding @react-pdf/renderer or puppeteer in a future phase.
 - **Next cron round priorities**: (1) implement real JWT auth + login screen, (2) add StockLevel per-warehouse table for true multi-warehouse stock, (3) low-stock email/notification alerts (scheduled), (4) xlsx export library for reports, (5) product image AI similarity search with embeddings, (6) virtualized tables for 100k+ products, (7) column visibility toggles for data tables on mobile.
+
+---
+
+## Task 5-b — Simplified Repairs (Kanban) & Reports views
+
+- **Task ID:** 5-b
+- **Agent:** Repairs & Reports simplification subagent (Z.ai Code)
+- **Task:** Rewrite `src/components/views/repairs-view.tsx` and `src/components/views/reports-view.tsx` to embody the new "speed & minimal clicks" design philosophy. Repairs → simple 6-column Kanban + New Ticket dialog + detail sheet (NO complex tabs, NO damaged inventory tab — that's in reports now). Reports → clean grid of 6 report cards + preview table + Export PDF / Export Excel buttons (NO report builder, NO analytics charts).
+
+### Work Log
+
+**Files REWRITTEN (2):**
+
+1. `src/components/views/repairs-view.tsx` (~1160 lines, full rewrite) — Simple Kanban board:
+   - **6 columns**: Received (zinc) → Diagnosed (teal) → Waiting Parts (amber) → Repairing (purple) → Ready/COMPLETED (emerald-500) → Delivered (emerald-700). CANCELLED filtered out.
+   - **One fetch**: `useQuery(["repairs","kanban"], /repairs?pageSize=200)` — every ticket with customer/model+brand/technician/parts in one shot. Client-side grouping.
+   - **Cards**: ticket no + age (`timeAgo`), customer name, phone model, problem (line-clamp-2), technician avatar (initials) or unassigned ghost, total cost. Hover lift + shadow + focus ring.
+   - **New Ticket dialog**: Customer (required) + Phone model + IMEI + Problem (required) + Technician + Labor cost. POST /repairs → invalidates → ticket lands in "Received".
+   - **Detail sheet** (right side, max-w-lg): emerald-tinted header; "Move to status" Select (PATCH immediately); Customer/Phone info cards; Problem card; Diagnosis textarea; Technician + Labor + Paid 3-col grid; Notes; "Save details" button (single PATCH); Parts section (inline product search-and-add, qty, "Use now" checkbox, USED/RESERVED toggle pill with stock deduction, X-to-remove); Cost summary (Labor/Parts/Paid/Total + amber balance-due banner); 4-step Timeline (Received→Diagnosed→Completed→Delivered); Delete ticket (confirm).
+   - **Keyed-remount pattern**: outer `RepairDetailSheet` owns Sheet open state; inner `<RepairSheetBody key={repair.id}>` initializes `useState` from `repair` once per mount — clean state reset on ticket change without refs or effects (fixes `react-hooks/refs` + `react-hooks/set-state-in-effect` lint rules).
+   - **Top toolbar**: PageHeader with inline search + "New Ticket" button; quick-stat strip (total / active / error badge).
+   - **States**: LoadingState while fetching; EmptyState with CTA when no tickets; retry on error.
+   - **Responsive**: horizontal-scroll board on mobile (`overflow-x-auto` + `min-w-max` + `w-[280px]` columns); each column body has its own max-h + vertical scroll.
+
+2. `src/components/views/reports-view.tsx` (~340 lines, full rewrite) — Simple report picker:
+   - **6 report cards** in responsive grid (1/2/3 cols): Sales, Profit, Inventory, Low Stock, Damaged Items, Purchases. Each: emerald icon badge + title + description + chevron. Selected → primary ring.
+   - **API type mapping**: sales→`sales`, profit→`profit`, inventory→`inventory`, lowstock→`lowstock`, damaged→`damaged`, purchase→`purchase` (all exist in `/api/reports`).
+   - **Preview card**: header (icon + title + record count + date range) → optional date-range inputs (only for hasDateFilter types: sales/profit/damaged/purchase) → Export PDF + Export Excel buttons; body = sticky-header `<Table>` (max-h-560, first 200 rows) with smart cell rendering (currency / % / dates / `—`); footer = "Showing N of M" badge + "Download full CSV" ghost button (server-side `?format=csv`, no row cap).
+   - **Exports**: Export PDF (Printer icon) opens new window with self-contained print-optimized HTML (emerald-tinted `#059669` header, `#ecfdf5`/`#065f46` table head, zebra rows, footer) → `window.print()`. Export Excel (FileSpreadsheet icon) → client-side `toCSV` + `downloadBlob` (Excel-compatible CSV). Download full CSV → server-side `?format=csv`.
+   - **States**: LoadingState / ErrorState-with-retry / EmptyState.
+   - **Removed**: old "Export Preview" + "CSV (server)" duplicate buttons; complicated report builder; analytics charts. Simplified to 2 primary export buttons + 1 secondary "full CSV" link.
+
+### Key decisions
+- **Kanban-only for Repairs** — spec said "NO table view toggle". Removed the old DataTable tab. Cards are the single interaction surface; click → sheet. Minimal clicks: 1 click to open, 1 dropdown to move status, 1 button to save edits.
+- **"Ready" label for COMPLETED** in column header + dropdown (more user-friendly), underlying API status stays `COMPLETED`. CANCELLED available in dropdown but not a kanban column.
+- **Keyed-remount over ref-sync/effect-sync** — initial `useRef`-sync flagged by `react-hooks/refs`; `useEffect`-sync flagged by `react-hooks/set-state-in-effect`. Final: outer Sheet + keyed inner body with `useState` initializers — idiomatic React.
+- **Parts search**: `enabled: query.length >= 2` debounce; reuses `/api/products?q=...&pageSize=50`.
+- **Color palette**: emerald primary, complementary teal/amber/purple/zinc/rose. NO indigo/blue/sky. Delivered = emerald-700 (darker) to distinguish from Ready = emerald-500.
+- **Reports date range**: kept simple date-range filter for date-filtered types only (spec said "optional simple date range if easy" — it was easy).
+
+### Verification
+- **`bun run lint`**: **0 errors / 0 warnings** project-wide (initial run flagged 3 `react-hooks/refs` errors; fixed via keyed-remount; re-run clean).
+- **`npx tsc --noEmit --skipLibCheck`**: **0 errors in my 2 files** (grep for `repairs-view|reports-view` returns empty).
+- **Dev log**: only `✓ Compiled in NNN ms` entries after each file write. Pre-existing `Module not found: '@/components/views/home-view'` errors in `view-router.tsx` are unrelated (home-view was never created by any prior agent). Zero `⨯` / `SyntaxError` / `ModuleParseError` referencing my files.
+- **API contracts verified** (read-only, against existing routes): `/api/repairs?pageSize=200` returns `{ data, total }` with full includes; PATCH `/api/repairs/[id]` supports `{ status, diagnosis, technicianId, laborCost, paid, notes }` and auto-recomputes total; `/api/repairs/[id]/parts` POST/PATCH/DELETE handle add/toggle-used/remove with stock deduction + IN reversal; `/api/reports?type=X` returns `{ type, rows, count }` and `?format=csv` returns text/csv.
+
+### Stage Summary
+Both views rewritten to embody "speed and minimal clicks". Repairs is now a clean 6-column Kanban with one-click status changes, an inline New Ticket dialog, and a focused detail sheet (status dropdown + parts + cost summary + timeline) — no complex tabs, no damaged inventory tab (moved to reports). Reports is now a clean 6-card picker + preview table + 2 export buttons (PDF via print, Excel via CSV) — no report builder, no analytics bloat. Both honor the emerald design system (NO indigo/blue), are fully responsive (mobile-first with horizontal-scroll kanban), have proper loading/empty/error states, and pass lint + tsc with 0 errors. No backend changes needed — the existing `/api/repairs*` and `/api/reports*` routes already support every operation the simplified views require. Agent work record saved at `/agent-ctx/5-b-reports-repairs.md`.
+
+---
+
+## Task 5-a — Simplified Sales & Purchases views (Google-Search-fast single-screen POS)
+
+- **Task ID:** 5-a
+- **Agent:** Simplified POS subagent (Z.ai Code)
+- **Task:** Rewrite `src/components/views/sales-view.tsx` and `src/components/views/purchases-view.tsx` to follow a new design philosophy: speed + minimal clicks. Single-screen flows (no dialogs), 2–3 clicks max for common tasks, large touch targets, no tabs, no complex filters.
+
+### Work Log
+
+**Files rewritten (2 — full replacement):**
+
+1. **`src/components/views/sales-view.tsx`** (959 → 961 lines) — Single-screen POS:
+   - **Layout**: PageHeader → compact 4-card KPI strip (Today / This Month / Outstanding / Cart Items) → single-card POS grid `lg:grid-cols-[1fr_380px]` (left = search + cart, right = checkout) → Recent Sales card.
+   - **Search**: large `h-11 text-base` Input with `Search` icon and clearable `X` button; instant query (`/products?q=`) with 10-sec stale time; results render as a `max-h-72` dropdown of compact product rows (icon + name + sku/brand/model + price + stock pill + `+` glyph); out-of-stock rows disabled and tinted rose. `ScannerButton` (size="default", `h-11`) sits next to the input — auto-adds if exactly one match, otherwise falls back to typing.
+   - **Cart**: header with `ShoppingCart` icon, count badge, "Clear" ghost button; `EmptyState` when empty; otherwise a `ScrollArea` (`max-h-[460px]`) of Framer-Motion-animated line cards. Each line: product name + sku/cost/stock, qty stepper (`−`/input/`+`, clamped to `[1, stock]`), editable price, editable discount, live line total, remove button. `qty > stock` renders a rose warning.
+   - **Checkout panel** (right; on `<lg` it becomes a slide-over triggered by a sticky "Checkout · Rs X" button so the cart is still usable on mobile):
+     - Customer `<Select>` (walk-in default; lists `/customers`).
+     - **Payment Method — BIG button group**: 4 large buttons in a 4-col grid (Cash=Banknote, Card=CreditCard, Bank=Landmark, Mobile=Smartphone). Active = emerald ring + primary tint.
+     - **Payment Status — 3-button segmented**: Paid (emerald) / Partial (amber) / Unpaid (rose). Active state color-coded per status.
+     - **Amount Paid input appears only for PARTIAL** with a live "Balance due" hint.
+     - Discount + Tax inputs (2-col grid).
+     - Optional Notes textarea.
+     - Live totals block: Subtotal / item discounts / overall discount / tax / Total (2xl primary) / Est. profit (emerald or rose). `tabular-nums` everywhere for clean alignment.
+     - Big `h-12 w-full text-base` "Complete Sale · Rs X" button — disabled when cart empty, mutation pending, or any line exceeds stock.
+   - **On success**: toast with invoice no + total, `clearCart()` resets everything, invoice dialog auto-opens with the freshly-created sale (user can immediately print or return).
+   - **Recent Sales card**: divider list of last 5 sales (TanStack Query `["sales-recent"]`, 15-sec stale); each row = customer avatar + name + invoice no + `timeAgo` + (sm+) payment method/status badges + total + item count; click → fetches `/api/sales/[id]` and opens the existing `InvoiceDialog`.
+   - **`InvoiceDialog` retained unchanged** (header w/ business + customer + QR + line-items table + totals + return + print popup). The `Undo2` icon was swapped to `Sparkles` for the Return button so the file no longer imports `Undo2`/`Eye` (unused in the new layout).
+   - **State-sync during render**: when payment status flips to PAID, `amountPaid` is synced to `totals.total` via the React-blessed "adjusting state during render" pattern (conditional + idempotent). No `useEffect` — passes `react-hooks/set-state-in-effect`.
+   - **Stats query**: kept the 100-sale aggregate (today/month/outstanding); replaced the "Today's Count" StatCard with a more useful "Cart Items" card so the KPI strip is alive while you build the cart.
+   - Zero dialogs/tabs for the sale flow itself. The only dialog is the post-sale invoice (for print/return).
+
+2. **`src/components/views/purchases-view.tsx`** (765 → 738 lines) — Single-screen Receive Stock flow:
+   - **Layout**: PageHeader ("Receive Stock") → 4-card KPI strip (This Month / Outstanding / Suppliers / Receiving) → POS-style grid `lg:grid-cols-[1fr_380px]` (left = search + receiving list, right = supplier + checkout) → Recent Purchases card.
+   - **Search**: large `h-11` Input, instant `/products?q=` query, clearable; results show name + sku/brand/stock + last cost; click → adds to receiving list with default `qty=1` and `cost = product.purchasePrice`.
+   - **Receiving list**: header w/ count badge + Clear; line cards show name + sku + current stock + previous cost; qty stepper + editable unit cost + live line total. Cost changes from previous cost show an amber "Cost change: was Rs X → now Rs Y" hint.
+   - **Checkout panel** (right; same slide-over pattern on mobile):
+     - **Supplier `<Select>`** — big `h-12 text-base` trigger, prominent; "— No supplier —" is the first option (optional).
+     - Payment Status segmented buttons (Paid/Partial/Unpaid), defaults to UNPAID for purchases.
+     - Discount + Tax inputs.
+     - Optional Notes.
+     - Live totals (Subtotal / Discount / Tax / Total / no profit block since purchases don't carry margin).
+     - `h-12 w-full` "Receive Stock · Rs X" button.
+   - **On success**: toast with PO no + total, `clearAll()` resets, slide-over closes.
+   - **Recent Purchases card**: last 5 purchases; each row = supplier avatar + name + PO no + `timeAgo` + (sm+) Received/Cancelled + Payment badges + total + item count; click → opens the existing `PurchaseDetailSheet` (right-side slide-over with mark-as-paid / cancel-purchase actions).
+   - **PurchaseDetailSheet retained** (supplier card + items table + totals + notes + actions). Removed imports for `DataTable`, `Column`, `PAYMENT_STATUSES` (was actually still used — kept) — actually cleaned: dropped `DataTable`/`Column` (no longer used), `Building2`/`Minus`/`Plus` still used. Removed unused `Card` import? No, Card still used. Verified zero unused imports via lint.
+
+### Key decisions
+- **No more `Dialog` for sale/purchase creation** — the POS IS the view. The only dialogs are post-action (invoice preview, purchase detail sheet) for view/print/cancel.
+- **Slide-over checkout on mobile** — on `<lg` screens the right panel becomes a bottom-anchored slide-over (`fixed inset-0 top-auto z-40 max-h-[92vh] translate-y-full → translate-y-0`), triggered by a sticky "Checkout · Rs X" button bar at the bottom of the cart column. This keeps the cart scannable on a phone and the checkout gesture-driven. On `lg+` it's a normal sidebar.
+- **Big payment-method buttons** instead of a Select — matches the spec's "Cash/Card/Bank/Mobile big button group" requirement and is much faster to tap. Icons: `Banknote`, `CreditCard`, `Landmark`, `Smartphone`.
+- **Segmented payment-status pills** with color coding (emerald/amber/rose) — instantly readable, single-tap switching, no Select dropdown.
+- **Amount-paid input shown only for PARTIAL** — removes a useless field from the PAID and UNPAID paths.
+- **Cart Items / Receiving KPI cards** replace the redundant "Today's Count" card so the KPI strip reflects live cart activity, not just historical stats.
+- **Recent-list click → invoice/sheet** — gives the user a 1-click path back to any of the last 5 transactions for print/refund/cancel without leaving the screen.
+- **`tabular-nums` everywhere** in totals — keeps numbers from jittering as the cart changes.
+- **State sync during render** (not in `useEffect`) — keeps the `react-hooks/set-state-in-effect` lint rule happy. Same pattern used in StockAdjustDialog (Task 4-b).
+- **No new APIs** — reuses existing `/api/sales` (POST), `/api/sales/[id]`, `/api/purchases` (POST), `/api/purchases/[id]`, `/api/products?q=`, `/api/customers`, `/api/suppliers`. No backend changes needed.
+- **No sidebar/topbar/router changes** — purely view-level rewrites; zero risk to navigation. Exports unchanged (`SalesView`, `PurchasesView`).
+- **Emerald design system only** (with rose/amber/teal/purple StatCard accents per existing palette). NO indigo/blue. Verified by reading every `text-*` / `bg-*` class in both files.
+
+### Verification
+- **`bun run lint`** → **0 errors / 0 warnings in `sales-view.tsx` and `purchases-view.tsx`** (verified via `npx eslint src/components/views/sales-view.tsx src/components/views/purchases-view.tsx` — clean output). The remaining project-wide lint error (`repairs-view.tsx:663` `react-hooks/set-state-in-effect`) is pre-existing in another agent's file and out of scope.
+- **`npx tsc --noEmit --skipLibCheck`** → **0 errors in `sales-view.tsx` and `purchases-view.tsx`** (verified via `npx tsc --noEmit --skipLibCheck 2>&1 | grep -E "sales-view|purchases-view"` — empty result).
+- **Dev log**: after writing both files, dev server produced 8 consecutive `✓ Compiled in NNN ms` entries (893ms, 510ms, 281ms, 932ms, 240ms, 331ms, 634ms, 318ms) with zero `⨯` errors referencing my files. The only error in the recent log slice is a stale `Module not found: '@/components/views/home-view'` from a Turbopack HMR cache (pre-existing — `home-view.tsx` exists and the server recovered on the next compile with `GET / 200`). Unrelated to my changes.
+- **No new API calls** — both views hit the same endpoints as before; the existing `/api/sales?pageSize=5` and `/api/purchases?pageSize=5` queries power the new Recent lists.
+
+### Stage Summary
+Both views are now Google-Search-fast: the POS/receive flow is one screen, 2–3 taps from search → done. The Sales view goes Search → tap product → (optional) adjust qty/price → tap payment method → "Complete Sale · Rs X" → toast + auto invoice. The Purchases view goes Search → tap product → (optional) adjust qty/cost → tap supplier → "Receive Stock · Rs X" → toast. No New-Sale/New-Purchase dialogs. No tabs. No complex filters in the create path. Recent transactions are one tap away for print/refund/cancel. Mobile slide-over checkout keeps the cart scannable on phones. Emerald design system, large touch targets, tabular-num totals, animated line add/remove, full loading/empty/error states. Lint + tsc clean for both files. Dev server compiles cleanly. Zero regressions — the rest of the SPA continues to render (Sidebar/Topbar/CommandPalette unaffected).
+
+Agent work record saved at `/agent-ctx/5-a-simplified-sales-purchases.md`.
+
+---
+Task ID: REDESIGN-1
+Agent: orchestrator (Z.ai Code)
+Task: Complete redesign of PartsHub around "Universal Search as homepage" philosophy — simplify navigation to 7 items, make every workflow 2-3 clicks max, think Google Search not SAP.
+
+## Current Project Status Assessment
+PartsHub has been completely redesigned per the new philosophy: the app is now optimized for speed, simplicity, and minimal clicks. The homepage IS the universal search. Navigation reduced from 15 items to 7. Every view simplified to single-screen workflows. Lint: 0 errors. All 7 views render. The app now feels like Google Search for spare parts.
+
+## Completed Modifications
+
+### Navigation redesign (15 → 7 items)
+- **New sidebar** (`src/components/sidebar.tsx`): only Home, Inventory, Sales, Purchases, Repairs, Reports, Settings. No groups, flat list, active item uses solid primary background. AI Camera shortcut in footer.
+- **ViewKey** (`src/lib/types.ts`): reduced to 7 keys (home, inventory, sales, purchases, repairs, reports, settings). Removed: dashboard, compatibility, products, transfers, suppliers, customers, payments, ai, analytics.
+- **View router** (`src/components/view-router.tsx`): only 7 views, home → HomeView.
+- **Store** (`src/lib/store.ts`): default view is now "home".
+- **Topbar** (`src/components/topbar.tsx`): search button navigates to Home and focuses universal search. Titles updated to 7 views. Removed "New Sale" topbar button (Sales view is now the POS itself).
+- **Command palette** (`src/components/command-palette.tsx`): rewritten with 7 nav items + quick actions (Search Parts, New Sale, Receive Stock, Camera Identify, New Repair).
+
+### Universal Search homepage (the heart of the app)
+- **New API** (`src/app/api/search/route.ts`): GET /api/search?q= searches EVERYTHING — products (by name, SKU, barcode, LCD code, connector, model, brand), phone models, brands, customers, suppliers, sales, AND compatibility (finds peer models + their products). Returns grouped results. Searching "M12" returns A12 LCDs because they're compatible.
+- **HomeView** (`src/components/views/home-view.tsx`): large centered search bar (h-14, auto-focused, Esc clears). Hero mode (no query) shows "Find any part in seconds" + Camera button. Results mode shows: matched model/brand/customer/supplier chips, cross-compatible parts note, products grouped by part type (LCD, OLED, Touch, Battery, Frame, etc.) with SmartProductCards, related sales. Debounced 200ms.
+- **SmartProductCard** (`src/components/shared/smart-product-card.tsx`): each card has photo, stock badge, shelf, price, profit/unit, compatible models, supplier, and 5 quick action buttons (Sell, Receive, QR, Edit, History) — all visible, no menus.
+
+### Simplified views (via 2 parallel subagents + manual)
+- **Sales** (`src/components/views/sales-view.tsx`): single-screen POS — search + cart on left, checkout on right. Payment method as big button group. Complete Sale in one click. Recent sales below. No dialogs.
+- **Purchases** (`src/components/views/purchases-view.tsx`): single-screen receive flow — search + receiving list + supplier select + Receive Stock button. Recent purchases below.
+- **Repairs** (`src/components/views/repairs-view.tsx`): simple 6-column Kanban (Received → Diagnosed → Waiting Parts → Repairing → Ready → Delivered). New Ticket dialog. Detail sheet with status change + parts. No tabs, no damaged inventory tab.
+- **Reports** (`src/components/views/reports-view.tsx`): 6 report cards (Sales, Profit, Inventory, Low Stock, Damaged, Purchases). Click → preview table → Export PDF/Excel. No builder.
+- **Inventory** (`src/components/views/inventory-view.tsx`): rewritten — search + simple filters (brand, part type, stock status chips) + SmartProductCard grid. No complex data table.
+- **Settings** (`src/components/views/settings-view.tsx`): rewritten — 4 tabs only (Business, Users, Backup, Theme). Theme as 3 visual cards (Light/Dark/System).
+
+## Verification Results
+- `bun run lint`: 0 errors, 0 warnings.
+- All 7 nav views render correctly (Home, Inventory, Sales, Purchases, Repairs, Reports, Settings).
+- Universal search verified: typing "A12" returns 6 direct products + 12 compatible products + 2 matched models + 20 compatible models, grouped by part type with smart cards.
+- Sales POS: single-screen with search, cart, checkout, payment methods all visible.
+- Repairs: 6-column kanban with 3 received tickets.
+- Reports: 6 report cards with export options.
+- Settings: 4 tabs (Business/Users/Backup/Theme).
+- Dark mode works.
+- Dev server runs clean (compiles in ~300ms).
+
+## Unresolved Issues / Risks & Next-Phase Recommendations
+- **Stale Turbopack cache**: browser console shows stale "Module not found: @/components/views/payments-view" from the old view-router. Non-blocking — the app works. A dev server restart clears it.
+- **Old view files**: the old view files (dashboard-view, compatibility-view, products-view, suppliers-view, customers-view, payments-view, transfers-view, analytics-view, ai-view) still exist on disk but are no longer imported by the view-router. They could be deleted for cleanliness but are harmless.
+- **AI Camera**: the Home hero has a "Identify with Camera" button that currently navigates to home. The AI identification flow (VLM) could be integrated as a modal on the home page rather than a separate view.
+- **Next priorities**: (1) integrate AI camera as a modal on home, (2) delete unused old view files, (3) add keyboard arrow-key navigation in search results, (4) add recent searches / popular models on the home hero, (5) optimize search for 100k+ products with DB indexes.

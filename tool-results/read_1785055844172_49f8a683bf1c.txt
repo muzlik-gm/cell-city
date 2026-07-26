@@ -1,0 +1,766 @@
+     1→"use client";
+     2→
+     3→import { useState, useMemo } from "react";
+     4→import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+     5→import { api } from "@/lib/api";
+     6→import { PageHeader } from "@/components/shared/page-header";
+     7→import { StatCard } from "@/components/shared/stat-card";
+     8→import { DataTable, type Column } from "@/components/shared/data-table";
+     9→import { PaymentStatusBadge } from "@/components/shared/badges";
+    10→import { Button } from "@/components/ui/button";
+    11→import { Input } from "@/components/ui/input";
+    12→import { Label } from "@/components/ui/label";
+    13→import { Textarea } from "@/components/ui/textarea";
+    14→import { Badge } from "@/components/ui/badge";
+    15→import { Card } from "@/components/ui/card";
+    16→import { ScrollArea } from "@/components/ui/scroll-area";
+    17→import {
+    18→  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
+    19→} from "@/components/ui/dialog";
+    20→import {
+    21→  Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription,
+    22→} from "@/components/ui/sheet";
+    23→import {
+    24→  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+    25→} from "@/components/ui/select";
+    26→import {
+    27→  Truck, Plus, Search, Trash2, X, Eye, Package, Minus, Loader2, Building2,
+    28→  AlertCircle, Banknote, XCircle,
+    29→} from "lucide-react";
+    30→import { formatCurrency, formatDateTime } from "@/lib/format";
+    31→import { PAYMENT_STATUSES } from "@/lib/types";
+    32→import { toast } from "sonner";
+    33→import { motion, AnimatePresence } from "framer-motion";
+    34→
+    35→// ────────────────────────────────────────────────────────────────────────────
+    36→// Types
+    37→// ────────────────────────────────────────────────────────────────────────────
+    38→interface Supplier { id: string; name: string; company?: string | null; phone?: string | null; }
+    39→interface Product {
+    40→  id: string; sku: string; name: string; purchasePrice: number; sellingPrice: number;
+    41→  stock: number; brand?: { name: string } | null; model?: { name: string } | null;
+    42→}
+    43→interface PurchaseItem {
+    44→  id: string; productId: string; name: string; qty: number; cost: number; price: number; total: number;
+    45→  product?: { sku?: string; brand?: { name: string } | null; model?: { name: string } | null };
+    46→}
+    47→interface Purchase {
+    48→  id: string; poNo: string; supplierId?: string | null;
+    49→  supplier?: Supplier | null; user?: { name: string } | null;
+    50→  subtotal: number; discount: number; tax: number; total: number; paid: number;
+    51→  paymentStatus: string; status: string; notes?: string | null;
+    52→  createdAt: string; items: PurchaseItem[];
+    53→}
+    54→interface CartLine {
+    55→  key: string; productId: string; name: string; sku: string;
+    56→  qty: number; cost: number; currentCost: number; stock: number;
+    57→}
+    58→
+    59→// ────────────────────────────────────────────────────────────────────────────
+    60→// Main view
+    61→// ────────────────────────────────────────────────────────────────────────────
+    62→export function PurchasesView() {
+    63→  const qc = useQueryClient();
+    64→  const [q, setQ] = useState("");
+    65→  const [paymentStatus, setPaymentStatus] = useState("");
+    66→  const [dateFilter, setDateFilter] = useState("");
+    67→  const [page, setPage] = useState(1);
+    68→  const [formOpen, setFormOpen] = useState(false);
+    69→  const [detailPurchase, setDetailPurchase] = useState<Purchase | null>(null);
+    70→
+    71→  const queryStr = useMemo(() => {
+    72→    const p = new URLSearchParams();
+    73→    if (q) p.set("q", q);
+    74→    if (paymentStatus) p.set("paymentStatus", paymentStatus);
+    75→    if (dateFilter) {
+    76→      const d = new Date(dateFilter);
+    77→      const from = new Date(d.getFullYear(), d.getMonth(), d.getDate()).toISOString();
+    78→      const to = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59).toISOString();
+    79→      p.set("from", from);
+    80→      p.set("to", to);
+    81→    }
+    82→    p.set("page", String(page));
+    83→    p.set("pageSize", "20");
+    84→    return p.toString();
+    85→  }, [q, paymentStatus, dateFilter, page]);
+    86→
+    87→  const purchases = useQuery<{ data: Purchase[]; total: number }>({
+    88→    queryKey: ["purchases", queryStr],
+    89→    queryFn: () => api.get(`/purchases?${queryStr}`),
+    90→  });
+    91→
+    92→  // Stats — fetch first 100 purchases + supplier count
+    93→  const statsQuery = useQuery<{ data: Purchase[] }>({
+    94→    queryKey: ["purchases-stats"],
+    95→    queryFn: () => api.get(`/purchases?pageSize=100`),
+    96→    staleTime: 30_000,
+    97→  });
+    98→  const suppliersCount = useQuery<{ length: number }>({
+    99→    queryKey: ["suppliers-count"],
+   100→    queryFn: async () => {
+   101→      const data = await api.get<Supplier[]>("/suppliers");
+   102→      return { length: data.length };
+   103→    },
+   104→    staleTime: 60_000,
+   105→  });
+   106→  const stats = useMemo(() => {
+   107→    const all = statsQuery.data?.data ?? [];
+   108→    const now = new Date();
+   109→    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+   110→    let monthTotal = 0, outstanding = 0;
+   111→    for (const p of all) {
+   112→      const t = new Date(p.createdAt).getTime();
+   113→      if (p.status !== "CANCELLED" && t >= monthStart) monthTotal += p.total;
+   114→      if (p.paymentStatus !== "PAID" && p.status !== "CANCELLED") outstanding += Math.max(0, p.total - p.paid);
+   115→    }
+   116→    return { monthTotal, outstanding, suppliersCount: suppliersCount.data?.length ?? 0 };
+   117→  }, [statsQuery.data, suppliersCount.data]);
+   118→
+   119→  const columns: Column<Purchase & Record<string, unknown>>[] = [
+   120→    {
+   121→      key: "poNo", header: "PO No.", className: "min-w-[140px]",
+   122→      render: (p) => (
+   123→        <div>
+   124→          <p className="font-mono text-xs font-semibold text-foreground">{p.poNo}</p>
+   125→          <p className="text-[11px] text-muted-foreground">{formatDateTime(p.createdAt)}</p>
+   126→        </div>
+   127→      ),
+   128→    },
+   129→    {
+   130→      key: "supplier", header: "Supplier", className: "min-w-[170px]",
+   131→      render: (p) => (
+   132→        <div className="flex items-center gap-2">
+   133→          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+   134→            <Building2 className="h-4 w-4" />
+   135→          </div>
+   136→          <div className="min-w-0">
+   137→            <p className="truncate text-sm font-medium">{p.supplier?.name ?? "—"}</p>
+   138→            <p className="text-[11px] text-muted-foreground">{p.supplier?.phone ?? ""}</p>
+   139→          </div>
+   140→        </div>
+   141→      ),
+   142→    },
+   143→    {
+   144→      key: "items", header: "Items",
+   145→      render: (p) => <Badge variant="secondary" className="font-semibold">{p.items?.length ?? 0}</Badge>,
+   146→    },
+   147→    {
+   148→      key: "total", header: "Total", className: "text-right",
+   149→      render: (p) => (
+   150→        <div className="text-right">
+   151→          <p className="text-sm font-bold">{formatCurrency(p.total)}</p>
+   152→          <p className="text-[11px] text-muted-foreground">paid {formatCurrency(p.paid)}</p>
+   153→        </div>
+   154→      ),
+   155→    },
+   156→    {
+   157→      key: "paymentStatus", header: "Payment",
+   158→      render: (p) => <PaymentStatusBadge status={p.paymentStatus} />,
+   159→    },
+   160→    {
+   161→      key: "status", header: "Status",
+   162→      render: (p) => {
+   163→        if (p.status === "CANCELLED") return <Badge variant="outline" className="bg-rose-500/10 text-rose-600 dark:text-rose-400">Cancelled</Badge>;
+   164→        if (p.status === "PENDING") return <Badge variant="outline" className="bg-amber-500/10 text-amber-600 dark:text-amber-400">Pending</Badge>;
+   165→        return <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">Received</Badge>;
+   166→      },
+   167→    },
+   168→    {
+   169→      key: "actions", header: "", className: "text-right",
+   170→      render: (p) => (
+   171→        <div className="flex justify-end gap-1">
+   172→          <Button size="sm" variant="ghost" className="h-8 gap-1" onClick={(e) => { e.stopPropagation(); openDetail(p.id); }}>
+   173→            <Eye className="h-3.5 w-3.5" /> View
+   174→          </Button>
+   175→        </div>
+   176→      ),
+   177→    },
+   178→  ];
+   179→
+   180→  const openDetail = async (id: string) => {
+   181→    try {
+   182→      const p = await api.get<Purchase>(`/purchases/${id}`);
+   183→      setDetailPurchase(p);
+   184→    } catch (e) {
+   185→      toast.error((e as Error).message);
+   186→    }
+   187→  };
+   188→
+   189→  const hasFilters = q || paymentStatus || dateFilter;
+   190→  const clearFilters = () => { setQ(""); setPaymentStatus(""); setDateFilter(""); setPage(1); };
+   191→
+   192→  return (
+   193→    <div className="space-y-5">
+   194→      <PageHeader
+   195→        title="Purchases"
+   196→        description="Record stock purchases, track supplier payments and update product costs"
+   197→        icon={Truck}
+   198→        actions={
+   199→          <Button size="sm" className="gap-1.5" onClick={() => setFormOpen(true)}>
+   200→            <Plus className="h-4 w-4" /> New Purchase
+   201→          </Button>
+   202→        }
+   203→      />
+   204→
+   205→      {/* Stats */}
+   206→      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+   207→        <StatCard label="This Month" value={formatCurrency(stats.monthTotal)} icon={Truck} accent="emerald" subtitle="Total purchases this month" />
+   208→        <StatCard label="Outstanding" value={formatCurrency(stats.outstanding)} icon={AlertCircle} accent="amber" subtitle="Unpaid purchase orders" />
+   209→        <StatCard label="Suppliers" value={stats.suppliersCount} icon={Building2} accent="purple" subtitle="Active suppliers" />
+   210→      </div>
+   211→
+   212→      {/* Filters */}
+   213→      <Card className="p-4 shadow-soft">
+   214→        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+   215→          <div className="relative flex-1">
+   216→            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+   217→            <Input
+   218→              value={q}
+   219→              onChange={(e) => { setQ(e.target.value); setPage(1); }}
+   220→              placeholder="Search PO no, supplier name or notes…"
+   221→              className="pl-9"
+   222→            />
+   223→          </div>
+   224→          <div className="flex flex-wrap gap-2">
+   225→            <Select value={paymentStatus || "all"} onValueChange={(v) => { setPaymentStatus(v === "all" ? "" : v); setPage(1); }}>
+   226→              <SelectTrigger className="w-[150px]"><SelectValue placeholder="All payments" /></SelectTrigger>
+   227→              <SelectContent>
+   228→                <SelectItem value="all">All payments</SelectItem>
+   229→                {PAYMENT_STATUSES.map((s) => <SelectItem key={s} value={s}>{s.charAt(0) + s.slice(1).toLowerCase()}</SelectItem>)}
+   230→              </SelectContent>
+   231→            </Select>
+   232→            <Input
+   233→              type="date"
+   234→              value={dateFilter}
+   235→              onChange={(e) => { setDateFilter(e.target.value); setPage(1); }}
+   236→              className="w-[150px]"
+   237→            />
+   238→            {hasFilters && (
+   239→              <Button variant="ghost" size="sm" className="gap-1" onClick={clearFilters}>
+   240→                <X className="h-4 w-4" /> Clear
+   241→              </Button>
+   242→            )}
+   243→          </div>
+   244→        </div>
+   245→      </Card>
+   246→
+   247→      {/* Table */}
+   248→      <DataTable
+   249→        columns={columns}
+   250→        data={purchases.data?.data ?? []}
+   251→        loading={purchases.isLoading}
+   252→        pagination
+   253→        page={page}
+   254→        pageSize={20}
+   255→        total={purchases.data?.total ?? 0}
+   256→        onPageChange={setPage}
+   257→        onRowClick={(p) => openDetail(p.id)}
+   258→        rowKey={(p) => p.id}
+   259→        emptyTitle="No purchases found"
+   260→        emptyDescription={hasFilters ? "Try adjusting your filters." : "Record your first purchase order to get started."}
+   261→      />
+   262→
+   263→      <PurchaseFormDialog
+   264→        open={formOpen}
+   265→        onOpenChange={setFormOpen}
+   266→        onCreated={() => {
+   267→          qc.invalidateQueries({ queryKey: ["purchases"] });
+   268→          qc.invalidateQueries({ queryKey: ["products"] });
+   269→        }}
+   270→      />
+   271→
+   272→      <PurchaseDetailSheet purchase={detailPurchase} onOpenChange={(o) => !o && setDetailPurchase(null)} />
+   273→    </div>
+   274→  );
+   275→}
+   276→
+   277→// ────────────────────────────────────────────────────────────────────────────
+   278→// Purchase Form Dialog
+   279→// ────────────────────────────────────────────────────────────────────────────
+   280→function PurchaseFormDialog({
+   281→  open, onOpenChange, onCreated,
+   282→}: {
+   283→  open: boolean;
+   284→  onOpenChange: (o: boolean) => void;
+   285→  onCreated: () => void;
+   286→}) {
+   287→  const qc = useQueryClient();
+   288→  const [supplierId, setSupplierId] = useState("");
+   289→  const [cart, setCart] = useState<CartLine[]>([]);
+   290→  const [search, setSearch] = useState("");
+   291→  const [discount, setDiscount] = useState(0);
+   292→  const [tax, setTax] = useState(0);
+   293→  const [paymentStatus, setPaymentStatus] = useState("UNPAID");
+   294→  const [notes, setNotes] = useState("");
+   295→
+   296→  const suppliers = useQuery<Supplier[]>({
+   297→    queryKey: ["suppliers"],
+   298→    queryFn: () => api.get("/suppliers"),
+   299→    staleTime: 60_000,
+   300→  });
+   301→
+   302→  const productSearch = useQuery<{ data: Product[] }>({
+   303→    queryKey: ["products-purchase", search],
+   304→    queryFn: () => api.get(`/products?q=${encodeURIComponent(search)}&pageSize=10`),
+   305→    enabled: open && search.length > 0,
+   306→    staleTime: 10_000,
+   307→  });
+   308→
+   309→  const resetForm = () => {
+   310→    setSupplierId(""); setCart([]); setSearch(""); setDiscount(0);
+   311→    setTax(0); setPaymentStatus("UNPAID"); setNotes("");
+   312→  };
+   313→  const handleOpenChange = (o: boolean) => {
+   314→    if (!o) resetForm();
+   315→    onOpenChange(o);
+   316→  };
+   317→
+   318→  const totals = useMemo(() => {
+   319→    const subtotal = cart.reduce((s, l) => s + l.qty * l.cost, 0);
+   320→    const total = Math.max(0, subtotal - discount + tax);
+   321→    return { subtotal, total };
+   322→  }, [cart, discount, tax]);
+   323→
+   324→  const addToCart = (p: Product) => {
+   325→    setCart((prev) => {
+   326→      const existing = prev.find((l) => l.productId === p.id);
+   327→      if (existing) {
+   328→        return prev.map((l) => l.productId === p.id ? { ...l, qty: l.qty + 1 } : l);
+   329→      }
+   330→      return [...prev, {
+   331→        key: p.id, productId: p.id, name: p.name, sku: p.sku,
+   332→        qty: 1, cost: p.purchasePrice, currentCost: p.purchasePrice, stock: p.stock,
+   333→      }];
+   334→    });
+   335→    setSearch("");
+   336→  };
+   337→
+   338→  const updateLine = (key: string, patch: Partial<CartLine>) => {
+   339→    setCart((prev) => prev.map((l) => l.key === key ? { ...l, ...patch } : l));
+   340→  };
+   341→  const removeLine = (key: string) => setCart((prev) => prev.filter((l) => l.key !== key));
+   342→
+   343→  const createPurchase = useMutation({
+   344→    mutationFn: () => api.post<Purchase>("/purchases", {
+   345→      supplierId: supplierId || undefined,
+   346→      items: cart.map((l) => ({ productId: l.productId, qty: l.qty, cost: l.cost })),
+   347→      discount, tax, paymentStatus, notes,
+   348→    }),
+   349→    onSuccess: (p) => {
+   350→      toast.success(`Purchase ${p.poNo} created — stock added`);
+   351→      qc.invalidateQueries({ queryKey: ["purchases"] });
+   352→      qc.invalidateQueries({ queryKey: ["products"] });
+   353→      onOpenChange(false);
+   354→      onCreated();
+   355→    },
+   356→    onError: (e: Error) => toast.error(e.message),
+   357→  });
+   358→
+   359→  const canSubmit = cart.length > 0 && !createPurchase.isPending;
+   360→
+   361→  return (
+   362→    <Dialog open={open} onOpenChange={handleOpenChange}>
+   363→      <DialogContent className="sm:max-w-4xl max-h-[92vh] overflow-hidden p-0 gap-0">
+   364→        <DialogHeader className="px-6 py-4 border-b bg-muted/30">
+   365→          <DialogTitle className="flex items-center gap-2">
+   366→            <Truck className="h-5 w-5 text-primary" /> New Purchase Order
+   367→          </DialogTitle>
+   368→          <DialogDescription>Record stock received from a supplier. Stock levels and product costs are updated automatically.</DialogDescription>
+   369→        </DialogHeader>
+   370→
+   371→        <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] overflow-hidden">
+   372→          {/* Left: product search + cart */}
+   373→          <div className="flex flex-col overflow-hidden border-r">
+   374→            {/* Supplier + Search */}
+   375→            <div className="space-y-3 p-4 border-b">
+   376→              <div>
+   377→                <Label className="text-xs font-medium">Supplier</Label>
+   378→                <Select value={supplierId || "none"} onValueChange={(v) => setSupplierId(v === "none" ? "" : v)}>
+   379→                  <SelectTrigger className="mt-1 w-full"><SelectValue placeholder="Select supplier (optional)" /></SelectTrigger>
+   380→                  <SelectContent>
+   381→                    <SelectItem value="none">— No supplier —</SelectItem>
+   382→                    {(suppliers.data ?? []).map((s) => (
+   383→                      <SelectItem key={s.id} value={s.id}>{s.name}{s.company ? ` · ${s.company}` : ""}</SelectItem>
+   384→                    ))}
+   385→                  </SelectContent>
+   386→                </Select>
+   387→              </div>
+   388→              <div className="relative">
+   389→                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+   390→                <Input
+   391→                  value={search}
+   392→                  onChange={(e) => setSearch(e.target.value)}
+   393→                  placeholder="Search products to add to purchase…"
+   394→                  className="pl-9"
+   395→                />
+   396→              </div>
+   397→              {search && (
+   398→                <div className="max-h-64 overflow-y-auto rounded-lg border bg-popover shadow-sm">
+   399→                  {productSearch.isLoading && (
+   400→                    <div className="p-3 text-xs text-muted-foreground flex items-center gap-2">
+   401→                      <Loader2 className="h-3 w-3 animate-spin" /> Searching…
+   402→                    </div>
+   403→                  )}
+   404→                  {!productSearch.isLoading && (productSearch.data?.data ?? []).length === 0 && (
+   405→                    <div className="p-3 text-xs text-muted-foreground">No products found.</div>
+   406→                  )}
+   407→                  <AnimatePresence>
+   408→                    {(productSearch.data?.data ?? []).map((p) => (
+   409→                      <motion.button
+   410→                        key={p.id}
+   411→                        initial={{ opacity: 0, y: -4 }}
+   412→                        animate={{ opacity: 1, y: 0 }}
+   413→                        exit={{ opacity: 0 }}
+   414→                        onClick={() => addToCart(p)}
+   415→                        className="flex w-full items-center gap-3 border-b px-3 py-2 text-left last:border-b-0 hover:bg-accent transition"
+   416→                      >
+   417→                        <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 text-primary">
+   418→                          <Package className="h-4 w-4" />
+   419→                        </div>
+   420→                        <div className="min-w-0 flex-1">
+   421→                          <p className="truncate text-sm font-medium">{p.name}</p>
+   422→                          <p className="text-[11px] text-muted-foreground">
+   423→                            {p.sku} · {p.brand?.name ?? ""} {p.model?.name ?? ""} · stock {p.stock}
+   424→                          </p>
+   425→                        </div>
+   426→                        <div className="text-right">
+   427→                          <p className="text-sm font-semibold">{formatCurrency(p.purchasePrice)}</p>
+   428→                          <p className="text-[11px] text-muted-foreground">last cost</p>
+   429→                        </div>
+   430→                        <Plus className="h-4 w-4 text-muted-foreground" />
+   431→                      </motion.button>
+   432→                    ))}
+   433→                  </AnimatePresence>
+   434→                </div>
+   435→              )}
+   436→            </div>
+   437→
+   438→            {/* Cart */}
+   439→            <div className="flex-1 overflow-hidden">
+   440→              {cart.length === 0 ? (
+   441→                <div className="flex h-full flex-col items-center justify-center px-6 py-12 text-center">
+   442→                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
+   443→                    <Truck className="h-6 w-6" />
+   444→                  </div>
+   445→                  <h3 className="mt-3 text-sm font-semibold">No items yet</h3>
+   446→                  <p className="mt-1 text-xs text-muted-foreground">Search products above to add them to this purchase.</p>
+   447→                </div>
+   448→              ) : (
+   449→                <ScrollArea className="h-full max-h-[42vh]">
+   450→                  <div className="space-y-2 p-3">
+   451→                    <AnimatePresence initial={false}>
+   452→                      {cart.map((l) => (
+   453→                        <motion.div
+   454→                          key={l.key}
+   455→                          layout
+   456→                          initial={{ opacity: 0, y: -4 }}
+   457→                          animate={{ opacity: 1, y: 0 }}
+   458→                          exit={{ opacity: 0, x: -10 }}
+   459→                          className="rounded-lg border bg-card p-3"
+   460→                        >
+   461→                          <div className="flex items-start gap-2">
+   462→                            <div className="min-w-0 flex-1">
+   463→                              <p className="truncate text-sm font-medium">{l.name}</p>
+   464→                              <p className="text-[11px] text-muted-foreground">
+   465→                                {l.sku} · current stock {l.stock} · prev cost {formatCurrency(l.currentCost)}
+   466→                              </p>
+   467→                            </div>
+   468→                            <button
+   469→                              onClick={() => removeLine(l.key)}
+   470→                              className="rounded-md p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+   471→                            >
+   472→                              <Trash2 className="h-4 w-4" />
+   473→                            </button>
+   474→                          </div>
+   475→                          <div className="mt-2 grid grid-cols-3 gap-2">
+   476→                            <div>
+   477→                              <Label className="text-[10px] uppercase text-muted-foreground">Qty</Label>
+   478→                              <div className="flex items-center gap-1">
+   479→                                <Button size="icon" variant="outline" className="h-7 w-7" type="button"
+   480→                                  onClick={() => updateLine(l.key, { qty: Math.max(1, l.qty - 1) })}>
+   481→                                  <Minus className="h-3 w-3" />
+   482→                                </Button>
+   483→                                <Input
+   484→                                  type="number" min={1}
+   485→                                  value={l.qty}
+   486→                                  onChange={(e) => updateLine(l.key, { qty: Math.max(1, Number(e.target.value) || 1) })}
+   487→                                  className="h-7 px-2 text-center"
+   488→                                />
+   489→                                <Button size="icon" variant="outline" className="h-7 w-7" type="button"
+   490→                                  onClick={() => updateLine(l.key, { qty: l.qty + 1 })}>
+   491→                                  <Plus className="h-3 w-3" />
+   492→                                </Button>
+   493→                              </div>
+   494→                            </div>
+   495→                            <div>
+   496→                              <Label className="text-[10px] uppercase text-muted-foreground">Unit Cost</Label>
+   497→                              <Input
+   498→                                type="number" min={0} step="any"
+   499→                                value={l.cost}
+   500→                                onChange={(e) => updateLine(l.key, { cost: Math.max(0, Number(e.target.value) || 0) })}
+   501→                                className="h-7 px-2"
+   502→                              />
+   503→                            </div>
+   504→                            <div>
+   505→                              <Label className="text-[10px] uppercase text-muted-foreground">Total</Label>
+   506→                              <p className="flex h-7 items-center text-sm font-bold">
+   507→                                {formatCurrency(l.qty * l.cost)}
+   508→                              </p>
+   509→                            </div>
+   510→                          </div>
+   511→                          {l.cost !== l.currentCost && (
+   512→                            <p className="mt-1 text-[11px] text-amber-600">
+   513→                              ⚠ Cost change: was {formatCurrency(l.currentCost)} → now {formatCurrency(l.cost)}
+   514→                            </p>
+   515→                          )}
+   516→                        </motion.div>
+   517→                      ))}
+   518→                    </AnimatePresence>
+   519→                  </div>
+   520→                </ScrollArea>
+   521→              )}
+   522→            </div>
+   523→          </div>
+   524→
+   525→          {/* Right: checkout */}
+   526→          <div className="flex flex-col overflow-hidden bg-muted/20">
+   527→            <ScrollArea className="flex-1 max-h-[60vh]">
+   528→              <div className="space-y-4 p-4">
+   529→                <div>
+   530→                  <Label className="text-xs font-medium">Payment Status</Label>
+   531→                  <Select value={paymentStatus} onValueChange={setPaymentStatus}>
+   532→                    <SelectTrigger className="mt-1 w-full"><SelectValue /></SelectTrigger>
+   533→                    <SelectContent>
+   534→                      {PAYMENT_STATUSES.map((s) => <SelectItem key={s} value={s}>{s.charAt(0) + s.slice(1).toLowerCase()}</SelectItem>)}
+   535→                    </SelectContent>
+   536→                  </Select>
+   537→                </div>
+   538→                <div className="grid grid-cols-2 gap-2">
+   539→                  <div>
+   540→                    <Label className="text-xs font-medium">Discount</Label>
+   541→                    <Input type="number" min={0} step="any" value={discount}
+   542→                      onChange={(e) => setDiscount(Math.max(0, Number(e.target.value) || 0))} className="mt-1" />
+   543→                  </div>
+   544→                  <div>
+   545→                    <Label className="text-xs font-medium">Tax</Label>
+   546→                    <Input type="number" min={0} step="any" value={tax}
+   547→                      onChange={(e) => setTax(Math.max(0, Number(e.target.value) || 0))} className="mt-1" />
+   548→                  </div>
+   549→                </div>
+   550→                <div>
+   551→                  <Label className="text-xs font-medium">Notes</Label>
+   552→                  <Textarea value={notes} onChange={(e) => setNotes(e.target.value)}
+   553→                    rows={2} placeholder="Optional purchase notes…" className="mt-1 resize-none" />
+   554→                </div>
+   555→              </div>
+   556→            </ScrollArea>
+   557→
+   558→            <div className="border-t bg-background p-4 space-y-2">
+   559→              <div className="flex justify-between text-sm">
+   560→                <span className="text-muted-foreground">Subtotal</span>
+   561→                <span className="font-medium">{formatCurrency(totals.subtotal)}</span>
+   562→              </div>
+   563→              {discount > 0 && (
+   564→                <div className="flex justify-between text-sm text-amber-600">
+   565→                  <span>Discount</span>
+   566→                  <span>− {formatCurrency(discount)}</span>
+   567→                </div>
+   568→              )}
+   569→              {tax > 0 && (
+   570→                <div className="flex justify-between text-sm">
+   571→                  <span className="text-muted-foreground">Tax</span>
+   572→                  <span className="font-medium">+ {formatCurrency(tax)}</span>
+   573→                </div>
+   574→              )}
+   575→              <div className="my-1 border-t" />
+   576→              <div className="flex justify-between text-base">
+   577→                <span className="font-semibold">Total</span>
+   578→                <span className="text-lg font-bold text-primary">{formatCurrency(totals.total)}</span>
+   579→              </div>
+   580→              <Button
+   581→                className="mt-2 w-full gap-1.5" size="lg"
+   582→                disabled={!canSubmit}
+   583→                onClick={() => createPurchase.mutate()}
+   584→              >
+   585→                {createPurchase.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Truck className="h-4 w-4" />}
+   586→                {createPurchase.isPending ? "Saving…" : "Save Purchase"}
+   587→              </Button>
+   588→            </div>
+   589→          </div>
+   590→        </div>
+   591→      </DialogContent>
+   592→    </Dialog>
+   593→  );
+   594→}
+   595→
+   596→// ────────────────────────────────────────────────────────────────────────────
+   597→// Purchase Detail Sheet
+   598→// ────────────────────────────────────────────────────────────────────────────
+   599→function PurchaseDetailSheet({
+   600→  purchase, onOpenChange,
+   601→}: {
+   602→  purchase: Purchase | null;
+   603→  onOpenChange: (o: boolean) => void;
+   604→}) {
+   605→  const open = !!purchase;
+   606→  const qc = useQueryClient();
+   607→
+   608→  const handleCancel = async () => {
+   609→    if (!purchase) return;
+   610→    if (!confirm(`Cancel purchase ${purchase.poNo}? Stock will be reversed if currently received.`)) return;
+   611→    try {
+   612→      await api.put(`/purchases/${purchase.id}`, { status: "CANCELLED" });
+   613→      qc.invalidateQueries({ queryKey: ["purchases"] });
+   614→      qc.invalidateQueries({ queryKey: ["products"] });
+   615→      toast.success(`Purchase ${purchase.poNo} cancelled.`);
+   616→      onOpenChange(false);
+   617→    } catch (e) {
+   618→      toast.error((e as Error).message);
+   619→    }
+   620→  };
+   621→
+   622→  const handleMarkPaid = async () => {
+   623→    if (!purchase) return;
+   624→    try {
+   625→      await api.put(`/purchases/${purchase.id}`, { paymentStatus: "PAID", paid: purchase.total });
+   626→      qc.invalidateQueries({ queryKey: ["purchases"] });
+   627→      toast.success(`Marked ${purchase.poNo} as paid.`);
+   628→      onOpenChange(false);
+   629→    } catch (e) {
+   630→      toast.error((e as Error).message);
+   631→    }
+   632→  };
+   633→
+   634→  return (
+   635→    <Sheet open={open} onOpenChange={onOpenChange}>
+   636→      <SheetContent side="right" className="w-full overflow-hidden p-0 sm:max-w-2xl">
+   637→        {purchase && (
+   638→          <>
+   639→            <SheetHeader className="border-b px-6 py-4">
+   640→              <div className="flex items-start justify-between gap-3">
+   641→                <div>
+   642→                  <SheetTitle className="text-base flex items-center gap-2">
+   643→                    <Truck className="h-5 w-5 text-primary" /> {purchase.poNo}
+   644→                  </SheetTitle>
+   645→                  <SheetDescription>{formatDateTime(purchase.createdAt)}</SheetDescription>
+   646→                </div>
+   647→                <div className="flex flex-wrap gap-1.5">
+   648→                  {purchase.status === "CANCELLED" ? (
+   649→                    <Badge variant="outline" className="bg-rose-500/10 text-rose-600 dark:text-rose-400">Cancelled</Badge>
+   650→                  ) : purchase.status === "PENDING" ? (
+   651→                    <Badge variant="outline" className="bg-amber-500/10 text-amber-600 dark:text-amber-400">Pending</Badge>
+   652→                  ) : (
+   653→                    <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">Received</Badge>
+   654→                  )}
+   655→                  <PaymentStatusBadge status={purchase.paymentStatus} />
+   656→                </div>
+   657→              </div>
+   658→            </SheetHeader>
+   659→
+   660→            <ScrollArea className="h-[calc(100vh-100px)]">
+   661→              <div className="space-y-5 px-6 py-5">
+   662→                {/* Supplier info */}
+   663→                <div className="rounded-xl border p-4">
+   664→                  <div className="flex items-start gap-3">
+   665→                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+   666→                      <Building2 className="h-5 w-5" />
+   667→                    </div>
+   668→                    <div className="min-w-0 flex-1">
+   669→                      <p className="font-semibold">{purchase.supplier?.name ?? "—"}</p>
+   670→                      {purchase.supplier?.company && <p className="text-xs text-muted-foreground">{purchase.supplier.company}</p>}
+   671→                      {purchase.supplier?.phone && <p className="text-xs text-muted-foreground">{purchase.supplier.phone}</p>}
+   672→                    </div>
+   673→                  </div>
+   674→                </div>
+   675→
+   676→                {/* Items */}
+   677→                <div>
+   678→                  <h4 className="mb-2 text-sm font-semibold">Items Received</h4>
+   679→                  <div className="overflow-hidden rounded-lg border">
+   680→                    <table className="w-full text-sm">
+   681→                      <thead className="bg-muted/40">
+   682→                        <tr>
+   683→                          <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase text-muted-foreground">Item</th>
+   684→                          <th className="px-3 py-2 text-center text-[11px] font-semibold uppercase text-muted-foreground">Qty</th>
+   685→                          <th className="px-3 py-2 text-right text-[11px] font-semibold uppercase text-muted-foreground">Cost</th>
+   686→                          <th className="px-3 py-2 text-right text-[11px] font-semibold uppercase text-muted-foreground">Total</th>
+   687→                        </tr>
+   688→                      </thead>
+   689→                      <tbody>
+   690→                        {purchase.items.map((it) => (
+   691→                          <tr key={it.id} className="border-t">
+   692→                            <td className="px-3 py-2">
+   693→                              <p className="font-medium">{it.name}</p>
+   694→                              <p className="text-[11px] text-muted-foreground">{it.product?.sku ?? ""}</p>
+   695→                            </td>
+   696→                            <td className="px-3 py-2 text-center">{it.qty}</td>
+   697→                            <td className="px-3 py-2 text-right">{formatCurrency(it.cost)}</td>
+   698→                            <td className="px-3 py-2 text-right font-semibold">{formatCurrency(it.total)}</td>
+   699→                          </tr>
+   700→                        ))}
+   701→                      </tbody>
+   702→                    </table>
+   703→                  </div>
+   704→                </div>
+   705→
+   706→                {/* Totals */}
+   707→                <div className="ml-auto w-full max-w-xs space-y-1.5 text-sm">
+   708→                  <Row label="Subtotal" value={formatCurrency(purchase.subtotal)} />
+   709→                  {purchase.discount > 0 && <Row label="Discount" value={`− ${formatCurrency(purchase.discount)}`} muted />}
+   710→                  {purchase.tax > 0 && <Row label="Tax" value={`+ ${formatCurrency(purchase.tax)}`} />}
+   711→                  <div className="my-1 border-t" />
+   712→                  <div className="flex items-center justify-between">
+   713→                    <span className="font-semibold">Total</span>
+   714→                    <span className="text-lg font-bold text-primary">{formatCurrency(purchase.total)}</span>
+   715→                  </div>
+   716→                  {purchase.paid > 0 && <Row label="Paid" value={formatCurrency(purchase.paid)} />}
+   717→                  {purchase.total - purchase.paid > 0 && (
+   718→                    <div className="flex items-center justify-between rounded-md bg-amber-500/10 px-2 py-1.5 text-amber-700 dark:text-amber-400">
+   719→                      <span className="text-xs font-medium">Balance Due</span>
+   720→                      <span className="font-semibold">{formatCurrency(purchase.total - purchase.paid)}</span>
+   721→                    </div>
+   722→                  )}
+   723→                </div>
+   724→
+   725→                {purchase.notes && (
+   726→                  <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3">
+   727→                    <p className="mb-1 text-[11px] font-semibold uppercase text-amber-600">Notes</p>
+   728→                    <p className="text-sm">{purchase.notes}</p>
+   729→                  </div>
+   730→                )}
+   731→
+   732→                {purchase.user && (
+   733→                  <p className="text-center text-[11px] text-muted-foreground">Recorded by {purchase.user.name}</p>
+   734→                )}
+   735→
+   736→                {/* Actions */}
+   737→                <div className="flex flex-wrap gap-2 border-t pt-4">
+   738→                  {purchase.paymentStatus !== "PAID" && purchase.status !== "CANCELLED" && (
+   739→                    <Button variant="outline" size="sm" className="gap-1.5" onClick={handleMarkPaid}>
+   740→                      <Banknote className="h-4 w-4" /> Mark as Paid
+   741→                    </Button>
+   742→                  )}
+   743→                  {purchase.status !== "CANCELLED" && (
+   744→                    <Button variant="outline" size="sm" className="gap-1.5 text-rose-600" onClick={handleCancel}>
+   745→                      <XCircle className="h-4 w-4" /> Cancel Purchase
+   746→                    </Button>
+   747→                  )}
+   748→                </div>
+   749→              </div>
+   750→            </ScrollArea>
+   751→          </>
+   752→        )}
+   753→      </SheetContent>
+   754→    </Sheet>
+   755→  );
+   756→}
+   757→
+   758→function Row({ label, value, muted }: { label: string; value: string; muted?: boolean }) {
+   759→  return (
+   760→    <div className="flex items-center justify-between">
+   761→      <span className={muted ? "text-amber-600" : "text-muted-foreground"}>{label}</span>
+   762→      <span className="font-medium">{value}</span>
+   763→    </div>
+   764→  );
+   765→}
+   766→

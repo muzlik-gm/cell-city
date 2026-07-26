@@ -3,68 +3,71 @@
 import { useState, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
-import { PageHeader } from "@/components/shared/page-header";
-import { DataTable, type Column } from "@/components/shared/data-table";
-import { ProductFormDialog } from "@/components/shared/product-form";
+import { SmartProductCard } from "@/components/shared/smart-product-card";
 import { ProductDetailSheet } from "@/components/shared/product-detail";
-import { QualityBadge, StockBadge } from "@/components/shared/badges";
+import { ProductFormDialog } from "@/components/shared/product-form";
+import { StockAdjustDialog } from "@/components/shared/stock-adjust-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Package, Plus, Filter, Download, AlertTriangle, X } from "lucide-react";
-import { formatCurrency, downloadBlob, toCSV } from "@/lib/format";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Package, Plus, Search, X, AlertTriangle, Download } from "lucide-react";
+import { downloadBlob, toCSV, formatCurrency } from "@/lib/format";
 import { toast } from "sonner";
+import { LoadingState, EmptyState } from "@/components/shared/states";
 import { useAppStore } from "@/lib/store";
-import { ScannerButton } from "@/components/shared/scanner-button";
-import { QuickRestockButton } from "@/components/shared/quick-restock-button";
 
 interface Product {
-  id: string; sku: string; barcode: string | null; name: string;
-  brand?: { name: string }; model?: { name: string }; partType?: { name: string };
-  supplier?: { name: string }; warehouse?: { name: string }; shelf?: { code: string };
-  quality: string; condition: string; color: string | null;
-  purchasePrice: number; sellingPrice: number; stock: number; minStock: number;
+  id: string; sku: string; name: string; quality: string; condition: string;
+  stock: number; minStock: number; purchasePrice: number; sellingPrice: number;
+  color?: string | null; barcode?: string | null; lcdCode?: string | null;
+  brand?: { name: string } | null; model?: { name: string } | null;
+  partType?: { name: string } | null; supplier?: { name: string } | null;
+  warehouse?: { name: string } | null; shelf?: { code: string } | null;
   images?: { url: string }[];
 }
 
 export function InventoryView() {
   const qc = useQueryClient();
-  const { setView } = useAppStore();
+  const setView = useAppStore((s) => s.setView);
   const [q, setQ] = useState("");
   const [brandId, setBrandId] = useState("");
   const [partTypeId, setPartTypeId] = useState("");
-  const [warehouseId, setWarehouseId] = useState("");
-  const [lowOnly, setLowOnly] = useState(false);
-  const [page, setPage] = useState(1);
-  const [formOpen, setFormOpen] = useState(false);
+  const [stockFilter, setStockFilter] = useState(""); // "", "in", "out", "low"
+  const [selected, setSelected] = useState<any>(null);
   const [editing, setEditing] = useState<any>(null);
-  const [detail, setDetail] = useState<any>(null);
+  const [formOpen, setFormOpen] = useState(false);
+  const [adjustProduct, setAdjustProduct] = useState<any>(null);
 
   const brands = useQuery({ queryKey: ["brands"], queryFn: () => api.get<any[]>("/brands") });
   const partTypes = useQuery({ queryKey: ["part-types"], queryFn: () => api.get<any[]>("/part-types") });
-  const warehouses = useQuery({ queryKey: ["warehouses"], queryFn: () => api.get<any[]>("/warehouses") });
 
   const queryStr = useMemo(() => {
     const p = new URLSearchParams();
     if (q) p.set("q", q);
     if (brandId) p.set("brandId", brandId);
     if (partTypeId) p.set("partTypeId", partTypeId);
-    if (warehouseId) p.set("warehouseId", warehouseId);
-    if (lowOnly) p.set("lowStock", "true");
-    p.set("page", String(page));
-    p.set("pageSize", "20");
+    p.set("pageSize", "100");
     return p.toString();
-  }, [q, brandId, partTypeId, warehouseId, lowOnly, page]);
+  }, [q, brandId, partTypeId]);
 
   const products = useQuery<{ data: Product[]; total: number }>({
     queryKey: ["products", queryStr],
     queryFn: () => api.get(`/products?${queryStr}`),
   });
 
+  // Client-side stock filter (in/out/low)
+  const filtered = useMemo(() => {
+    const list = products.data?.data ?? [];
+    if (stockFilter === "in") return list.filter((p) => p.stock > p.minStock);
+    if (stockFilter === "low") return list.filter((p) => p.stock > 0 && p.stock <= p.minStock);
+    if (stockFilter === "out") return list.filter((p) => p.stock <= 0);
+    return list;
+  }, [products.data, stockFilter]);
+
   const onDelete = async (id: string) => {
-    if (!confirm("Delete this product? This will hide it from inventory.")) return;
+    if (!confirm("Delete this product?")) return;
     try {
       await api.del(`/products/${id}`);
       qc.invalidateQueries({ queryKey: ["products"] });
@@ -75,185 +78,132 @@ export function InventoryView() {
   };
 
   const exportCSV = () => {
-    const rows = (products.data?.data ?? []).map((p) => ({
+    const rows = filtered.map((p) => ({
       SKU: p.sku, Name: p.name, Brand: p.brand?.name ?? "", Model: p.model?.name ?? "",
       Part: p.partType?.name ?? "", Quality: p.quality, Stock: p.stock, MinStock: p.minStock,
-      PurchasePrice: p.purchasePrice, SellingPrice: p.sellingPrice,
-      Shelf: p.shelf?.code ?? "", Warehouse: p.warehouse?.name ?? "",
+      Cost: p.purchasePrice, Price: p.sellingPrice, Shelf: p.shelf?.code ?? "",
     }));
     downloadBlob(toCSV(rows), `inventory-${Date.now()}.csv`, "text/csv");
     toast.success("CSV exported");
   };
 
-  // ── Scan handler — search by detected code & open detail if exactly one match ─
-  const handleScanDetected = async (code: string) => {
-    const trimmed = code.trim();
-    if (!trimmed) return;
-    try {
-      const res = await api.get<{ data: Product[]; total: number }>(
-        `/products?q=${encodeURIComponent(trimmed)}&pageSize=10`,
-      );
-      const matches = res?.data ?? [];
-      if (matches.length === 1) {
-        setDetail(matches[0]);
-        toast.success(`Found "${matches[0].name}"`);
-      } else if (matches.length > 1) {
-        setQ(trimmed);
-        setPage(1);
-        toast.info(`${matches.length} products match code "${trimmed}" — see results below.`);
-      } else {
-        toast.error(`No product found for code "${trimmed}"`);
-      }
-    } catch (e) {
-      toast.error((e as Error).message);
-    }
-  };
-
-  const columns: Column<Product>[] = [
-    {
-      key: "name", header: "Product", className: "min-w-[220px]",
-      render: (p) => (
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted">
-            {p.images?.[0]?.url ? (
-              <img src={p.images[0].url} alt={p.name} className="h-full w-full object-cover" />
-            ) : (
-              <Package className="h-4 w-4 text-muted-foreground" />
-            )}
-          </div>
-          <div className="min-w-0">
-            <p className="truncate text-sm font-medium">{p.name}</p>
-            <p className="text-xs text-muted-foreground">{p.sku}{p.lcdCode ? ` · ${p.lcdCode}` : ""}</p>
-          </div>
-        </div>
-      ),
-    },
-    { key: "brand", header: "Brand", className: "min-w-[90px]", render: (p) => <span className="text-sm">{p.brand?.name ?? "—"}</span> },
-    { key: "model", header: "Model", className: "min-w-[140px]", render: (p) => <span className="text-sm">{p.model?.name ?? "—"}</span> },
-    { key: "partType", header: "Part", className: "min-w-[90px]", render: (p) => <Badge variant="secondary">{p.partType?.name ?? "—"}</Badge> },
-    { key: "quality", header: "Quality", render: (p) => <QualityBadge quality={p.quality} /> },
-    { key: "stock", header: "Stock", render: (p) => <StockBadge stock={p.stock} minStock={p.minStock} /> },
-    { key: "location", header: "Location", className: "min-w-[120px] whitespace-nowrap", render: (p) => (
-      <span className="text-xs text-muted-foreground whitespace-nowrap">{p.shelf?.code ?? "—"} · {p.warehouse?.name?.split(" ")[0] ?? "—"}</span>
-    )},
-    { key: "price", header: "Price", className: "text-right whitespace-nowrap", render: (p) => (
-      <div className="text-right">
-        <p className="text-sm font-semibold">{formatCurrency(p.sellingPrice)}</p>
-        <p className="text-[11px] text-muted-foreground">cost {formatCurrency(p.purchasePrice)}</p>
-      </div>
-    )},
-    { key: "actions", header: "", className: "text-right", render: (p) => (
-      <div className="flex justify-end gap-1" onClick={(e) => e.stopPropagation()}>
-        <Button size="sm" variant="ghost" className="h-8" onClick={(e) => { e.stopPropagation(); setDetail(p); }}>View</Button>
-        <QuickRestockButton
-          product={p}
-          variant="outline"
-          size="sm"
-          label="Restock"
-          className="h-8 px-2.5 text-xs"
-          stopPropagation
-        />
-        <Button size="sm" variant="ghost" className="h-8" onClick={(e) => { e.stopPropagation(); setEditing(p); setFormOpen(true); }}>Edit</Button>
-        <Button size="sm" variant="ghost" className="h-8 text-destructive" onClick={(e) => { e.stopPropagation(); onDelete(p.id); }}>Del</Button>
-      </div>
-    )},
-  ];
-
-  const hasFilters = q || brandId || partTypeId || warehouseId || lowOnly;
+  const hasFilters = q || brandId || partTypeId || stockFilter;
+  const lowCount = (products.data?.data ?? []).filter((p) => p.stock <= p.minStock).length;
 
   return (
     <div className="space-y-5">
-      <PageHeader
-        title="Inventory"
-        description="Manage your full spare parts catalog — LCDs, OLEDs, batteries, frames, flex and more"
-        icon={Package}
-        actions={
-          <>
-            <Button variant="outline" size="sm" className="gap-1.5" onClick={exportCSV}>
-              <Download className="h-4 w-4" /> Export
-            </Button>
-            <Button size="sm" className="gap-1.5" onClick={() => { setEditing(null); setFormOpen(true); }}>
-              <Plus className="h-4 w-4" /> Add Product
-            </Button>
-          </>
-        }
-      />
+      {/* Header */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 className="text-xl font-bold tracking-tight sm:text-2xl">Inventory</h2>
+          <p className="mt-0.5 text-sm text-muted-foreground">{products.data?.total ?? 0} products · {lowCount} low stock</p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" className="gap-1.5" onClick={exportCSV}>
+            <Download className="h-4 w-4" /> Export
+          </Button>
+          <Button size="sm" className="gap-1.5" onClick={() => { setEditing(null); setFormOpen(true); }}>
+            <Plus className="h-4 w-4" /> Add Product
+          </Button>
+        </div>
+      </div>
 
-      {/* Filters */}
-      <Card className="p-4 shadow-soft">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-          <div className="flex flex-1 gap-2">
-            <div className="relative flex-1">
-              <Filter className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                value={q}
-                onChange={(e) => { setQ(e.target.value); setPage(1); }}
-                placeholder="Search by name, SKU, barcode, LCD code, model…"
-                className="pl-9"
-              />
-            </div>
-            <ScannerButton
-              label="Scan"
-              onDetected={handleScanDetected}
-              className="shrink-0"
+      {/* Search + simple filters */}
+      <Card className="p-3 shadow-soft">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Search by name, SKU, barcode, LCD code…"
+              className="pl-9"
             />
+            {q && (
+              <button onClick={() => setQ("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                <X className="h-4 w-4" />
+              </button>
+            )}
           </div>
-          <div className="flex flex-wrap gap-2">
-            <Select value={brandId} onValueChange={(v) => { setBrandId(v === "all" ? "" : v); setPage(1); }}>
-              <SelectTrigger className="w-[140px]"><SelectValue placeholder="All brands" /></SelectTrigger>
+          <div className="flex gap-2">
+            <Select value={brandId} onValueChange={(v) => setBrandId(v === "all" ? "" : v)}>
+              <SelectTrigger className="w-[130px]"><SelectValue placeholder="All brands" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All brands</SelectItem>
                 {(brands.data ?? []).map((b) => <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>)}
               </SelectContent>
             </Select>
-            <Select value={partTypeId} onValueChange={(v) => { setPartTypeId(v === "all" ? "" : v); setPage(1); }}>
-              <SelectTrigger className="w-[150px]"><SelectValue placeholder="All parts" /></SelectTrigger>
+            <Select value={partTypeId} onValueChange={(v) => setPartTypeId(v === "all" ? "" : v)}>
+              <SelectTrigger className="w-[140px]"><SelectValue placeholder="All parts" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All parts</SelectItem>
                 {(partTypes.data ?? []).map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
               </SelectContent>
             </Select>
-            <Select value={warehouseId} onValueChange={(v) => { setWarehouseId(v === "all" ? "" : v); setPage(1); }}>
-              <SelectTrigger className="w-[150px]"><SelectValue placeholder="All warehouses" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All warehouses</SelectItem>
-                {(warehouses.data ?? []).map((w) => <SelectItem key={w.id} value={w.id}>{w.name}</SelectItem>)}
-              </SelectContent>
-            </Select>
-            <Button
-              variant={lowOnly ? "default" : "outline"}
-              size="sm"
-              className="gap-1.5"
-              onClick={() => { setLowOnly(!lowOnly); setPage(1); }}
-            >
-              <AlertTriangle className="h-4 w-4" /> Low Stock
-            </Button>
-            {hasFilters && (
-              <Button variant="ghost" size="sm" className="gap-1" onClick={() => { setQ(""); setBrandId(""); setPartTypeId(""); setWarehouseId(""); setLowOnly(false); setPage(1); }}>
-                <X className="h-4 w-4" /> Clear
-              </Button>
-            )}
           </div>
+        </div>
+        {/* Stock filter chips */}
+        <div className="mt-2 flex gap-1.5">
+          {[
+            { key: "", label: "All" },
+            { key: "in", label: "In Stock" },
+            { key: "low", label: "Low Stock" },
+            { key: "out", label: "Out of Stock" },
+          ].map((f) => (
+            <button
+              key={f.key}
+              onClick={() => setStockFilter(f.key)}
+              className={`rounded-lg px-3 py-1 text-xs font-medium transition ${
+                stockFilter === f.key
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground hover:bg-muted/70"
+              }`}
+            >
+              {f.label}
+            </button>
+          ))}
+          {hasFilters && (
+            <button
+              onClick={() => { setQ(""); setBrandId(""); setPartTypeId(""); setStockFilter(""); }}
+              className="ml-auto flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-3 w-3" /> Clear
+            </button>
+          )}
         </div>
       </Card>
 
-      <DataTable
-        columns={columns}
-        data={products.data?.data ?? []}
-        loading={products.isLoading}
-        pagination
-        page={page}
-        pageSize={20}
-        total={products.data?.total ?? 0}
-        onPageChange={setPage}
-        onRowClick={(p) => setDetail(p)}
-        rowKey={(p) => p.id}
-        emptyTitle="No products found"
-        emptyDescription={hasFilters ? "Try adjusting your filters." : "Add your first product to get started."}
-      />
+      {/* Product grid */}
+      {products.isLoading ? (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => <div key={i} className="h-64 animate-pulse rounded-2xl border bg-muted/50" />)}
+        </div>
+      ) : filtered.length === 0 ? (
+        <EmptyState
+          icon={Package}
+          title="No products found"
+          description={hasFilters ? "Try adjusting your filters." : "Add your first product to get started."}
+          action={!hasFilters && <Button onClick={() => { setEditing(null); setFormOpen(true); }} className="gap-1.5"><Plus className="h-4 w-4" /> Add Product</Button>}
+        />
+      ) : (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {filtered.map((p) => (
+            <SmartProductCard
+              key={p.id}
+              product={p}
+              onSell={() => { setView("sales"); }}
+              onEdit={(prod) => { setEditing(prod); setFormOpen(true); }}
+              onPrintQR={() => setSelected(p)}
+              onHistory={() => setSelected(p)}
+              onReceive={(prod) => setAdjustProduct(prod)}
+            />
+          ))}
+        </div>
+      )}
 
+      <ProductDetailSheet product={selected} onOpenChange={(o) => !o && setSelected(null)} onEdit={(p) => { setSelected(null); setEditing(p); setFormOpen(true); }} />
       <ProductFormDialog open={formOpen} onOpenChange={setFormOpen} product={editing} />
-      <ProductDetailSheet product={detail} onOpenChange={(o) => !o && setDetail(null)} onEdit={(p) => { setDetail(null); setEditing(p); setFormOpen(true); }} />
+      <StockAdjustDialog product={adjustProduct} open={!!adjustProduct} onOpenChange={(o) => !o && setAdjustProduct(null)} />
     </div>
   );
 }

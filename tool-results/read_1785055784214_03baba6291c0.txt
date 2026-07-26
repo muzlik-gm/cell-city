@@ -1,0 +1,1714 @@
+     1→"use client";
+     2→
+     3→import { useState, useMemo, useCallback } from "react";
+     4→import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+     5→import { api } from "@/lib/api";
+     6→import { PageHeader } from "@/components/shared/page-header";
+     7→import { StatCard } from "@/components/shared/stat-card";
+     8→import { DataTable, type Column } from "@/components/shared/data-table";
+     9→import { EmptyState, LoadingState } from "@/components/shared/states";
+    10→import { RepairStatusBadge, PaymentStatusBadge } from "@/components/shared/badges";
+    11→import { ImageUpload } from "@/components/shared/image-upload";
+    12→import { Button } from "@/components/ui/button";
+    13→import { Input } from "@/components/ui/input";
+    14→import { Label } from "@/components/ui/label";
+    15→import { Textarea } from "@/components/ui/textarea";
+    16→import { Badge } from "@/components/ui/badge";
+    17→import { Card } from "@/components/ui/card";
+    18→import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+    19→import { ScrollArea } from "@/components/ui/scroll-area";
+    20→import { Separator } from "@/components/ui/separator";
+    21→import {
+    22→  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
+    23→} from "@/components/ui/dialog";
+    24→import {
+    25→  Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription,
+    26→} from "@/components/ui/sheet";
+    27→import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+    28→import {
+    29→  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+    30→} from "@/components/ui/select";
+    31→import {
+    32→  Wrench, Plus, Search, Eye, Loader2, Trash2, Package, User2, Smartphone,
+    33→  Clock, CheckCircle2, Wallet, TrendingUp, ClipboardList, Cog, TimerReset,
+    34→  CheckCheck, Truck, AlertTriangle, Image as ImageIcon, X, ChevronRight,
+    35→  Wrench as WrenchIcon, Save, Ban, Boxes, PackageX,
+    36→} from "lucide-react";
+    37→import { formatCurrency, formatDate, formatDateTime, timeAgo, initials } from "@/lib/format";
+    38→import { REPAIR_STATUSES, DAMAGE_REASONS, type RepairStatus } from "@/lib/types";
+    39→import { toast } from "sonner";
+    40→import { motion, AnimatePresence } from "framer-motion";
+    41→import {
+    42→  PieChart, Pie, Cell as RechartsCell, ResponsiveContainer, Tooltip as RechartsTooltip,
+    43→} from "recharts";
+    44→
+    45→// ─────────────────────────────────────────────────────────────────────────────
+    46→// Types
+    47→// ─────────────────────────────────────────────────────────────────────────────
+    48→interface User {
+    49→  id: string; name: string; email: string; role: string;
+    50→  phone?: string | null; avatarUrl?: string | null;
+    51→}
+    52→interface Customer { id: string; name: string; phone?: string | null; }
+    53→interface PhoneModel { id: string; name: string; brand?: { name: string } | null; }
+    54→interface Product {
+    55→  id: string; sku: string; name: string; stock: number;
+    56→  purchasePrice: number; sellingPrice: number;
+    57→  brand?: { name: string } | null; model?: { name: string } | null;
+    58→}
+    59→interface RepairPart {
+    60→  id: string; repairId: string; productId: string; qty: number; cost: number; used: boolean;
+    61→  product?: Product | null;
+    62→}
+    63→interface RepairJob {
+    64→  id: string; ticketNo: string; customerId?: string | null;
+    65→  customer?: Customer | null;
+    66→  modelId?: string | null;
+    67→  model?: PhoneModel | null;
+    68→  technicianId?: string | null;
+    69→  technician?: User | null;
+    70→  imei?: string | null;
+    71→  problem: string; diagnosis?: string | null;
+    72→  status: string; paymentStatus: string;
+    73→  laborCost: number; partsCost: number; total: number; paid: number;
+    74→  notes?: string | null; imageUrl?: string | null;
+    75→  receivedAt: string; completedAt?: string | null; deliveredAt?: string | null;
+    76→  createdAt: string; updatedAt: string;
+    77→  parts?: RepairPart[];
+    78→}
+    79→interface DamagedItem {
+    80→  id: string; productId: string; qty: number; reason: string;
+    81→  note?: string | null; imageUrl?: string | null; date: string;
+    82→  product?: Product | null;
+    83→}
+    84→
+    85→// ─────────────────────────────────────────────────────────────────────────────
+    86→// Constants — column metadata (no indigo/blue per design system)
+    87→// ─────────────────────────────────────────────────────────────────────────────
+    88→const STATUS_FLOW: RepairStatus[] = [
+    89→  "RECEIVED", "DIAGNOSED", "WAITING_PARTS", "REPAIRING", "COMPLETED", "DELIVERED",
+    90→];
+    91→
+    92→interface ColumnMeta {
+    93→  key: RepairStatus;
+    94→  label: string;
+    95→  dot: string;      // tailwind bg for dot
+    96→  chip: string;     // tailwind classes for count chip
+    97→  accent: string;   // tailwind text color for label
+    98→  ring: string;     // tailwind border classes for card ring
+    99→  icon: React.ComponentType<{ className?: string }>;
+   100→}
+   101→
+   102→const COLUMN_META: Record<RepairStatus, ColumnMeta> = {
+   103→  RECEIVED:      { key: "RECEIVED",      label: "Received",      dot: "bg-sky-500",     chip: "bg-sky-500/10 text-sky-600 dark:text-sky-400",        accent: "text-sky-600 dark:text-sky-400",        ring: "hover:ring-sky-500/30",     icon: ClipboardList },
+   104→  DIAGNOSED:     { key: "DIAGNOSED",     label: "Diagnosed",     dot: "bg-teal-500",    chip: "bg-teal-500/10 text-teal-600 dark:text-teal-400",    accent: "text-teal-600 dark:text-teal-400",      ring: "hover:ring-teal-500/30",    icon: Search },
+   105→  WAITING_PARTS: { key: "WAITING_PARTS", label: "Waiting Parts", dot: "bg-amber-500",   chip: "bg-amber-500/10 text-amber-600 dark:text-amber-400", accent: "text-amber-600 dark:text-amber-400",    ring: "hover:ring-amber-500/30",   icon: TimerReset },
+   106→  REPAIRING:     { key: "REPAIRING",     label: "Repairing",     dot: "bg-purple-500",  chip: "bg-purple-500/10 text-purple-600 dark:text-purple-400", accent: "text-purple-600 dark:text-purple-400", ring: "hover:ring-purple-500/30",  icon: Cog },
+   107→  COMPLETED:     { key: "COMPLETED",     label: "Completed",     dot: "bg-emerald-500", chip: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400", accent: "text-emerald-600 dark:text-emerald-400", ring: "hover:ring-emerald-500/30", icon: CheckCircle2 },
+   108→  DELIVERED:     { key: "DELIVERED",     label: "Delivered",     dot: "bg-teal-700",    chip: "bg-teal-700/10 text-teal-700 dark:text-teal-300",    accent: "text-teal-700 dark:text-teal-300",      ring: "hover:ring-teal-700/30",    icon: Truck },
+   109→};
+   110→
+   111→const DAMAGE_COLORS: Record<string, string> = {
+   112→  BROKEN:    "oklch(0.65 0.22 25)",
+   113→  DEAD:      "oklch(0.55 0.2 0)",
+   114→  WARRANTY:  "oklch(0.6 0.15 250)",
+   115→  RETURNED:  "oklch(0.65 0.18 60)",
+   116→  REJECTED:  "oklch(0.62 0.2 295)",
+   117→  LOST:      "oklch(0.55 0.13 162)",
+   118→  DISPOSED:  "oklch(0.5 0.02 250)",
+   119→};
+   120→
+   121→// Use a teal in place of WARRANTY/DEAD to stay within palette where possible.
+   122→const DAMAGE_CHART_COLORS = [
+   123→  "oklch(0.65 0.22 25)",    // BROKEN — rose/red
+   124→  "oklch(0.55 0.13 162)",   // DEAD — emerald
+   125→  "oklch(0.6 0.18 60)",     // WARRANTY — amber
+   126→  "oklch(0.62 0.2 295)",    // RETURNED — purple
+   127→  "oklch(0.65 0.18 200)",   // REJECTED — teal
+   128→  "oklch(0.55 0.2 0)",      // LOST — red
+   129→  "oklch(0.5 0.02 250)",    // DISPOSED — slate
+   130→];
+   131→
+   132→// ─────────────────────────────────────────────────────────────────────────────
+   133→// Small shared components
+   134→// ─────────────────────────────────────────────────────────────────────────────
+   135→function TechAvatar({ name, size = "sm" }: { name?: string | null; size?: "sm" | "md" }) {
+   136→  const dim = size === "md" ? "h-9 w-9" : "h-7 w-7";
+   137→  const text = size === "md" ? "text-xs" : "text-[10px]";
+   138→  if (!name) {
+   139→    return (
+   140→      <div className={`flex ${dim} items-center justify-center rounded-full bg-muted text-muted-foreground`}>
+   141→        <User2 className="h-3.5 w-3.5" />
+   142→      </div>
+   143→    );
+   144→  }
+   145→  return (
+   146→    <Avatar className={`${dim} ring-2 ring-background`}>
+   147→      <AvatarFallback className={`bg-primary/10 ${text} font-semibold text-primary`}>
+   148→        {initials(name)}
+   149→      </AvatarFallback>
+   150→    </Avatar>
+   151→  );
+   152→}
+   153→
+   154→// Visual status timeline stepper — RECEIVED → DIAGNOSED → … → DELIVERED
+   155→function StatusTimeline({ status }: { status: string }) {
+   156→  const currentIdx = STATUS_FLOW.indexOf(status as RepairStatus);
+   157→  const isCancelled = status === "CANCELLED";
+   158→  if (isCancelled) {
+   159→    return (
+   160→      <div className="flex items-center gap-2 rounded-lg border border-rose-500/30 bg-rose-500/5 px-3 py-2.5">
+   161→        <Ban className="h-4 w-4 text-rose-500" />
+   162→        <p className="text-sm font-medium text-rose-600 dark:text-rose-400">This ticket was cancelled</p>
+   163→      </div>
+   164→    );
+   165→  }
+   166→  return (
+   167→    <div className="flex items-center justify-between gap-1">
+   168→      {STATUS_FLOW.map((s, i) => {
+   169→        const meta = COLUMN_META[s];
+   170→        const isDone = i < currentIdx;
+   171→        const isCurrent = i === currentIdx;
+   172→        const isFuture = i > currentIdx;
+   173→        const Icon = meta.icon;
+   174→        return (
+   175→          <div key={s} className="flex flex-1 flex-col items-center">
+   176→            <div className="flex w-full items-center">
+   177→              {/* connector before */}
+   178→              <div className={`h-0.5 flex-1 ${i === 0 ? "opacity-0" : isDone || isCurrent ? meta.dot : "bg-border"}`} />
+   179→              {/* circle */}
+   180→              <div
+   181→                className={`relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 transition ${
+   182→                  isCurrent
+   183→                    ? `${meta.dot} border-transparent text-white shadow-md`
+   184→                    : isDone
+   185→                    ? `${meta.dot} border-transparent text-white`
+   186→                    : "border-border bg-background text-muted-foreground"
+   187→                }`}
+   188→              >
+   189→                {isDone ? <CheckCheck className="h-4 w-4" /> : <Icon className="h-3.5 w-3.5" />}
+   190→                {isCurrent && (
+   191→                  <span className={`absolute -inset-1 animate-ping rounded-full ${meta.dot} opacity-30`} />
+   192→                )}
+   193→              </div>
+   194→              {/* connector after */}
+   195→              <div className={`h-0.5 flex-1 ${i === STATUS_FLOW.length - 1 ? "opacity-0" : isDone ? meta.dot : "bg-border"}`} />
+   196→            </div>
+   197→            <p
+   198→              className={`mt-1.5 text-center text-[10px] font-medium leading-tight ${
+   199→                isCurrent ? meta.accent : isFuture ? "text-muted-foreground/60" : "text-muted-foreground"
+   200→              }`}
+   201→            >
+   202→              {meta.label}
+   203→            </p>
+   204→          </div>
+   205→        );
+   206→      })}
+   207→    </div>
+   208→  );
+   209→}
+   210→
+   211→// ─────────────────────────────────────────────────────────────────────────────
+   212→// New Ticket Dialog
+   213→// ─────────────────────────────────────────────────────────────────────────────
+   214→interface NewTicketPayload {
+   215→  customerId?: string; modelId?: string; technicianId?: string;
+   216→  imei?: string; problem: string; diagnosis?: string;
+   217→  laborCost?: number; partsCost?: number; notes?: string; imageUrl?: string;
+   218→}
+   219→
+   220→function NewTicketDialog({
+   221→  open, onOpenChange, customers, models, technicians,
+   222→}: {
+   223→  open: boolean;
+   224→  onOpenChange: (v: boolean) => void;
+   225→  customers: Customer[];
+   226→  models: PhoneModel[];
+   227→  technicians: User[];
+   228→}) {
+   229→  const qc = useQueryClient();
+   230→  const [customerId, setCustomerId] = useState("");
+   231→  const [modelId, setModelId] = useState("");
+   232→  const [technicianId, setTechnicianId] = useState("");
+   233→  const [imei, setImei] = useState("");
+   234→  const [problem, setProblem] = useState("");
+   235→  const [diagnosis, setDiagnosis] = useState("");
+   236→  const [laborCost, setLaborCost] = useState("");
+   237→  const [notes, setNotes] = useState("");
+   238→  const [imageUrl, setImageUrl] = useState<string | null>(null);
+   239→  const [saving, setSaving] = useState(false);
+   240→
+   241→  const reset = useCallback(() => {
+   242→    setCustomerId(""); setModelId(""); setTechnicianId(""); setImei("");
+   243→    setProblem(""); setDiagnosis(""); setLaborCost(""); setNotes(""); setImageUrl(null);
+   244→  }, []);
+   245→
+   246→  const handleSubmit = async () => {
+   247→    if (!problem.trim()) { toast.error("Problem description is required"); return; }
+   248→    setSaving(true);
+   249→    try {
+   250→      const payload: NewTicketPayload = {
+   251→        problem: problem.trim(),
+   252→        ...(customerId ? { customerId } : {}),
+   253→        ...(modelId ? { modelId } : {}),
+   254→        ...(technicianId ? { technicianId } : {}),
+   255→        ...(imei.trim() ? { imei: imei.trim() } : {}),
+   256→        ...(diagnosis.trim() ? { diagnosis: diagnosis.trim() } : {}),
+   257→        ...(laborCost ? { laborCost: Number(laborCost) } : {}),
+   258→        ...(notes.trim() ? { notes: notes.trim() } : {}),
+   259→        ...(imageUrl ? { imageUrl } : {}),
+   260→      };
+   261→      const created = await api.post<RepairJob>("/repairs", payload);
+   262→      toast.success(`Ticket ${created.ticketNo} created`);
+   263→      qc.invalidateQueries({ queryKey: ["repairs"] });
+   264→      qc.invalidateQueries({ queryKey: ["repairs-stats"] });
+   265→      reset();
+   266→      onOpenChange(false);
+   267→    } catch (e) {
+   268→      toast.error((e as Error).message);
+   269→    } finally {
+   270→      setSaving(false);
+   271→    }
+   272→  };
+   273→
+   274→  return (
+   275→    <Dialog open={open} onOpenChange={(v) => { if (!v) reset(); onOpenChange(v); }}>
+   276→      <DialogContent className="max-w-2xl gap-0 overflow-hidden p-0 sm:max-w-2xl">
+   277→        <DialogHeader className="border-b bg-muted/30 p-5">
+   278→          <DialogTitle className="flex items-center gap-2">
+   279→            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+   280→              <Wrench className="h-4 w-4" />
+   281→            </div>
+   282→            New Repair Ticket
+   283→          </DialogTitle>
+   284→          <DialogDescription>Create a new repair job. Ticket number is auto-generated.</DialogDescription>
+   285→        </DialogHeader>
+   286→
+   287→        <ScrollArea className="max-h-[70vh]">
+   288→          <div className="space-y-4 p-5">
+   289→            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+   290→              <div className="space-y-1.5">
+   291→                <Label className="text-xs font-medium">Customer</Label>
+   292→                <Select value={customerId} onValueChange={setCustomerId}>
+   293→                  <SelectTrigger><SelectValue placeholder="Walk-in customer" /></SelectTrigger>
+   294→                  <SelectContent>
+   295→                    {customers.map((c) => (
+   296→                      <SelectItem key={c.id} value={c.id}>{c.name}{c.phone ? ` · ${c.phone}` : ""}</SelectItem>
+   297→                    ))}
+   298→                  </SelectContent>
+   299→                </Select>
+   300→              </div>
+   301→              <div className="space-y-1.5">
+   302→                <Label className="text-xs font-medium">Phone Model</Label>
+   303→                <Select value={modelId} onValueChange={setModelId}>
+   304→                  <SelectTrigger><SelectValue placeholder="Select model" /></SelectTrigger>
+   305→                  <SelectContent className="max-h-64">
+   306→                    {models.map((m) => (
+   307→                      <SelectItem key={m.id} value={m.id}>
+   308→                        {m.brand?.name ? `${m.brand.name} ` : ""}{m.name}
+   309→                      </SelectItem>
+   310→                    ))}
+   311→                  </SelectContent>
+   312→                </Select>
+   313→              </div>
+   314→              <div className="space-y-1.5">
+   315→                <Label className="text-xs font-medium">Technician</Label>
+   316→                <Select value={technicianId} onValueChange={setTechnicianId}>
+   317→                  <SelectTrigger><SelectValue placeholder="Assign technician" /></SelectTrigger>
+   318→                  <SelectContent>
+   319→                    {technicians.length === 0 ? (
+   320→                      <SelectItem value="__none" disabled>No technicians available</SelectItem>
+   321→                    ) : (
+   322→                      technicians.map((t) => (
+   323→                        <SelectItem key={t.id} value={t.id}>{t.name} · {t.role}</SelectItem>
+   324→                      ))
+   325→                    )}
+   326→                  </SelectContent>
+   327→                </Select>
+   328→              </div>
+   329→              <div className="space-y-1.5">
+   330→                <Label className="text-xs font-medium">IMEI / Serial</Label>
+   331→                <Input value={imei} onChange={(e) => setImei(e.target.value)} placeholder="15-digit IMEI (optional)" />
+   332→              </div>
+   333→            </div>
+   334→
+   335→            <div className="space-y-1.5">
+   336→              <Label className="text-xs font-medium">Problem <span className="text-rose-500">*</span></Label>
+   337→              <Textarea value={problem} onChange={(e) => setProblem(e.target.value)} rows={2} placeholder="e.g. Broken LCD, touch not working..." />
+   338→            </div>
+   339→            <div className="space-y-1.5">
+   340→              <Label className="text-xs font-medium">Diagnosis</Label>
+   341→              <Textarea value={diagnosis} onChange={(e) => setDiagnosis(e.target.value)} rows={2} placeholder="Initial technician diagnosis (optional)" />
+   342→            </div>
+   343→
+   344→            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+   345→              <div className="space-y-1.5">
+   346→                <Label className="text-xs font-medium">Labor Cost (Rs)</Label>
+   347→                <Input
+   348→                  type="number" min="0" step="50" value={laborCost}
+   349→                  onChange={(e) => setLaborCost(e.target.value)} placeholder="0"
+   350→                />
+   351→              </div>
+   352→              <div className="space-y-1.5">
+   353→                <Label className="text-xs font-medium">Image</Label>
+   354→                <div className="flex items-center gap-3">
+   355→                  {imageUrl ? (
+   356→                    <div className="group relative h-16 w-16 overflow-hidden rounded-lg border">
+   357→                      <img src={imageUrl} alt="damage" className="h-full w-full object-cover" />
+   358→                      <button
+   359→                        type="button" onClick={() => setImageUrl(null)}
+   360→                        className="absolute right-0.5 top-0.5 rounded bg-black/50 p-0.5 text-white opacity-0 transition group-hover:opacity-100"
+   361→                      >
+   362→                        <X className="h-3 w-3" />
+   363→                      </button>
+   364→                    </div>
+   365→                  ) : (
+   366→                    <ImageUpload value={null} onChange={setImageUrl} label="Upload" className="w-16" />
+   367→                  )}
+   368→                  <p className="text-[11px] text-muted-foreground">Photo of the device or damage</p>
+   369→                </div>
+   370→              </div>
+   371→            </div>
+   372→
+   373→            <div className="space-y-1.5">
+   374→              <Label className="text-xs font-medium">Notes</Label>
+   375→              <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Internal notes (optional)" />
+   376→            </div>
+   377→          </div>
+   378→        </ScrollArea>
+   379→
+   380→        <DialogFooter className="border-t bg-muted/30 p-4">
+   381→          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>Cancel</Button>
+   382→          <Button onClick={handleSubmit} disabled={saving || !problem.trim()} className="gap-1.5">
+   383→            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+   384→            Create Ticket
+   385→          </Button>
+   386→        </DialogFooter>
+   387→      </DialogContent>
+   388→    </Dialog>
+   389→  );
+   390→}
+   391→
+   392→// ─────────────────────────────────────────────────────────────────────────────
+   393→// Add Part dialog (inside detail sheet)
+   394→// ─────────────────────────────────────────────────────────────────────────────
+   395→function AddPartDialog({
+   396→  open, onOpenChange, repairId,
+   397→}: { open: boolean; onOpenChange: (v: boolean) => void; repairId: string }) {
+   398→  const qc = useQueryClient();
+   399→  const [search, setSearch] = useState("");
+   400→  const [selectedId, setSelectedId] = useState("");
+   401→  const [qty, setQty] = useState("1");
+   402→  const [used, setUsed] = useState(true);
+   403→  const [saving, setSaving] = useState(false);
+   404→
+   405→  const productsQ = useQuery<{ data: Product[] }>({
+   406→    queryKey: ["repair-parts-search", search],
+   407→    queryFn: () => api.get(`/products?q=${encodeURIComponent(search)}&pageSize=30`),
+   408→    enabled: open,
+   409→    staleTime: 10_000,
+   410→  });
+   411→  const products = productsQ.data?.data ?? [];
+   412→
+   413→  const handleSubmit = async () => {
+   414→    if (!selectedId) { toast.error("Select a product"); return; }
+   415→    const q = Math.max(1, parseInt(qty, 10) || 1);
+   416→    setSaving(true);
+   417→    try {
+   418→      await api.post(`/repairs/${repairId}/parts`, { productId: selectedId, qty: q, used });
+   419→      toast.success("Part added to repair");
+   420→      qc.invalidateQueries({ queryKey: ["repair-detail", repairId] });
+   421→      qc.invalidateQueries({ queryKey: ["repairs"] });
+   422→      setSearch(""); setSelectedId(""); setQty("1"); setUsed(true);
+   423→      onOpenChange(false);
+   424→    } catch (e) {
+   425→      toast.error((e as Error).message);
+   426→    } finally {
+   427→      setSaving(false);
+   428→    }
+   429→  };
+   430→
+   431→  return (
+   432→    <Dialog open={open} onOpenChange={onOpenChange}>
+   433→      <DialogContent className="max-w-lg p-0 gap-0 overflow-hidden">
+   434→        <DialogHeader className="border-b bg-muted/30 p-5">
+   435→          <DialogTitle className="flex items-center gap-2">
+   436→            <Package className="h-4 w-4 text-primary" /> Add Part from Inventory
+   437→          </DialogTitle>
+   438→          <DialogDescription>Select a part to attach to this repair ticket.</DialogDescription>
+   439→        </DialogHeader>
+   440→        <div className="space-y-4 p-5">
+   441→          <div className="relative">
+   442→            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+   443→            <Input
+   444→              value={search} onChange={(e) => setSearch(e.target.value)}
+   445→              placeholder="Search products by name, SKU, model..."
+   446→              className="pl-9"
+   447→            />
+   448→          </div>
+   449→          <div className="max-h-64 space-y-1 overflow-y-auto rounded-lg border">
+   450→            {productsQ.isLoading ? (
+   451→              <div className="p-4 text-center text-sm text-muted-foreground">
+   452→                <Loader2 className="mx-auto h-4 w-4 animate-spin" />
+   453→              </div>
+   454→            ) : products.length === 0 ? (
+   455→              <div className="p-6 text-center text-sm text-muted-foreground">No products found</div>
+   456→            ) : (
+   457→              products.map((p) => (
+   458→                <button
+   459→                  key={p.id} type="button"
+   460→                  onClick={() => setSelectedId(p.id)}
+   461→                  className={`flex w-full items-center gap-3 border-b px-3 py-2 text-left transition last:border-b-0 hover:bg-muted/50 ${
+   462→                    selectedId === p.id ? "bg-primary/5 ring-1 ring-inset ring-primary/30" : ""
+   463→                  }`}
+   464→                >
+   465→                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted text-xs font-bold">
+   466→                    {p.brand?.name?.[0] ?? "?"}
+   467→                  </div>
+   468→                  <div className="min-w-0 flex-1">
+   469→                    <p className="truncate text-xs font-medium">{p.name}</p>
+   470→                    <p className="text-[10px] text-muted-foreground">{p.sku} · stock {p.stock}</p>
+   471→                  </div>
+   472→                  <span className="text-xs font-semibold">{formatCurrency(p.purchasePrice)}</span>
+   473→                </button>
+   474→              ))
+   475→            )}
+   476→          </div>
+   477→          <div className="grid grid-cols-2 gap-3">
+   478→            <div className="space-y-1.5">
+   479→              <Label className="text-xs">Quantity</Label>
+   480→              <Input type="number" min="1" value={qty} onChange={(e) => setQty(e.target.value)} />
+   481→            </div>
+   482→            <div className="space-y-1.5">
+   483→              <Label className="text-xs">Stock action</Label>
+   484→              <Select value={used ? "used" : "reserved"} onValueChange={(v) => setUsed(v === "used")}>
+   485→                <SelectTrigger><SelectValue /></SelectTrigger>
+   486→                <SelectContent>
+   487→                  <SelectItem value="used">Deduct now</SelectItem>
+   488→                  <SelectItem value="reserved">Reserve only</SelectItem>
+   489→                </SelectContent>
+   490→              </Select>
+   491→            </div>
+   492→          </div>
+   493→        </div>
+   494→        <DialogFooter className="border-t bg-muted/30 p-4">
+   495→          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>Cancel</Button>
+   496→          <Button onClick={handleSubmit} disabled={saving || !selectedId} className="gap-1.5">
+   497→            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+   498→            Add Part
+   499→          </Button>
+   500→        </DialogFooter>
+   501→      </DialogContent>
+   502→    </Dialog>
+   503→  );
+   504→}
+   505→
+   506→// ─────────────────────────────────────────────────────────────────────────────
+   507→// Repair Detail Sheet
+   508→// ─────────────────────────────────────────────────────────────────────────────
+   509→function RepairDetailSheet({
+   510→  repairId, onClose,
+   511→}: { repairId: string | null; onClose: () => void }) {
+   512→  const qc = useQueryClient();
+   513→  const [addPartOpen, setAddPartOpen] = useState(false);
+   514→  const [editDiagnosis, setEditDiagnosis] = useState(false);
+   515→  const [diagnosisDraft, setDiagnosisDraft] = useState("");
+   516→  const [editCosts, setEditCosts] = useState(false);
+   517→  const [laborDraft, setLaborDraft] = useState("");
+   518→  const [editPayment, setEditPayment] = useState(false);
+   519→  const [paymentStatusDraft, setPaymentStatusDraft] = useState("UNPAID");
+   520→  const [paidDraft, setPaidDraft] = useState("");
+   521→
+   522→  const open = Boolean(repairId);
+   523→
+   524→  const detailQ = useQuery<RepairJob>({
+   525→    queryKey: ["repair-detail", repairId],
+   526→    queryFn: () => api.get(`/repairs/${repairId}`),
+   527→    enabled: open,
+   528→  });
+   529→  const r = detailQ.data;
+   530→
+   531→  const updateMutation = useMutation({
+   532→    mutationFn: async (body: Record<string, unknown>) => {
+   533→      if (!repairId) throw new Error("No repair selected");
+   534→      return api.patch<RepairJob>(`/repairs/${repairId}`, body);
+   535→    },
+   536→    onSuccess: () => {
+   537→      qc.invalidateQueries({ queryKey: ["repair-detail", repairId] });
+   538→      qc.invalidateQueries({ queryKey: ["repairs"] });
+   539→      qc.invalidateQueries({ queryKey: ["repairs-stats"] });
+   540→    },
+   541→    onError: (e: Error) => toast.error(e.message),
+   542→  });
+   543→
+   544→  const togglePartUsed = async (part: RepairPart) => {
+   545→    try {
+   546→      await api.patch(`/repairs/${repairId}/parts?partId=${part.id}`, { used: !part.used });
+   547→      toast.success(part.used ? "Stock restocked" : "Marked as used · stock deducted");
+   548→      qc.invalidateQueries({ queryKey: ["repair-detail", repairId] });
+   549→      qc.invalidateQueries({ queryKey: ["repairs"] });
+   550→    } catch (e) {
+   551→      toast.error((e as Error).message);
+   552→    }
+   553→  };
+   554→
+   555→  const removePart = async (part: RepairPart) => {
+   556→    if (!confirm(`Remove ${part.product?.name ?? "part"} from this repair?${part.used ? " Stock will be restocked." : ""}`)) return;
+   557→    try {
+   558→      await api.del(`/repairs/${repairId}/parts?partId=${part.id}`);
+   559→      toast.success("Part removed");
+   560→      qc.invalidateQueries({ queryKey: ["repair-detail", repairId] });
+   561→      qc.invalidateQueries({ queryKey: ["repairs"] });
+   562→    } catch (e) {
+   563→      toast.error((e as Error).message);
+   564→    }
+   565→  };
+   566→
+   567→  const handleDelete = async () => {
+   568→    if (!r) return;
+   569→    if (!confirm(`Delete ticket ${r.ticketNo}? This cannot be undone.`)) return;
+   570→    try {
+   571→      await api.del(`/repairs/${r.id}`);
+   572→      toast.success("Repair ticket deleted");
+   573→      qc.invalidateQueries({ queryKey: ["repairs"] });
+   574→      qc.invalidateQueries({ queryKey: ["repairs-stats"] });
+   575→      onClose();
+   576→    } catch (e) {
+   577→      toast.error((e as Error).message);
+   578→    }
+   579→  };
+   580→
+   581→  const saveDiagnosis = () => {
+   582→    updateMutation.mutate({ diagnosis: diagnosisDraft }, {
+   583→      onSuccess: () => { toast.success("Diagnosis updated"); setEditDiagnosis(false); },
+   584→    });
+   585→  };
+   586→  const saveCosts = () => {
+   587→    updateMutation.mutate({ laborCost: Number(laborDraft) || 0 }, {
+   588→      onSuccess: () => { toast.success("Labor cost updated"); setEditCosts(false); },
+   589→    });
+   590→  };
+   591→  const savePayment = () => {
+   592→    updateMutation.mutate(
+   593→      { paymentStatus: paymentStatusDraft, paid: Number(paidDraft) || 0 },
+   594→      { onSuccess: () => { toast.success("Payment updated"); setEditPayment(false); } }
+   595→    );
+   596→  };
+   597→
+   598→  return (
+   599→    <Sheet open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
+   600→      <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-xl md:max-w-2xl">
+   601→        <SheetHeader className="border-b bg-muted/30 p-5">
+   602→          {r ? (
+   603→            <>
+   604→              <div className="flex items-center justify-between pr-6">
+   605→                <div className="min-w-0">
+   606→                  <SheetTitle className="flex items-center gap-2 font-mono text-base">
+   607→                    {r.ticketNo}
+   608→                  </SheetTitle>
+   609→                  <SheetDescription className="mt-0.5">
+   610→                    Opened {timeAgo(r.receivedAt)} · {formatDateTime(r.receivedAt)}
+   611→                  </SheetDescription>
+   612→                </div>
+   613→                <RepairStatusBadge status={r.status} />
+   614→              </div>
+   615→            </>
+   616→          ) : (
+   617→            <div className="space-y-2">
+   618→              <div className="h-5 w-32 animate-pulse rounded bg-muted" />
+   619→              <div className="h-3 w-48 animate-pulse rounded bg-muted" />
+   620→            </div>
+   621→          )}
+   622→        </SheetHeader>
+   623→
+   624→        {detailQ.isLoading ? (
+   625→          <LoadingState className="flex-1" />
+   626→        ) : detailQ.isError ? (
+   627→          <div className="flex-1 p-6 text-sm text-rose-600">Failed to load repair.</div>
+   628→        ) : !r ? null : (
+   629→          <ScrollArea className="flex-1">
+   630→            <div className="space-y-5 p-5">
+   631→              {/* Status timeline */}
+   632→              <div>
+   633→                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Status Timeline</p>
+   634→                <StatusTimeline status={r.status} />
+   635→              </div>
+   636→
+   637→              {/* Quick status changer */}
+   638→              <div className="flex flex-wrap items-center gap-2 rounded-xl border bg-card p-3">
+   639→                <span className="text-xs font-medium text-muted-foreground">Move to:</span>
+   640→                <Select
+   641→                  value={r.status}
+   642→                  onValueChange={(v) => updateMutation.mutate({ status: v })}
+   643→                >
+   644→                  <SelectTrigger className="h-8 w-44 text-xs">
+   645→                    <SelectValue />
+   646→                  </SelectTrigger>
+   647→                  <SelectContent>
+   648→                    {[...REPAIR_STATUSES].map((s) => (
+   649→                      <SelectItem key={s} value={s} className="capitalize">
+   650→                        {s.replace("_", " ").toLowerCase()}
+   651→                      </SelectItem>
+   652→                    ))}
+   653→                  </SelectContent>
+   654→                </Select>
+   655→                <Button
+   656→                  size="sm" variant="outline" className="h-8 gap-1"
+   657→                  onClick={() => {
+   658→                    const next = STATUS_FLOW[STATUS_FLOW.indexOf(r.status as RepairStatus) + 1];
+   659→                    if (next) updateMutation.mutate({ status: next });
+   660→                  }}
+   661→                  disabled={r.status === "DELIVERED" || r.status === "CANCELLED" || updateMutation.isPending}
+   662→                >
+   663→                  Advance <ChevronRight className="h-3.5 w-3.5" />
+   664→                </Button>
+   665→                {r.status !== "CANCELLED" && (
+   666→                  <Button
+   667→                    size="sm" variant="ghost" className="h-8 gap-1 text-rose-600 hover:bg-rose-500/10 hover:text-rose-600"
+   668→                    onClick={() => updateMutation.mutate({ status: "CANCELLED" })}
+   669→                    disabled={updateMutation.isPending}
+   670→                  >
+   671→                    <Ban className="h-3.5 w-3.5" /> Cancel ticket
+   672→                  </Button>
+   673→                )}
+   674→              </div>
+   675→
+   676→              {/* Customer + device */}
+   677→              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+   678→                <div className="rounded-xl border bg-card p-3">
+   679→                  <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+   680→                    <User2 className="h-3.5 w-3.5" /> Customer
+   681→                  </p>
+   682→                  <div className="flex items-center gap-2">
+   683→                    <TechAvatar name={r.customer?.name} size="md" />
+   684→                    <div className="min-w-0">
+   685→                      <p className="truncate text-sm font-medium">{r.customer?.name ?? "Walk-in Customer"}</p>
+   686→                      <p className="text-xs text-muted-foreground">{r.customer?.phone ?? "—"}</p>
+   687→                    </div>
+   688→                  </div>
+   689→                </div>
+   690→                <div className="rounded-xl border bg-card p-3">
+   691→                  <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+   692→                    <Smartphone className="h-3.5 w-3.5" /> Device
+   693→                  </p>
+   694→                  <p className="text-sm font-medium">
+   695→                    {r.model ? `${r.model.brand?.name ?? ""} ${r.model.name}`.trim() : "—"}
+   696→                  </p>
+   697→                  <p className="font-mono text-[11px] text-muted-foreground">IMEI: {r.imei || "—"}</p>
+   698→                </div>
+   699→              </div>
+   700→
+   701→              {/* Technician */}
+   702→              <div className="rounded-xl border bg-card p-3">
+   703→                <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+   704→                  <WrenchIcon className="h-3.5 w-3.5" /> Technician
+   705→                </p>
+   706→                <div className="flex items-center gap-2">
+   707→                  <TechAvatar name={r.technician?.name} size="md" />
+   708→                  <p className="text-sm font-medium">{r.technician?.name ?? "Unassigned"}</p>
+   709→                  {r.technician && <Badge variant="secondary" className="text-[10px]">{r.technician.role}</Badge>}
+   710→                </div>
+   711→              </div>
+   712→
+   713→              {/* Problem */}
+   714→              <div className="rounded-xl border bg-card p-3">
+   715→                <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Problem Reported</p>
+   716→                <p className="text-sm">{r.problem}</p>
+   717→              </div>
+   718→
+   719→              {/* Diagnosis — inline editable */}
+   720→              <div className="rounded-xl border bg-card p-3">
+   721→                <div className="mb-1.5 flex items-center justify-between">
+   722→                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Diagnosis</p>
+   723→                  <Button size="sm" variant="ghost" className="h-6 px-2 text-xs"
+   724→                    onClick={() => { setDiagnosisDraft(r.diagnosis ?? ""); setEditDiagnosis(!editDiagnosis); }}
+   725→                  >
+   726→                    {editDiagnosis ? "Cancel" : "Edit"}
+   727→                  </Button>
+   728→                </div>
+   729→                {editDiagnosis ? (
+   730→                  <div className="space-y-2">
+   731→                    <Textarea value={diagnosisDraft} onChange={(e) => setDiagnosisDraft(e.target.value)} rows={3}
+   732→                      placeholder="Technical findings, root cause..." />
+   733→                    <Button size="sm" className="h-7 gap-1" onClick={saveDiagnosis} disabled={updateMutation.isPending}>
+   734→                      <Save className="h-3 w-3" /> Save
+   735→                    </Button>
+   736→                  </div>
+   737→                ) : (
+   738→                  <p className="text-sm text-muted-foreground">{r.diagnosis || "No diagnosis recorded yet."}</p>
+   739→                )}
+   740→              </div>
+   741→
+   742→              {/* Parts used */}
+   743→              <div className="rounded-xl border bg-card p-3">
+   744→                <div className="mb-2 flex items-center justify-between">
+   745→                  <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+   746→                    <Package className="h-3.5 w-3.5" /> Parts Used
+   747→                    <Badge variant="secondary" className="text-[10px]">{r.parts?.length ?? 0}</Badge>
+   748→                  </p>
+   749→                  <Button size="sm" variant="outline" className="h-7 gap-1" onClick={() => setAddPartOpen(true)}>
+   750→                    <Plus className="h-3.5 w-3.5" /> Add Part
+   751→                  </Button>
+   752→                </div>
+   753→                {r.parts && r.parts.length > 0 ? (
+   754→                  <div className="space-y-1.5">
+   755→                    {r.parts.map((p) => (
+   756→                      <div key={p.id} className="flex items-center gap-2 rounded-lg border bg-background p-2">
+   757→                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-muted text-[10px] font-bold">
+   758→                          {p.product?.brand?.name?.[0] ?? "?"}
+   759→                        </div>
+   760→                        <div className="min-w-0 flex-1">
+   761→                          <p className="truncate text-xs font-medium">{p.product?.name ?? "Unknown product"}</p>
+   762→                          <p className="text-[10px] text-muted-foreground">
+   763→                            {p.qty} × {formatCurrency(p.cost / p.qty)} = <span className="font-semibold">{formatCurrency(p.cost)}</span>
+   764→                          </p>
+   765→                        </div>
+   766→                        <button
+   767→                          onClick={() => togglePartUsed(p)}
+   768→                          className={`rounded-md px-2 py-1 text-[10px] font-medium transition ${
+   769→                            p.used
+   770→                              ? "bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20"
+   771→                              : "bg-amber-500/10 text-amber-600 hover:bg-amber-500/20"
+   772→                          }`}
+   773→                          title={p.used ? "Used — click to restock" : "Reserved — click to deduct stock"}
+   774→                        >
+   775→                          {p.used ? "Used" : "Reserved"}
+   776→                        </button>
+   777→                        <button
+   778→                          onClick={() => removePart(p)}
+   779→                          className="rounded-md p-1 text-muted-foreground transition hover:bg-rose-500/10 hover:text-rose-600"
+   780→                          title="Remove"
+   781→                        >
+   782→                          <Trash2 className="h-3.5 w-3.5" />
+   783→                        </button>
+   784→                      </div>
+   785→                    ))}
+   786→                  </div>
+   787→                ) : (
+   788→                  <p className="py-3 text-center text-xs text-muted-foreground">No parts added yet</p>
+   789→                )}
+   790→              </div>
+   791→
+   792→              {/* Costs breakdown */}
+   793→              <div className="rounded-xl border bg-card p-3">
+   794→                <div className="mb-2 flex items-center justify-between">
+   795→                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Costs Breakdown</p>
+   796→                  <Button size="sm" variant="ghost" className="h-6 px-2 text-xs"
+   797→                    onClick={() => { setLaborDraft(String(r.laborCost)); setEditCosts(!editCosts); }}
+   798→                  >
+   799→                    {editCosts ? "Cancel" : "Edit labor"}
+   800→                  </Button>
+   801→                </div>
+   802→                <div className="space-y-1.5">
+   803→                  <div className="flex items-center justify-between text-sm">
+   804→                    <span className="text-muted-foreground">Labor</span>
+   805→                    {editCosts ? (
+   806→                      <Input type="number" min="0" step="50" value={laborDraft} onChange={(e) => setLaborDraft(e.target.value)}
+   807→                        className="h-7 w-28 text-right text-xs" />
+   808→                    ) : (
+   809→                      <span className="font-medium">{formatCurrency(r.laborCost)}</span>
+   810→                    )}
+   811→                  </div>
+   812→                  <div className="flex items-center justify-between text-sm">
+   813→                    <span className="text-muted-foreground">Parts</span>
+   814→                    <span className="font-medium">{formatCurrency(r.partsCost)}</span>
+   815→                  </div>
+   816→                  <Separator className="my-1" />
+   817→                  <div className="flex items-center justify-between text-sm">
+   818→                    <span className="font-semibold">Total</span>
+   819→                    <span className="text-base font-bold text-primary">{formatCurrency(r.total)}</span>
+   820→                  </div>
+   821→                  {editCosts && (
+   822→                    <Button size="sm" className="mt-1 h-7 gap-1" onClick={saveCosts} disabled={updateMutation.isPending}>
+   823→                      <Save className="h-3 w-3" /> Save labor
+   824→                    </Button>
+   825→                  )}
+   826→                </div>
+   827→              </div>
+   828→
+   829→              {/* Payment */}
+   830→              <div className="rounded-xl border bg-card p-3">
+   831→                <div className="mb-2 flex items-center justify-between">
+   832→                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Payment</p>
+   833→                  <Button size="sm" variant="ghost" className="h-6 px-2 text-xs"
+   834→                    onClick={() => { setPaymentStatusDraft(r.paymentStatus); setPaidDraft(String(r.paid)); setEditPayment(!editPayment); }}
+   835→                  >
+   836→                    {editPayment ? "Cancel" : "Edit"}
+   837→                  </Button>
+   838→                </div>
+   839→                {editPayment ? (
+   840→                  <div className="grid grid-cols-2 gap-2">
+   841→                    <Select value={paymentStatusDraft} onValueChange={setPaymentStatusDraft}>
+   842→                      <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+   843→                      <SelectContent>
+   844→                        <SelectItem value="UNPAID">Unpaid</SelectItem>
+   845→                        <SelectItem value="PARTIAL">Partial</SelectItem>
+   846→                        <SelectItem value="PAID">Paid</SelectItem>
+   847→                      </SelectContent>
+   848→                    </Select>
+   849→                    <Input type="number" min="0" value={paidDraft} onChange={(e) => setPaidDraft(e.target.value)}
+   850→                      placeholder="Amount paid" className="h-8 text-xs" />
+   851→                    <Button size="sm" className="col-span-2 h-7 gap-1" onClick={savePayment} disabled={updateMutation.isPending}>
+   852→                      <Save className="h-3 w-3" /> Save payment
+   853→                    </Button>
+   854→                  </div>
+   855→                ) : (
+   856→                  <div className="flex items-center justify-between">
+   857→                    <div className="flex items-center gap-2">
+   858→                      <PaymentStatusBadge status={r.paymentStatus} />
+   859→                      <span className="text-sm">
+   860→                        {formatCurrency(r.paid)} / {formatCurrency(r.total)}
+   861→                      </span>
+   862→                    </div>
+   863→                    {r.total - r.paid > 0 && (
+   864→                      <span className="text-xs font-medium text-rose-600">
+   865→                        Due {formatCurrency(r.total - r.paid)}
+   866→                      </span>
+   867→                    )}
+   868→                  </div>
+   869→                )}
+   870→              </div>
+   871→
+   872→              {/* Dates */}
+   873→              <div className="grid grid-cols-3 gap-2 rounded-xl border bg-card p-3 text-center">
+   874→                <div>
+   875→                  <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Received</p>
+   876→                  <p className="mt-1 text-xs font-medium">{formatDate(r.receivedAt)}</p>
+   877→                </div>
+   878→                <div>
+   879→                  <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Completed</p>
+   880→                  <p className="mt-1 text-xs font-medium">{r.completedAt ? formatDate(r.completedAt) : "—"}</p>
+   881→                </div>
+   882→                <div>
+   883→                  <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Delivered</p>
+   884→                  <p className="mt-1 text-xs font-medium">{r.deliveredAt ? formatDate(r.deliveredAt) : "—"}</p>
+   885→                </div>
+   886→              </div>
+   887→
+   888→              {/* Image */}
+   889→              {r.imageUrl && (
+   890→                <div className="overflow-hidden rounded-xl border">
+   891→                  <img src={r.imageUrl} alt="Repair" className="max-h-60 w-full object-cover" />
+   892→                </div>
+   893→              )}
+   894→
+   895→              {/* Notes */}
+   896→              {r.notes && (
+   897→                <div className="rounded-xl border bg-card p-3">
+   898→                  <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Notes</p>
+   899→                  <p className="text-sm">{r.notes}</p>
+   900→                </div>
+   901→              )}
+   902→
+   903→              {/* Danger zone */}
+   904→              <div className="flex justify-end pt-2">
+   905→                <Button size="sm" variant="ghost" className="gap-1 text-rose-600 hover:bg-rose-500/10 hover:text-rose-600"
+   906→                  onClick={handleDelete}
+   907→                >
+   908→                  <Trash2 className="h-3.5 w-3.5" /> Delete ticket
+   909→                </Button>
+   910→              </div>
+   911→            </div>
+   912→          </ScrollArea>
+   913→        )}
+   914→
+   915→        {r && (
+   916→          <AddPartDialog open={addPartOpen} onOpenChange={setAddPartOpen} repairId={r.id} />
+   917→        )}
+   918→      </SheetContent>
+   919→    </Sheet>
+   920→  );
+   921→}
+   922→
+   923→// ─────────────────────────────────────────────────────────────────────────────
+   924→// Kanban board
+   925→// ─────────────────────────────────────────────────────────────────────────────
+   926→function KanbanCard({ repair, onClick }: { repair: RepairJob; onClick: () => void }) {
+   927→  const meta = COLUMN_META[repair.status as RepairStatus] ?? COLUMN_META.RECEIVED;
+   928→  const due = repair.total - repair.paid;
+   929→  return (
+   930→    <motion.button
+   931→      layout
+   932→      initial={{ opacity: 0, y: 6 }}
+   933→      animate={{ opacity: 1, y: 0 }}
+   934→      exit={{ opacity: 0, scale: 0.96 }}
+   935→      transition={{ duration: 0.18 }}
+   936→      onClick={onClick}
+   937→      className={`group w-full rounded-xl border bg-card p-3 text-left shadow-soft transition hover:shadow-md hover:ring-2 ${meta.ring}`}
+   938→    >
+   939→      <div className="mb-2 flex items-center justify-between">
+   940→        <span className="font-mono text-[11px] font-bold text-muted-foreground">{repair.ticketNo}</span>
+   941→        <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+   942→          <Clock className="h-3 w-3" />
+   943→          {timeAgo(repair.receivedAt)}
+   944→        </span>
+   945→      </div>
+   946→      <p className="mb-1 text-sm font-semibold leading-snug line-clamp-2">{repair.problem}</p>
+   947→      <p className="mb-2 text-[11px] text-muted-foreground">
+   948→        {repair.model ? `${repair.model.brand?.name ?? ""} ${repair.model.name}`.trim() : "No model"}
+   949→      </p>
+   950→      <div className="mb-2 flex items-center gap-1.5">
+   951→        <TechAvatar name={repair.customer?.name} />
+   952→        <span className="truncate text-[11px] font-medium">{repair.customer?.name ?? "Walk-in"}</span>
+   953→      </div>
+   954→      <div className="flex items-center justify-between border-t pt-2">
+   955→        <div className="flex items-center gap-1">
+   956→          <TechAvatar name={repair.technician?.name} />
+   957→          {due > 0 && (
+   958→            <Badge variant="outline" className="bg-rose-500/10 px-1.5 py-0 text-[9px] text-rose-600">
+   959→              Due {formatCurrency(due)}
+   960→            </Badge>
+   961→          )}
+   962→        </div>
+   963→        <span className="text-[11px] font-semibold">{formatCurrency(repair.total)}</span>
+   964→      </div>
+   965→    </motion.button>
+   966→  );
+   967→}
+   968→
+   969→function KanbanColumn({
+   970→  status, repairs, onCardClick,
+   971→}: { status: RepairStatus; repairs: RepairJob[]; onCardClick: (r: RepairJob) => void }) {
+   972→  const meta = COLUMN_META[status];
+   973→  const Icon = meta.icon;
+   974→  return (
+   975→    <div className="flex h-full w-[280px] shrink-0 flex-col rounded-2xl border bg-muted/30 sm:w-[300px]">
+   976→      <div className="flex items-center justify-between gap-2 rounded-t-2xl border-b bg-card/50 px-3 py-2.5">
+   977→        <div className="flex items-center gap-2">
+   978→          <span className={`flex h-7 w-7 items-center justify-center rounded-lg ${meta.chip}`}>
+   979→            <Icon className="h-3.5 w-3.5" />
+   980→          </span>
+   981→          <div>
+   982→            <p className={`text-xs font-semibold ${meta.accent}`}>{meta.label}</p>
+   983→            <p className="text-[10px] text-muted-foreground">{repairs.length} {repairs.length === 1 ? "ticket" : "tickets"}</p>
+   984→          </div>
+   985→        </div>
+   986→        <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${meta.chip}`}>{repairs.length}</span>
+   987→      </div>
+   988→      <ScrollArea className="flex-1">
+   989→        <div className="space-y-2 p-2.5">
+   990→          <AnimatePresence>
+   991→            {repairs.length === 0 ? (
+   992→              <div className="flex flex-col items-center justify-center py-8 text-center">
+   993→                <Icon className="mb-1.5 h-5 w-5 text-muted-foreground/40" />
+   994→                <p className="text-[10px] text-muted-foreground/60">No tickets</p>
+   995→              </div>
+   996→            ) : (
+   997→              repairs.map((r) => (
+   998→                <KanbanCard key={r.id} repair={r} onClick={() => onCardClick(r)} />
+   999→              ))
+  1000→            )}
+  1001→          </AnimatePresence>
+  1002→        </div>
+  1003→      </ScrollArea>
+  1004→    </div>
+  1005→  );
+  1006→}
+  1007→
+  1008→function KanbanBoard({
+  1009→  repairs, loading, onCardClick,
+  1010→}: { repairs: RepairJob[]; loading: boolean; onCardClick: (r: RepairJob) => void }) {
+  1011→  const grouped = useMemo(() => {
+  1012→    const map: Record<RepairStatus, RepairJob[]> = {
+  1013→      RECEIVED: [], DIAGNOSED: [], WAITING_PARTS: [], REPAIRING: [], COMPLETED: [], DELIVERED: [],
+  1014→    };
+  1015→    for (const r of repairs) {
+  1016→      if (r.status in map) map[r.status as RepairStatus].push(r);
+  1017→    }
+  1018→    return map;
+  1019→  }, [repairs]);
+  1020→
+  1021→  if (loading) {
+  1022→    return (
+  1023→      <div className="flex gap-3 overflow-x-auto pb-4">
+  1024→        {STATUS_FLOW.map((s) => (
+  1025→          <div key={s} className="w-[280px] shrink-0 space-y-2 rounded-2xl border bg-muted/30 p-2.5 sm:w-[300px]">
+  1026→            <div className="h-9 animate-pulse rounded-lg bg-muted" />
+  1027→            {Array.from({ length: 3 }).map((_, i) => (
+  1028→              <div key={i} className="h-24 animate-pulse rounded-xl bg-muted" />
+  1029→            ))}
+  1030→          </div>
+  1031→        ))}
+  1032→      </div>
+  1033→    );
+  1034→  }
+  1035→
+  1036→  if (repairs.length === 0) {
+  1037→    return (
+  1038→      <EmptyState
+  1039→        icon={Wrench}
+  1040→        title="No repair tickets yet"
+  1041→        description="Create your first repair ticket to start tracking jobs on the kanban board."
+  1042→      />
+  1043→    );
+  1044→  }
+  1045→
+  1046→  return (
+  1047→    <div className="flex gap-3 overflow-x-auto pb-4 [scrollbar-width:thin]">
+  1048→      {STATUS_FLOW.map((s) => (
+  1049→        <KanbanColumn key={s} status={s} repairs={grouped[s]} onCardClick={onCardClick} />
+  1050→      ))}
+  1051→    </div>
+  1052→  );
+  1053→}
+  1054→
+  1055→// ─────────────────────────────────────────────────────────────────────────────
+  1056→// Damaged Inventory tab
+  1057→// ─────────────────────────────────────────────────────────────────────────────
+  1058→function DamageReasonBadge({ reason }: { reason: string }) {
+  1059→  const map: Record<string, string> = {
+  1060→    BROKEN: "bg-rose-500/10 text-rose-600 dark:text-rose-400",
+  1061→    DEAD: "bg-rose-500/10 text-rose-600 dark:text-rose-400",
+  1062→    WARRANTY: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+  1063→    RETURNED: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+  1064→    REJECTED: "bg-purple-500/10 text-purple-600 dark:text-purple-400",
+  1065→    LOST: "bg-teal-500/10 text-teal-600 dark:text-teal-400",
+  1066→    DISPOSED: "bg-muted text-muted-foreground",
+  1067→  };
+  1068→  return (
+  1069→    <Badge variant="outline" className={`text-[10px] font-medium ${map[reason] ?? "bg-muted"}`}>
+  1070→      {reason.toLowerCase()}
+  1071→    </Badge>
+  1072→  );
+  1073→}
+  1074→
+  1075→function RecordDamageDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
+  1076→  const qc = useQueryClient();
+  1077→  const [search, setSearch] = useState("");
+  1078→  const [selectedId, setSelectedId] = useState("");
+  1079→  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  1080→  const [qty, setQty] = useState("1");
+  1081→  const [reason, setReason] = useState("");
+  1082→  const [note, setNote] = useState("");
+  1083→  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  1084→  const [saving, setSaving] = useState(false);
+  1085→
+  1086→  const productsQ = useQuery<{ data: Product[] }>({
+  1087→    queryKey: ["damage-product-search", search],
+  1088→    queryFn: () => api.get(`/products?q=${encodeURIComponent(search)}&pageSize=20`),
+  1089→    enabled: open,
+  1090→    staleTime: 10_000,
+  1091→  });
+  1092→  const products = productsQ.data?.data ?? [];
+  1093→
+  1094→  const handleSubmit = async () => {
+  1095→    if (!selectedId) { toast.error("Select a product"); return; }
+  1096→    if (!reason) { toast.error("Select a damage reason"); return; }
+  1097→    setSaving(true);
+  1098→    try {
+  1099→      await api.post("/damaged", {
+  1100→        productId: selectedId,
+  1101→        qty: Number(qty) || 1,
+  1102→        reason,
+  1103→        note: note.trim() || undefined,
+  1104→        imageUrl: imageUrl || undefined,
+  1105→      });
+  1106→      toast.success("Damage recorded · stock deducted");
+  1107→      qc.invalidateQueries({ queryKey: ["damaged"] });
+  1108→      qc.invalidateQueries({ queryKey: ["damaged-stats"] });
+  1109→      setSearch(""); setSelectedId(""); setSelectedProduct(null);
+  1110→      setQty("1"); setReason(""); setNote(""); setImageUrl(null);
+  1111→      onOpenChange(false);
+  1112→    } catch (e) {
+  1113→      toast.error((e as Error).message);
+  1114→    } finally {
+  1115→      setSaving(false);
+  1116→    }
+  1117→  };
+  1118→
+  1119→  return (
+  1120→    <Dialog open={open} onOpenChange={onOpenChange}>
+  1121→      <DialogContent className="max-w-lg gap-0 overflow-hidden p-0">
+  1122→        <DialogHeader className="border-b bg-muted/30 p-5">
+  1123→          <DialogTitle className="flex items-center gap-2">
+  1124→            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-rose-500/10 text-rose-600">
+  1125→              <PackageX className="h-4 w-4" />
+  1126→            </div>
+  1127→            Record Damaged Inventory
+  1128→          </DialogTitle>
+  1129→          <DialogDescription>Stock will be deducted and a damage movement logged.</DialogDescription>
+  1130→        </DialogHeader>
+  1131→        <ScrollArea className="max-h-[70vh]">
+  1132→          <div className="space-y-4 p-5">
+  1133→            {/* product search */}
+  1134→            {!selectedProduct ? (
+  1135→              <div className="space-y-2">
+  1136→                <Label className="text-xs font-medium">Search Product</Label>
+  1137→                <div className="relative">
+  1138→                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+  1139→                  <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Name, SKU, model..." className="pl-9" autoFocus />
+  1140→                </div>
+  1141→                <div className="max-h-56 space-y-1 overflow-y-auto rounded-lg border">
+  1142→                  {productsQ.isLoading ? (
+  1143→                    <div className="p-4 text-center"><Loader2 className="mx-auto h-4 w-4 animate-spin" /></div>
+  1144→                  ) : products.length === 0 ? (
+  1145→                    <div className="p-4 text-center text-xs text-muted-foreground">No products found</div>
+  1146→                  ) : (
+  1147→                    products.map((p) => (
+  1148→                      <button key={p.id} type="button"
+  1149→                        onClick={() => { setSelectedId(p.id); setSelectedProduct(p); }}
+  1150→                        className="flex w-full items-center gap-2 border-b px-3 py-2 text-left transition last:border-b-0 hover:bg-muted/50"
+  1151→                      >
+  1152→                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-[10px] font-bold">
+  1153→                          {p.brand?.name?.[0] ?? "?"}
+  1154→                        </div>
+  1155→                        <div className="min-w-0 flex-1">
+  1156→                          <p className="truncate text-xs font-medium">{p.name}</p>
+  1157→                          <p className="text-[10px] text-muted-foreground">{p.sku} · stock {p.stock}</p>
+  1158→                        </div>
+  1159→                      </button>
+  1160→                    ))
+  1161→                  )}
+  1162→                </div>
+  1163→              </div>
+  1164→            ) : (
+  1165→              <div className="flex items-center gap-2 rounded-lg border bg-muted/30 p-2">
+  1166→                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted text-xs font-bold">
+  1167→                  {selectedProduct.brand?.name?.[0] ?? "?"}
+  1168→                </div>
+  1169→                <div className="min-w-0 flex-1">
+  1170→                  <p className="truncate text-xs font-medium">{selectedProduct.name}</p>
+  1171→                  <p className="text-[10px] text-muted-foreground">
+  1172→                    {selectedProduct.sku} · stock {selectedProduct.stock} · {formatCurrency(selectedProduct.purchasePrice)}
+  1173→                  </p>
+  1174→                </div>
+  1175→                <Button size="sm" variant="ghost" className="h-7 px-2 text-xs"
+  1176→                  onClick={() => { setSelectedProduct(null); setSelectedId(""); }}
+  1177→                >
+  1178→                  Change
+  1179→                </Button>
+  1180→              </div>
+  1181→            )}
+  1182→
+  1183→            <div className="grid grid-cols-2 gap-3">
+  1184→              <div className="space-y-1.5">
+  1185→                <Label className="text-xs font-medium">Quantity</Label>
+  1186→                <Input type="number" min="1" value={qty} onChange={(e) => setQty(e.target.value)} />
+  1187→              </div>
+  1188→              <div className="space-y-1.5">
+  1189→                <Label className="text-xs font-medium">Reason <span className="text-rose-500">*</span></Label>
+  1190→                <Select value={reason} onValueChange={setReason}>
+  1191→                  <SelectTrigger><SelectValue placeholder="Select reason" /></SelectTrigger>
+  1192→                  <SelectContent>
+  1193→                    {DAMAGE_REASONS.map((r) => (
+  1194→                      <SelectItem key={r} value={r}>{r.charAt(0) + r.slice(1).toLowerCase()}</SelectItem>
+  1195→                    ))}
+  1196→                  </SelectContent>
+  1197→                </Select>
+  1198→              </div>
+  1199→            </div>
+  1200→
+  1201→            <div className="space-y-1.5">
+  1202→              <Label className="text-xs font-medium">Note</Label>
+  1203→              <Textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2} placeholder="What happened? (optional)" />
+  1204→            </div>
+  1205→
+  1206→            <div className="space-y-1.5">
+  1207→              <Label className="text-xs font-medium">Image (optional)</Label>
+  1208→              <div className="flex items-center gap-3">
+  1209→                {imageUrl ? (
+  1210→                  <div className="group relative h-16 w-16 overflow-hidden rounded-lg border">
+  1211→                    <img src={imageUrl} alt="damage" className="h-full w-full object-cover" />
+  1212→                    <button type="button" onClick={() => setImageUrl(null)}
+  1213→                      className="absolute right-0.5 top-0.5 rounded bg-black/50 p-0.5 text-white opacity-0 transition group-hover:opacity-100"
+  1214→                    >
+  1215→                      <X className="h-3 w-3" />
+  1216→                    </button>
+  1217→                  </div>
+  1218→                ) : (
+  1219→                  <ImageUpload value={null} onChange={setImageUrl} label="Upload" className="w-16" />
+  1220→                )}
+  1221→                <p className="text-[11px] text-muted-foreground">Photo of the damaged item</p>
+  1222→              </div>
+  1223→            </div>
+  1224→          </div>
+  1225→        </ScrollArea>
+  1226→        <DialogFooter className="border-t bg-muted/30 p-4">
+  1227→          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>Cancel</Button>
+  1228→          <Button onClick={handleSubmit} disabled={saving || !selectedId || !reason} className="gap-1.5">
+  1229→            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <PackageX className="h-4 w-4" />}
+  1230→            Record Damage
+  1231→          </Button>
+  1232→        </DialogFooter>
+  1233→      </DialogContent>
+  1234→    </Dialog>
+  1235→  );
+  1236→}
+  1237→
+  1238→function DamagedTab() {
+  1239→  const qc = useQueryClient();
+  1240→  const [q, setQ] = useState("");
+  1241→  const [reasonFilter, setReasonFilter] = useState("");
+  1242→  const [page, setPage] = useState(1);
+  1243→  const [dialogOpen, setDialogOpen] = useState(false);
+  1244→
+  1245→  const queryStr = useMemo(() => {
+  1246→    const p = new URLSearchParams();
+  1247→    if (q) p.set("q", q);
+  1248→    if (reasonFilter) p.set("reason", reasonFilter);
+  1249→    p.set("page", String(page));
+  1250→    p.set("pageSize", "50");
+  1251→    return p.toString();
+  1252→  }, [q, reasonFilter, page]);
+  1253→
+  1254→  const damagedQ = useQuery<{ data: DamagedItem[]; total: number }>({
+  1255→    queryKey: ["damaged", queryStr],
+  1256→    queryFn: () => api.get(`/damaged?${queryStr}`),
+  1257→  });
+  1258→  const items = damagedQ.data?.data ?? [];
+  1259→
+  1260→  // Stats — derived from a separate fetch of all (no filter)
+  1261→  const statsQ = useQuery<{ data: DamagedItem[] }>({
+  1262→    queryKey: ["damaged-stats"],
+  1263→    queryFn: () => api.get(`/damaged?pageSize=200`),
+  1264→    staleTime: 30_000,
+  1265→  });
+  1266→
+  1267→  const stats = useMemo(() => {
+  1268→    const all = statsQ.data?.data ?? [];
+  1269→    let units = 0, value = 0;
+  1270→    const byReason: Record<string, { reason: string; units: number; value: number }> = {};
+  1271→    for (const d of all) {
+  1272→      units += d.qty;
+  1273→      const lineValue = d.qty * (d.product?.purchasePrice ?? 0);
+  1274→      value += lineValue;
+  1275→      if (!byReason[d.reason]) byReason[d.reason] = { reason: d.reason, units: 0, value: 0 };
+  1276→      byReason[d.reason].units += d.qty;
+  1277→      byReason[d.reason].value += lineValue;
+  1278→    }
+  1279→    const reasonData = Object.values(byReason).sort((a, b) => b.units - a.units);
+  1280→    return { units, value, reasonData, count: all.length };
+  1281→  }, [statsQ.data]);
+  1282→
+  1283→  const columns: Column<DamagedItem & Record<string, unknown>>[] = [
+  1284→    {
+  1285→      key: "product", header: "Product", className: "min-w-[220px]",
+  1286→      render: (d) => (
+  1287→        <div className="flex items-center gap-2.5">
+  1288→          {d.imageUrl ? (
+  1289→            <img src={d.imageUrl} alt="" className="h-10 w-10 shrink-0 rounded-lg border object-cover" />
+  1290→          ) : (
+  1291→            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted text-xs font-bold">
+  1292→              {d.product?.brand?.name?.[0] ?? "?"}
+  1293→            </div>
+  1294→          )}
+  1295→          <div className="min-w-0">
+  1296→            <p className="truncate text-sm font-medium">{d.product?.name ?? "Unknown"}</p>
+  1297→            <p className="text-[11px] text-muted-foreground">{d.product?.sku ?? "—"}</p>
+  1298→          </div>
+  1299→        </div>
+  1300→      ),
+  1301→    },
+  1302→    {
+  1303→      key: "qty", header: "Qty", className: "min-w-[80px]",
+  1304→      render: (d) => <Badge variant="secondary" className="font-semibold">{d.qty} unit{d.qty > 1 ? "s" : ""}</Badge>,
+  1305→    },
+  1306→    {
+  1307→      key: "reason", header: "Reason", className: "min-w-[120px]",
+  1308→      render: (d) => <DamageReasonBadge reason={d.reason} />,
+  1309→    },
+  1310→    {
+  1311→      key: "value", header: "Value Lost", className: "min-w-[120px] text-right",
+  1312→      render: (d) => (
+  1313→        <span className="font-semibold text-rose-600 dark:text-rose-400">
+  1314→          {formatCurrency(d.qty * (d.product?.purchasePrice ?? 0))}
+  1315→        </span>
+  1316→      ),
+  1317→    },
+  1318→    {
+  1319→      key: "date", header: "Date", className: "min-w-[140px]",
+  1320→      render: (d) => <span className="text-xs">{formatDateTime(d.date)}</span>,
+  1321→    },
+  1322→    {
+  1323→      key: "note", header: "Note", className: "min-w-[180px]",
+  1324→      render: (d) => <span className="line-clamp-1 text-xs text-muted-foreground">{d.note ?? "—"}</span>,
+  1325→    },
+  1326→  ];
+  1327→
+  1328→  return (
+  1329→    <div className="space-y-5">
+  1330→      {/* Stats row */}
+  1331→      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+  1332→        <StatCard label="Total Damaged Units" value={stats.units} icon={PackageX} accent="rose" subtitle={`${stats.count} record${stats.count === 1 ? "" : "s"}`} />
+  1333→        <StatCard label="Damaged Value" value={formatCurrency(stats.value)} icon={Wallet} accent="amber" subtitle="At purchase cost" />
+  1334→        <StatCard label="Most Common Reason" value={stats.reasonData[0]?.reason ?? "—"} icon={AlertTriangle} accent="purple"
+  1335→          subtitle={stats.reasonData[0] ? `${stats.reasonData[0].units} units` : "No data"} />
+  1336→        <StatCard label="Avg per Incident" value={stats.count ? (stats.units / stats.count).toFixed(1) : "0"} icon={TrendingUp} accent="teal" subtitle="Units per record" />
+  1337→      </div>
+  1338→
+  1339→      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+  1340→        {/* Reason breakdown donut */}
+  1341→        <Card className="p-5 shadow-card lg:col-span-1">
+  1342→          <div className="mb-2">
+  1343→            <h3 className="text-sm font-semibold">By Reason Breakdown</h3>
+  1344→            <p className="text-xs text-muted-foreground">Units damaged per reason</p>
+  1345→          </div>
+  1346→          {statsQ.isLoading ? (
+  1347→            <div className="h-[200px] animate-pulse rounded-lg bg-muted" />
+  1348→          ) : stats.reasonData.length === 0 ? (
+  1349→            <div className="flex h-[200px] items-center justify-center text-xs text-muted-foreground">
+  1350→              No damaged inventory recorded
+  1351→            </div>
+  1352→          ) : (
+  1353→            <>
+  1354→              <div className="h-[200px]">
+  1355→                <ResponsiveContainer width="100%" height="100%">
+  1356→                  <PieChart>
+  1357→                    <Pie
+  1358→                      data={stats.reasonData}
+  1359→                      dataKey="units" nameKey="reason"
+  1360→                      innerRadius={50} outerRadius={80} paddingAngle={2}
+  1361→                    >
+  1362→                      {stats.reasonData.map((_, i) => (
+  1363→                        <RechartsCell key={i} fill={DAMAGE_CHART_COLORS[i % DAMAGE_CHART_COLORS.length]} />
+  1364→                      ))}
+  1365→                    </Pie>
+  1366→                    <RechartsTooltip
+  1367→                      contentStyle={{ borderRadius: 12, border: "1px solid var(--border)", background: "var(--popover)", fontSize: 12 }}
+  1368→                      formatter={(v: number, name: string) => [`${v} units`, name.toLowerCase()]}
+  1369→                    />
+  1370→                  </PieChart>
+  1371→                </ResponsiveContainer>
+  1372→              </div>
+  1373→              <div className="mt-2 space-y-1">
+  1374→                {stats.reasonData.slice(0, 5).map((r, i) => (
+  1375→                  <div key={r.reason} className="flex items-center justify-between text-[11px]">
+  1376→                    <div className="flex items-center gap-1.5">
+  1377→                      <span className="h-2 w-2 rounded-full" style={{ background: DAMAGE_CHART_COLORS[i % DAMAGE_CHART_COLORS.length] }} />
+  1378→                      <span className="capitalize">{r.reason.toLowerCase()}</span>
+  1379→                    </div>
+  1380→                    <span className="font-medium">{r.units} · {formatCurrency(r.value)}</span>
+  1381→                  </div>
+  1382→                ))}
+  1383→              </div>
+  1384→            </>
+  1385→          )}
+  1386→        </Card>
+  1387→
+  1388→        {/* Table */}
+  1389→        <div className="lg:col-span-2">
+  1390→          <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+  1391→            <div className="flex flex-1 flex-col gap-2 sm:flex-row">
+  1392→              <div className="relative max-w-xs flex-1">
+  1393→                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+  1394→                <Input value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }} placeholder="Search products..." className="pl-9" />
+  1395→              </div>
+  1396→              <Select value={reasonFilter} onValueChange={(v) => { setReasonFilter(v === "ALL" ? "" : v); setPage(1); }}>
+  1397→                <SelectTrigger className="w-full sm:w-44"><SelectValue placeholder="All reasons" /></SelectTrigger>
+  1398→                <SelectContent>
+  1399→                  <SelectItem value="ALL">All reasons</SelectItem>
+  1400→                  {DAMAGE_REASONS.map((r) => (
+  1401→                    <SelectItem key={r} value={r}>{r.charAt(0) + r.slice(1).toLowerCase()}</SelectItem>
+  1402→                  ))}
+  1403→                </SelectContent>
+  1404→              </Select>
+  1405→            </div>
+  1406→            <Button onClick={() => setDialogOpen(true)} className="gap-1.5">
+  1407→              <Plus className="h-4 w-4" /> Record Damage
+  1408→            </Button>
+  1409→          </div>
+  1410→          <DataTable
+  1411→            columns={columns}
+  1412→            data={items as (DamagedItem & Record<string, unknown>)[]}
+  1413→            loading={damagedQ.isLoading}
+  1414→            pagination
+  1415→            page={page}
+  1416→            pageSize={50}
+  1417→            total={damagedQ.data?.total ?? 0}
+  1418→            onPageChange={setPage}
+  1419→            emptyTitle="No damaged inventory"
+  1420→            emptyDescription="Record damage to deduct stock and track losses."
+  1421→            rowKey={(d) => d.id}
+  1422→          />
+  1423→        </div>
+  1424→      </div>
+  1425→
+  1426→      <RecordDamageDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+  1427→    </div>
+  1428→  );
+  1429→}
+  1430→
+  1431→// ─────────────────────────────────────────────────────────────────────────────
+  1432→// Tickets tab (Kanban + Table toggle)
+  1433→// ─────────────────────────────────────────────────────────────────────────────
+  1434→function TicketsTab({ onNewTicket }: { onNewTicket: () => void }) {
+  1435→  const qc = useQueryClient();
+  1436→  const [view, setView] = useState<"kanban" | "table">("kanban");
+  1437→  const [q, setQ] = useState("");
+  1438→  const [statusFilter, setStatusFilter] = useState("");
+  1439→  const [techFilter, setTechFilter] = useState("");
+  1440→  const [page, setPage] = useState(1);
+  1441→  const [detailId, setDetailId] = useState<string | null>(null);
+  1442→
+  1443→  const queryStr = useMemo(() => {
+  1444→    const p = new URLSearchParams();
+  1445→    if (q) p.set("q", q);
+  1446→    if (statusFilter) p.set("status", statusFilter);
+  1447→    if (techFilter) p.set("technicianId", techFilter);
+  1448→    p.set("page", String(page));
+  1449→    p.set("pageSize", "100");
+  1450→    return p.toString();
+  1451→  }, [q, statusFilter, techFilter, page]);
+  1452→
+  1453→  const repairsQ = useQuery<{ data: RepairJob[]; total: number }>({
+  1454→    queryKey: ["repairs", queryStr],
+  1455→    queryFn: () => api.get(`/repairs?${queryStr}`),
+  1456→  });
+  1457→  const repairs = repairsQ.data?.data ?? [];
+  1458→
+  1459→  // Stats — fetch all repairs for aggregation
+  1460→  const statsQ = useQuery<{ data: RepairJob[] }>({
+  1461→    queryKey: ["repairs-stats"],
+  1462→    queryFn: () => api.get(`/repairs?pageSize=200`),
+  1463→    staleTime: 30_000,
+  1464→  });
+  1465→
+  1466→  const stats = useMemo(() => {
+  1467→    const all = statsQ.data?.data ?? [];
+  1468→    const now = new Date();
+  1469→    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+  1470→    let pending = 0, inProgress = 0, completedMonth = 0, revenue = 0;
+  1471→    for (const r of all) {
+  1472→      if (r.status === "RECEIVED" || r.status === "DIAGNOSED" || r.status === "WAITING_PARTS") pending++;
+  1473→      if (r.status === "REPAIRING") inProgress++;
+  1474→      const t = new Date(r.receivedAt).getTime();
+  1475→      if (r.status === "COMPLETED" && t >= monthStart) {
+  1476→        completedMonth++;
+  1477→        revenue += r.paid;
+  1478→      }
+  1479→      if (r.status === "DELIVERED" && r.deliveredAt && new Date(r.deliveredAt).getTime() >= monthStart) {
+  1480→        revenue += r.paid;
+  1481→      }
+  1482→    }
+  1483→    return { pending, inProgress, completedMonth, revenue, total: all.length };
+  1484→  }, [statsQ.data]);
+  1485→
+  1486→  const techniciansQ = useQuery<User[]>({
+  1487→    queryKey: ["users-list"],
+  1488→    queryFn: () => api.get("/users"),
+  1489→    staleTime: 60_000,
+  1490→  });
+  1491→
+  1492→  const openDetail = (r: RepairJob) => setDetailId(r.id);
+  1493→
+  1494→  const columns: Column<RepairJob & Record<string, unknown>>[] = [
+  1495→    {
+  1496→      key: "ticketNo", header: "Ticket", className: "min-w-[140px]",
+  1497→      render: (r) => (
+  1498→        <div>
+  1499→          <p className="font-mono text-xs font-bold">{r.ticketNo}</p>
+  1500→          <p className="text-[11px] text-muted-foreground">{timeAgo(r.receivedAt)}</p>
+  1501→        </div>
+  1502→      ),
+  1503→    },
+  1504→    {
+  1505→      key: "customer", header: "Customer", className: "min-w-[150px]",
+  1506→      render: (r) => (
+  1507→        <div className="flex items-center gap-2">
+  1508→          <TechAvatar name={r.customer?.name} />
+  1509→          <div className="min-w-0">
+  1510→            <p className="truncate text-xs font-medium">{r.customer?.name ?? "Walk-in"}</p>
+  1511→            <p className="text-[10px] text-muted-foreground">{r.customer?.phone ?? "—"}</p>
+  1512→          </div>
+  1513→        </div>
+  1514→      ),
+  1515→    },
+  1516→    {
+  1517→      key: "model", header: "Device", className: "min-w-[160px]",
+  1518→      render: (r) => (
+  1519→        <div className="flex items-center gap-2">
+  1520→          <Smartphone className="h-3.5 w-3.5 text-muted-foreground" />
+  1521→          <div className="min-w-0">
+  1522→            <p className="truncate text-xs font-medium">
+  1523→              {r.model ? `${r.model.brand?.name ?? ""} ${r.model.name}`.trim() : "—"}
+  1524→            </p>
+  1525→            <p className="text-[10px] text-muted-foreground line-clamp-1">{r.problem}</p>
+  1526→          </div>
+  1527→        </div>
+  1528→      ),
+  1529→    },
+  1530→    {
+  1531→      key: "technician", header: "Technician", className: "min-w-[130px]",
+  1532→      render: (r) => (
+  1533→        <div className="flex items-center gap-1.5">
+  1534→          <TechAvatar name={r.technician?.name} />
+  1535→          <span className="truncate text-xs">{r.technician?.name ?? "Unassigned"}</span>
+  1536→        </div>
+  1537→      ),
+  1538→    },
+  1539→    {
+  1540→      key: "status", header: "Status", className: "min-w-[120px]",
+  1541→      render: (r) => <RepairStatusBadge status={r.status} />,
+  1542→    },
+  1543→    {
+  1544→      key: "total", header: "Total", className: "min-w-[110px] text-right",
+  1545→      render: (r) => (
+  1546→        <div className="text-right">
+  1547→          <p className="text-sm font-bold">{formatCurrency(r.total)}</p>
+  1548→          <PaymentStatusBadge status={r.paymentStatus} />
+  1549→        </div>
+  1550→      ),
+  1551→    },
+  1552→    {
+  1553→      key: "actions", header: "", className: "text-right",
+  1554→      render: (r) => (
+  1555→        <Button size="sm" variant="ghost" className="h-8 gap-1" onClick={(e) => { e.stopPropagation(); openDetail(r); }}>
+  1556→          <Eye className="h-3.5 w-3.5" /> View
+  1557→        </Button>
+  1558→      ),
+  1559→    },
+  1560→  ];
+  1561→
+  1562→  return (
+  1563→    <div className="space-y-5">
+  1564→      {/* Stats */}
+  1565→      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+  1566→        <StatCard label="Pending Repairs" value={stats.pending} icon={ClipboardList} accent="teal" subtitle="Awaiting parts/action" />
+  1567→        <StatCard label="In Progress" value={stats.inProgress} icon={Cog} accent="purple" subtitle="Being repaired now" />
+  1568→        <StatCard label="Completed This Month" value={stats.completedMonth} icon={CheckCircle2} accent="emerald" subtitle="Tickets finished" />
+  1569→        <StatCard label="Repair Revenue" value={formatCurrency(stats.revenue)} icon={Wallet} accent="amber" subtitle="Collected this month" />
+  1570→      </div>
+  1571→
+  1572→      {/* Toolbar */}
+  1573→      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+  1574→        <div className="flex flex-1 flex-col gap-2 sm:flex-row">
+  1575→          <div className="relative max-w-xs flex-1">
+  1576→            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+  1577→            <Input value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }} placeholder="Search tickets, customers, IMEI..." className="pl-9" />
+  1578→          </div>
+  1579→          <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v === "ALL" ? "" : v); setPage(1); }}>
+  1580→            <SelectTrigger className="w-full sm:w-44"><SelectValue placeholder="All statuses" /></SelectTrigger>
+  1581→            <SelectContent>
+  1582→              <SelectItem value="ALL">All statuses</SelectItem>
+  1583→              {REPAIR_STATUSES.map((s) => (
+  1584→                <SelectItem key={s} value={s}>{s.charAt(0) + s.slice(1).toLowerCase().replace("_", " ")}</SelectItem>
+  1585→              ))}
+  1586→            </SelectContent>
+  1587→          </Select>
+  1588→          <Select value={techFilter} onValueChange={(v) => { setTechFilter(v === "ALL" ? "" : v); setPage(1); }}>
+  1589→            <SelectTrigger className="w-full sm:w-44"><SelectValue placeholder="All technicians" /></SelectTrigger>
+  1590→            <SelectContent>
+  1591→              <SelectItem value="ALL">All technicians</SelectItem>
+  1592→              {(techniciansQ.data ?? []).map((t) => (
+  1593→                <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+  1594→              ))}
+  1595→            </SelectContent>
+  1596→          </Select>
+  1597→        </div>
+  1598→
+  1599→        {/* View toggle */}
+  1600→        <div className="inline-flex shrink-0 items-center gap-1 rounded-lg border bg-card p-1">
+  1601→          <button
+  1602→            onClick={() => setView("kanban")}
+  1603→            className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition ${
+  1604→              view === "kanban" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+  1605→            }`}
+  1606→          >
+  1607→            <Boxes className="h-3.5 w-3.5" /> Kanban
+  1608→          </button>
+  1609→          <button
+  1610→            onClick={() => setView("table")}
+  1611→            className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition ${
+  1612→              view === "table" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+  1613→            }`}
+  1614→          >
+  1615→            <ClipboardList className="h-3.5 w-3.5" /> Table
+  1616→          </button>
+  1617→        </div>
+  1618→      </div>
+  1619→
+  1620→      {/* Body */}
+  1621→      {view === "kanban" ? (
+  1622→        <KanbanBoard repairs={repairs} loading={repairsQ.isLoading} onCardClick={openDetail} />
+  1623→      ) : (
+  1624→        <DataTable
+  1625→          columns={columns}
+  1626→          data={repairs as (RepairJob & Record<string, unknown>)[]}
+  1627→          loading={repairsQ.isLoading}
+  1628→          pagination
+  1629→          page={page}
+  1630→          pageSize={100}
+  1631→          total={repairsQ.data?.total ?? 0}
+  1632→          onPageChange={setPage}
+  1633→          onRowClick={openDetail}
+  1634→          emptyTitle="No repair tickets"
+  1635→          emptyDescription="Create your first ticket to start tracking repairs."
+  1636→          rowKey={(r) => r.id}
+  1637→        />
+  1638→      )}
+  1639→
+  1640→      {/* Hidden button — actual trigger is in parent header */}
+  1641→      <button className="hidden" onClick={onNewTicket} aria-hidden data-new-ticket-trigger />
+  1642→    </div>
+  1643→  );
+  1644→}
+  1645→
+  1646→// ─────────────────────────────────────────────────────────────────────────────
+  1647→// Main view
+  1648→// ─────────────────────────────────────────────────────────────────────────────
+  1649→export function RepairsView() {
+  1650→  const [tab, setTab] = useState<"tickets" | "damaged">("tickets");
+  1651→  const [newTicketOpen, setNewTicketOpen] = useState(false);
+  1652→
+  1653→  // Shared data for the New Ticket dialog
+  1654→  const customersQ = useQuery<Customer[]>({
+  1655→    queryKey: ["customers-list"],
+  1656→    queryFn: () => api.get("/customers"),
+  1657→    staleTime: 60_000,
+  1658→  });
+  1659→  const modelsQ = useQuery<PhoneModel[]>({
+  1660→    queryKey: ["models-list"],
+  1661→    queryFn: () => api.get("/models"),
+  1662→    staleTime: 60_000,
+  1663→  });
+  1664→  const techniciansQ = useQuery<User[]>({
+  1665→    queryKey: ["users-list"],
+  1666→    queryFn: () => api.get("/users"),
+  1667→    staleTime: 60_000,
+  1668→  });
+  1669→
+  1670→  // Trigger the New Ticket dialog from inside TicketsTab via a custom event
+  1671→  // (TicketsTab has its own toolbar but we want the header button to work too).
+  1672→  const handleNewTicket = () => setNewTicketOpen(true);
+  1673→
+  1674→  return (
+  1675→    <div>
+  1676→      <PageHeader
+  1677→        title="Repair Jobs"
+  1678→        description="Track repair tickets from intake to delivery, manage parts usage, and record damaged inventory."
+  1679→        icon={Wrench}
+  1680→        actions={
+  1681→          <Button onClick={handleNewTicket} className="gap-1.5">
+  1682→            <Plus className="h-4 w-4" /> New Ticket
+  1683→          </Button>
+  1684→        }
+  1685→      />
+  1686→
+  1687→      <Tabs value={tab} onValueChange={(v) => setTab(v as "tickets" | "damaged")}>
+  1688→        <TabsList>
+  1689→          <TabsTrigger value="tickets" className="gap-1.5">
+  1690→            <Wrench className="h-3.5 w-3.5" /> Tickets
+  1691→          </TabsTrigger>
+  1692→          <TabsTrigger value="damaged" className="gap-1.5">
+  1693→            <PackageX className="h-3.5 w-3.5" /> Damaged Inventory
+  1694→          </TabsTrigger>
+  1695→        </TabsList>
+  1696→        <TabsContent value="tickets" className="mt-5">
+  1697→          <TicketsTab onNewTicket={handleNewTicket} />
+  1698→        </TabsContent>
+  1699→        <TabsContent value="damaged" className="mt-5">
+  1700→          <DamagedTab />
+  1701→        </TabsContent>
+  1702→      </Tabs>
+  1703→
+  1704→      <NewTicketDialog
+  1705→        open={newTicketOpen}
+  1706→        onOpenChange={setNewTicketOpen}
+  1707→        customers={customersQ.data ?? []}
+  1708→        models={modelsQ.data ?? []}
+  1709→        technicians={techniciansQ.data ?? []}
+  1710→      />
+  1711→    </div>
+  1712→  );
+  1713→}
+  1714→

@@ -36,18 +36,12 @@ export function Topbar() {
   });
 
   const titles: Record<string, string> = {
-    dashboard: "Dashboard",
+    home: "Home",
     inventory: "Inventory",
-    products: "Products",
-    compatibility: "Compatibility Engine",
-    sales: "Sales & Invoices",
+    sales: "Sales",
     purchases: "Purchases",
-    suppliers: "Suppliers",
-    customers: "Customers",
-    repairs: "Repair Jobs",
-    ai: "AI Identification",
+    repairs: "Repairs",
     reports: "Reports",
-    analytics: "Analytics",
     settings: "Settings",
   };
 
@@ -70,13 +64,13 @@ export function Topbar() {
         </span>
       </div>
 
-      {/* Global search trigger */}
+      {/* Global search trigger — navigates to Home and focuses the universal search */}
       <button
-        onClick={() => setCommandOpen(true)}
+        onClick={() => { setView("home"); setTimeout(() => document.getElementById("universal-search")?.focus(), 100); }}
         className="group ml-2 flex h-9 w-full max-w-md items-center gap-2 rounded-lg border bg-muted/50 pl-3 pr-2.5 text-sm text-muted-foreground transition hover:border-primary/40 hover:bg-muted lg:ml-6"
       >
         <Search className="h-4 w-4 shrink-0" />
-        <span className="flex-1 truncate text-left">Search products, models, invoices…</span>
+        <span className="flex-1 truncate text-left">Search anything…</span>
         <kbd className="hidden shrink-0 items-center gap-0.5 rounded border bg-background px-1.5 py-0.5 text-[10px] font-medium sm:flex">
           <CommandIcon className="h-2.5 w-2.5" />K
         </kbd>

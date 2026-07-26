@@ -1,0 +1,960 @@
+     1→"use client";
+     2→
+     3→import { useState, useMemo } from "react";
+     4→import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+     5→import { api } from "@/lib/api";
+     6→import { PageHeader } from "@/components/shared/page-header";
+     7→import { StatCard } from "@/components/shared/stat-card";
+     8→import { DataTable, type Column } from "@/components/shared/data-table";
+     9→import { PaymentStatusBadge, PaymentMethodBadge } from "@/components/shared/badges";
+    10→import { QrDisplay } from "@/components/shared/qr-barcode";
+    11→import { ScannerButton } from "@/components/shared/scanner-button";
+    12→import { Button } from "@/components/ui/button";
+    13→import { Input } from "@/components/ui/input";
+    14→import { Label } from "@/components/ui/label";
+    15→import { Textarea } from "@/components/ui/textarea";
+    16→import { Badge } from "@/components/ui/badge";
+    17→import { Card } from "@/components/ui/card";
+    18→import { ScrollArea } from "@/components/ui/scroll-area";
+    19→import {
+    20→  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+    21→} from "@/components/ui/dialog";
+    22→import {
+    23→  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+    24→} from "@/components/ui/select";
+    25→import {
+    26→  ShoppingCart, Plus, Search, Trash2, X, Printer, Eye, Undo2, Receipt,
+    27→  Wallet, TrendingUp, AlertCircle, Package, Minus, Loader2, User2,
+    28→} from "lucide-react";
+    29→import { formatCurrency, formatDateTime } from "@/lib/format";
+    30→import { PAYMENT_METHODS, PAYMENT_STATUSES } from "@/lib/types";
+    31→import { toast } from "sonner";
+    32→import { motion, AnimatePresence } from "framer-motion";
+    33→
+    34→// ────────────────────────────────────────────────────────────────────────────
+    35→// Types
+    36→// ────────────────────────────────────────────────────────────────────────────
+    37→interface Customer { id: string; name: string; phone?: string | null; company?: string | null; }
+    38→interface Product {
+    39→  id: string; sku: string; name: string; sellingPrice: number; purchasePrice: number;
+    40→  stock: number; brand?: { name: string } | null; model?: { name: string } | null;
+    41→}
+    42→interface SaleItem {
+    43→  id: string; productId: string; name: string; qty: number; price: number;
+    44→  cost: number; discount: number; total: number;
+    45→  product?: { sku?: string; brand?: { name: string } | null; model?: { name: string } | null };
+    46→}
+    47→interface Sale {
+    48→  id: string; invoiceNo: string; customerId?: string | null;
+    49→  customer?: Customer | null; user?: { name: string } | null;
+    50→  subtotal: number; discount: number; tax: number; total: number; profit: number;
+    51→  paid: number; paymentMethod: string; paymentStatus: string; status: string;
+    52→  notes?: string | null; createdAt: string; items: SaleItem[];
+    53→  business?: { name: string; phone: string; address: string; email: string; currencySymbol: string; taxName: string };
+    54→}
+    55→interface CartLine {
+    56→  key: string; productId: string; name: string; sku: string;
+    57→  qty: number; price: number; cost: number; discount: number; stock: number;
+    58→}
+    59→
+    60→// ────────────────────────────────────────────────────────────────────────────
+    61→// Main view
+    62→// ────────────────────────────────────────────────────────────────────────────
+    63→export function SalesView() {
+    64→  const qc = useQueryClient();
+    65→  const [q, setQ] = useState("");
+    66→  const [paymentStatus, setPaymentStatus] = useState("");
+    67→  const [dateFilter, setDateFilter] = useState("");
+    68→  const [page, setPage] = useState(1);
+    69→  const [formOpen, setFormOpen] = useState(false);
+    70→  const [invoiceSale, setInvoiceSale] = useState<Sale | null>(null);
+    71→
+    72→  const queryStr = useMemo(() => {
+    73→    const p = new URLSearchParams();
+    74→    if (q) p.set("q", q);
+    75→    if (paymentStatus) p.set("paymentStatus", paymentStatus);
+    76→    if (dateFilter) {
+    77→      const d = new Date(dateFilter);
+    78→      const from = new Date(d.getFullYear(), d.getMonth(), d.getDate()).toISOString();
+    79→      const to = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59).toISOString();
+    80→      p.set("from", from);
+    81→      p.set("to", to);
+    82→    }
+    83→    p.set("page", String(page));
+    84→    p.set("pageSize", "20");
+    85→    return p.toString();
+    86→  }, [q, paymentStatus, dateFilter, page]);
+    87→
+    88→  const sales = useQuery<{ data: Sale[]; total: number }>({
+    89→    queryKey: ["sales", queryStr],
+    90→    queryFn: () => api.get(`/sales?${queryStr}`),
+    91→  });
+    92→
+    93→  // Stats — fetch all sales this month for aggregation
+    94→  const statsQuery = useQuery<{ data: Sale[] }>({
+    95→    queryKey: ["sales-stats"],
+    96→    queryFn: () => api.get(`/sales?pageSize=100`),
+    97→    staleTime: 30_000,
+    98→  });
+    99→  const stats = useMemo(() => {
+   100→    const all = statsQuery.data?.data ?? [];
+   101→    const now = new Date();
+   102→    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+   103→    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+   104→    let todayTotal = 0, todayCount = 0, monthTotal = 0, outstanding = 0;
+   105→    for (const s of all) {
+   106→      const t = new Date(s.createdAt).getTime();
+   107→      if (s.status !== "RETURNED") {
+   108→        if (t >= todayStart) { todayTotal += s.total; todayCount++; }
+   109→        if (t >= monthStart) monthTotal += s.total;
+   110→      }
+   111→      if (s.paymentStatus !== "PAID") outstanding += Math.max(0, s.total - s.paid);
+   112→    }
+   113→    return { todayTotal, todayCount, monthTotal, outstanding };
+   114→  }, [statsQuery.data]);
+   115→
+   116→  const columns: Column<Sale & Record<string, unknown>>[] = [
+   117→    {
+   118→      key: "invoiceNo", header: "Invoice", className: "min-w-[140px]",
+   119→      render: (s) => (
+   120→        <div>
+   121→          <p className="font-mono text-xs font-semibold text-foreground">{s.invoiceNo}</p>
+   122→          <p className="text-[11px] text-muted-foreground">{formatDateTime(s.createdAt)}</p>
+   123→        </div>
+   124→      ),
+   125→    },
+   126→    {
+   127→      key: "customer", header: "Customer", className: "min-w-[160px]",
+   128→      render: (s) => (
+   129→        <div className="flex items-center gap-2">
+   130→          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+   131→            <User2 className="h-4 w-4" />
+   132→          </div>
+   133→          <div className="min-w-0">
+   134→            <p className="truncate text-sm font-medium">{s.customer?.name ?? "Walk-in Customer"}</p>
+   135→            <p className="text-[11px] text-muted-foreground">{s.customer?.phone ?? "—"}</p>
+   136→          </div>
+   137→        </div>
+   138→      ),
+   139→    },
+   140→    {
+   141→      key: "items", header: "Items",
+   142→      render: (s) => <Badge variant="secondary" className="font-semibold">{s.items?.length ?? 0}</Badge>,
+   143→    },
+   144→    {
+   145→      key: "total", header: "Total", className: "text-right",
+   146→      render: (s) => (
+   147→        <div className="text-right">
+   148→          <p className="text-sm font-bold">{formatCurrency(s.total)}</p>
+   149→          <p className="text-[11px] text-muted-foreground">profit {formatCurrency(s.profit)}</p>
+   150→        </div>
+   151→      ),
+   152→    },
+   153→    {
+   154→      key: "paymentMethod", header: "Method",
+   155→      render: (s) => <PaymentMethodBadge method={s.paymentMethod} />,
+   156→    },
+   157→    {
+   158→      key: "paymentStatus", header: "Payment",
+   159→      render: (s) => <PaymentStatusBadge status={s.paymentStatus} />,
+   160→    },
+   161→    {
+   162→      key: "status", header: "Status",
+   163→      render: (s) => (
+   164→        s.status === "RETURNED" ? (
+   165→          <Badge variant="outline" className="bg-rose-500/10 text-rose-600 dark:text-rose-400">Returned</Badge>
+   166→        ) : (
+   167→          <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">Completed</Badge>
+   168→        )
+   169→      ),
+   170→    },
+   171→    {
+   172→      key: "actions", header: "", className: "text-right",
+   173→      render: (s) => (
+   174→        <div className="flex justify-end gap-1">
+   175→          <Button size="sm" variant="ghost" className="h-8 gap-1" onClick={(e) => { e.stopPropagation(); openInvoice(s.id); }}>
+   176→            <Eye className="h-3.5 w-3.5" /> View
+   177→          </Button>
+   178→          {s.status !== "RETURNED" && (
+   179→            <Button size="sm" variant="ghost" className="h-8 gap-1 text-amber-600" onClick={(e) => { e.stopPropagation(); handleReturn(s); }}>
+   180→              <Undo2 className="h-3.5 w-3.5" /> Return
+   181→            </Button>
+   182→          )}
+   183→        </div>
+   184→      ),
+   185→    },
+   186→  ];
+   187→
+   188→  const openInvoice = async (id: string) => {
+   189→    try {
+   190→      const sale = await api.get<Sale>(`/sales/${id}`);
+   191→      setInvoiceSale(sale);
+   192→    } catch (e) {
+   193→      toast.error((e as Error).message);
+   194→    }
+   195→  };
+   196→
+   197→  const handleReturn = async (s: Sale) => {
+   198→    if (!confirm(`Mark invoice ${s.invoiceNo} as RETURNED? Items will be restocked.`)) return;
+   199→    try {
+   200→      await api.put(`/sales/${s.id}`, { status: "RETURNED" });
+   201→      qc.invalidateQueries({ queryKey: ["sales"] });
+   202→      qc.invalidateQueries({ queryKey: ["products"] });
+   203→      toast.success(`Invoice ${s.invoiceNo} marked as returned. Stock restocked.`);
+   204→    } catch (e) {
+   205→      toast.error((e as Error).message);
+   206→    }
+   207→  };
+   208→
+   209→  const hasFilters = q || paymentStatus || dateFilter;
+   210→  const clearFilters = () => { setQ(""); setPaymentStatus(""); setDateFilter(""); setPage(1); };
+   211→
+   212→  return (
+   213→    <div className="space-y-5">
+   214→      <PageHeader
+   215→        title="Sales & Invoices"
+   216→        description="Create POS sales, manage invoices, track payments and returns"
+   217→        icon={ShoppingCart}
+   218→        actions={
+   219→          <Button size="sm" className="gap-1.5" onClick={() => setFormOpen(true)}>
+   220→            <Plus className="h-4 w-4" /> New Sale
+   221→          </Button>
+   222→        }
+   223→      />
+   224→
+   225→      {/* Stats */}
+   226→      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+   227→        <StatCard label="Today's Sales" value={formatCurrency(stats.todayTotal)} icon={Wallet} accent="emerald" subtitle={`${stats.todayCount} invoices today`} />
+   228→        <StatCard label="Today's Count" value={stats.todayCount} icon={ShoppingCart} accent="teal" subtitle="Invoices issued today" />
+   229→        <StatCard label="This Month" value={formatCurrency(stats.monthTotal)} icon={TrendingUp} accent="purple" subtitle="Total revenue this month" />
+   230→        <StatCard label="Outstanding" value={formatCurrency(stats.outstanding)} icon={AlertCircle} accent="amber" subtitle="Unpaid invoices" />
+   231→      </div>
+   232→
+   233→      {/* Filters */}
+   234→      <Card className="p-4 shadow-soft">
+   235→        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+   236→          <div className="relative flex-1">
+   237→            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+   238→            <Input
+   239→              value={q}
+   240→              onChange={(e) => { setQ(e.target.value); setPage(1); }}
+   241→              placeholder="Search invoice no, customer name or phone…"
+   242→              className="pl-9"
+   243→            />
+   244→          </div>
+   245→          <div className="flex flex-wrap gap-2">
+   246→            <Select value={paymentStatus || "all"} onValueChange={(v) => { setPaymentStatus(v === "all" ? "" : v); setPage(1); }}>
+   247→              <SelectTrigger className="w-[150px]"><SelectValue placeholder="All payments" /></SelectTrigger>
+   248→              <SelectContent>
+   249→                <SelectItem value="all">All payments</SelectItem>
+   250→                {PAYMENT_STATUSES.map((s) => <SelectItem key={s} value={s}>{s.charAt(0) + s.slice(1).toLowerCase()}</SelectItem>)}
+   251→              </SelectContent>
+   252→            </Select>
+   253→            <Input
+   254→              type="date"
+   255→              value={dateFilter}
+   256→              onChange={(e) => { setDateFilter(e.target.value); setPage(1); }}
+   257→              className="w-[150px]"
+   258→            />
+   259→            {hasFilters && (
+   260→              <Button variant="ghost" size="sm" className="gap-1" onClick={clearFilters}>
+   261→                <X className="h-4 w-4" /> Clear
+   262→              </Button>
+   263→            )}
+   264→          </div>
+   265→        </div>
+   266→      </Card>
+   267→
+   268→      {/* Table */}
+   269→      <DataTable
+   270→        columns={columns}
+   271→        data={sales.data?.data ?? []}
+   272→        loading={sales.isLoading}
+   273→        pagination
+   274→        page={page}
+   275→        pageSize={20}
+   276→        total={sales.data?.total ?? 0}
+   277→        onPageChange={setPage}
+   278→        onRowClick={(s) => openInvoice(s.id)}
+   279→        rowKey={(s) => s.id}
+   280→        emptyTitle="No sales found"
+   281→        emptyDescription={hasFilters ? "Try adjusting your filters." : "Create your first sale to get started."}
+   282→      />
+   283→
+   284→      <SaleFormDialog
+   285→        open={formOpen}
+   286→        onOpenChange={setFormOpen}
+   287→        onCreated={(sale) => { setInvoiceSale(sale); qc.invalidateQueries({ queryKey: ["sales"] }); qc.invalidateQueries({ queryKey: ["products"] }); }}
+   288→      />
+   289→
+   290→      <InvoiceDialog sale={invoiceSale} onOpenChange={(o) => !o && setInvoiceSale(null)} />
+   291→    </div>
+   292→  );
+   293→}
+   294→
+   295→// ────────────────────────────────────────────────────────────────────────────
+   296→// Sale Form Dialog (POS-style)
+   297→// ────────────────────────────────────────────────────────────────────────────
+   298→function SaleFormDialog({
+   299→  open, onOpenChange, onCreated,
+   300→}: {
+   301→  open: boolean;
+   302→  onOpenChange: (o: boolean) => void;
+   303→  onCreated: (sale: Sale) => void;
+   304→}) {
+   305→  const qc = useQueryClient();
+   306→  const [customerId, setCustomerId] = useState("");
+   307→  const [cart, setCart] = useState<CartLine[]>([]);
+   308→  const [search, setSearch] = useState("");
+   309→  const [overallDiscount, setOverallDiscount] = useState(0);
+   310→  const [tax, setTax] = useState(0);
+   311→  const [paymentMethod, setPaymentMethod] = useState("CASH");
+   312→  const [paymentStatus, setPaymentStatus] = useState("PAID");
+   313→  const [notes, setNotes] = useState("");
+   314→
+   315→  const customers = useQuery<Customer[]>({
+   316→    queryKey: ["customers"],
+   317→    queryFn: () => api.get("/customers"),
+   318→    staleTime: 60_000,
+   319→  });
+   320→
+   321→  const productSearch = useQuery<{ data: Product[] }>({
+   322→    queryKey: ["products-pos", search],
+   323→    queryFn: () => api.get(`/products?q=${encodeURIComponent(search)}&pageSize=10`),
+   324→    enabled: open && search.length > 0,
+   325→    staleTime: 10_000,
+   326→  });
+   327→
+   328→  const resetForm = () => {
+   329→    setCustomerId(""); setCart([]); setSearch(""); setOverallDiscount(0);
+   330→    setTax(0); setPaymentMethod("CASH"); setPaymentStatus("PAID"); setNotes("");
+   331→  };
+   332→  const handleOpenChange = (o: boolean) => {
+   333→    if (!o) resetForm();
+   334→    onOpenChange(o);
+   335→  };
+   336→
+   337→  const totals = useMemo(() => {
+   338→    const subtotal = cart.reduce((s, l) => s + l.qty * l.price, 0);
+   339→    const lineDiscounts = cart.reduce((s, l) => s + l.discount, 0);
+   340→    const cost = cart.reduce((s, l) => s + l.qty * l.cost, 0);
+   341→    const net = subtotal - lineDiscounts - overallDiscount;
+   342→    const total = Math.max(0, net + tax);
+   343→    const profit = net - cost;
+   344→    return { subtotal, lineDiscounts, cost, net, total, profit };
+   345→  }, [cart, overallDiscount, tax]);
+   346→
+   347→  const addToCart = (p: Product) => {
+   348→    setCart((prev) => {
+   349→      const existing = prev.find((l) => l.productId === p.id);
+   350→      if (existing) {
+   351→        return prev.map((l) => l.productId === p.id ? { ...l, qty: l.qty + 1 } : l);
+   352→      }
+   353→      return [...prev, {
+   354→        key: p.id, productId: p.id, name: p.name, sku: p.sku,
+   355→        qty: 1, price: p.sellingPrice, cost: p.purchasePrice, discount: 0, stock: p.stock,
+   356→      }];
+   357→    });
+   358→    setSearch("");
+   359→  };
+   360→
+   361→  // ── Scan handler — search by detected code & auto-add if exactly one match ─
+   362→  const handleScanDetected = async (code: string) => {
+   363→    const trimmed = code.trim();
+   364→    if (!trimmed) return;
+   365→    try {
+   366→      const res = await api.get<{ data: Product[] }>(
+   367→        `/products?q=${encodeURIComponent(trimmed)}&pageSize=10`,
+   368→      );
+   369→      const matches = res?.data ?? [];
+   370→      if (matches.length === 1) {
+   371→        addToCart(matches[0]);
+   372→        toast.success(`Added "${matches[0].name}" to cart`);
+   373→      } else if (matches.length > 1) {
+   374→        setSearch(trimmed);
+   375→        toast.info(`${matches.length} products match code "${trimmed}" — pick one below.`);
+   376→      } else {
+   377→        toast.error(`No product found for code "${trimmed}"`);
+   378→      }
+   379→    } catch (e) {
+   380→      toast.error((e as Error).message);
+   381→    }
+   382→  };
+   383→
+   384→  const updateLine = (key: string, patch: Partial<CartLine>) => {
+   385→    setCart((prev) => prev.map((l) => l.key === key ? { ...l, ...patch } : l));
+   386→  };
+   387→  const removeLine = (key: string) => setCart((prev) => prev.filter((l) => l.key !== key));
+   388→
+   389→  const createSale = useMutation({
+   390→    mutationFn: () => api.post<Sale>("/sales", {
+   391→      customerId: customerId || undefined,
+   392→      items: cart.map((l) => ({ productId: l.productId, qty: l.qty, price: l.price, discount: l.discount })),
+   393→      discount: overallDiscount,
+   394→      tax,
+   395→      paymentMethod,
+   396→      paymentStatus,
+   397→      notes,
+   398→    }),
+   399→    onSuccess: (sale) => {
+   400→      toast.success(`Sale ${sale.invoiceNo} created`);
+   401→      qc.invalidateQueries({ queryKey: ["sales"] });
+   402→      qc.invalidateQueries({ queryKey: ["products"] });
+   403→      onOpenChange(false);
+   404→      onCreated(sale);
+   405→    },
+   406→    onError: (e: Error) => toast.error(e.message),
+   407→  });
+   408→
+   409→  const canSubmit = cart.length > 0 && !createSale.isPending;
+   410→
+   411→  return (
+   412→    <Dialog open={open} onOpenChange={handleOpenChange}>
+   413→      <DialogContent className="sm:max-w-4xl max-h-[92vh] overflow-hidden p-0 gap-0">
+   414→        <DialogHeader className="px-6 py-4 border-b bg-muted/30">
+   415→          <DialogTitle className="flex items-center gap-2">
+   416→            <ShoppingCart className="h-5 w-5 text-primary" /> New Sale
+   417→          </DialogTitle>
+   418→          <DialogDescription>Add products to cart and checkout. Stock is deducted automatically.</DialogDescription>
+   419→        </DialogHeader>
+   420→
+   421→        <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] overflow-hidden">
+   422→          {/* Left: product search + cart */}
+   423→          <div className="flex flex-col overflow-hidden border-r">
+   424→            {/* Search */}
+   425→            <div className="p-4 border-b">
+   426→              <div className="flex gap-2">
+   427→                <div className="relative flex-1">
+   428→                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+   429→                  <Input
+   430→                    value={search}
+   431→                    onChange={(e) => setSearch(e.target.value)}
+   432→                    placeholder="Search products by name, SKU, barcode…"
+   433→                    className="pl-9"
+   434→                    autoFocus
+   435→                  />
+   436→                </div>
+   437→                <ScannerButton
+   438→                  label="Scan"
+   439→                  onDetected={handleScanDetected}
+   440→                  className="shrink-0"
+   441→                />
+   442→              </div>
+   443→              {/* Search results */}
+   444→              {search && (
+   445→                <div className="mt-2 max-h-64 overflow-y-auto rounded-lg border bg-popover shadow-sm">
+   446→                  {productSearch.isLoading && (
+   447→                    <div className="p-3 text-xs text-muted-foreground flex items-center gap-2">
+   448→                      <Loader2 className="h-3 w-3 animate-spin" /> Searching…
+   449→                    </div>
+   450→                  )}
+   451→                  {!productSearch.isLoading && (productSearch.data?.data ?? []).length === 0 && (
+   452→                    <div className="p-3 text-xs text-muted-foreground">No products found.</div>
+   453→                  )}
+   454→                  <AnimatePresence>
+   455→                    {(productSearch.data?.data ?? []).map((p) => (
+   456→                      <motion.button
+   457→                        key={p.id}
+   458→                        initial={{ opacity: 0, y: -4 }}
+   459→                        animate={{ opacity: 1, y: 0 }}
+   460→                        exit={{ opacity: 0 }}
+   461→                        onClick={() => addToCart(p)}
+   462→                        className="flex w-full items-center gap-3 border-b px-3 py-2 text-left last:border-b-0 hover:bg-accent transition"
+   463→                      >
+   464→                        <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 text-primary">
+   465→                          <Package className="h-4 w-4" />
+   466→                        </div>
+   467→                        <div className="min-w-0 flex-1">
+   468→                          <p className="truncate text-sm font-medium">{p.name}</p>
+   469→                          <p className="text-[11px] text-muted-foreground">
+   470→                            {p.sku} · {p.brand?.name ?? ""} {p.model?.name ?? ""}
+   471→                          </p>
+   472→                        </div>
+   473→                        <div className="text-right">
+   474→                          <p className="text-sm font-semibold text-emerald-600">{formatCurrency(p.sellingPrice)}</p>
+   475→                          <p className="text-[11px] text-muted-foreground">{p.stock} in stock</p>
+   476→                        </div>
+   477→                        <Plus className="h-4 w-4 text-muted-foreground" />
+   478→                      </motion.button>
+   479→                    ))}
+   480→                  </AnimatePresence>
+   481→                </div>
+   482→              )}
+   483→            </div>
+   484→
+   485→            {/* Cart list */}
+   486→            <div className="flex-1 overflow-hidden">
+   487→              {cart.length === 0 ? (
+   488→                <div className="flex h-full flex-col items-center justify-center px-6 py-12 text-center">
+   489→                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
+   490→                    <ShoppingCart className="h-6 w-6" />
+   491→                  </div>
+   492→                  <h3 className="mt-3 text-sm font-semibold">Cart is empty</h3>
+   493→                  <p className="mt-1 text-xs text-muted-foreground">Search products above and add them to the cart.</p>
+   494→                </div>
+   495→              ) : (
+   496→                <ScrollArea className="h-full max-h-[42vh]">
+   497→                  <div className="space-y-2 p-3">
+   498→                    <AnimatePresence initial={false}>
+   499→                      {cart.map((l) => (
+   500→                        <motion.div
+   501→                          key={l.key}
+   502→                          layout
+   503→                          initial={{ opacity: 0, y: -4 }}
+   504→                          animate={{ opacity: 1, y: 0 }}
+   505→                          exit={{ opacity: 0, x: -10 }}
+   506→                          className="rounded-lg border bg-card p-3"
+   507→                        >
+   508→                          <div className="flex items-start gap-2">
+   509→                            <div className="min-w-0 flex-1">
+   510→                              <p className="truncate text-sm font-medium">{l.name}</p>
+   511→                              <p className="text-[11px] text-muted-foreground">
+   512→                                {l.sku} · cost {formatCurrency(l.cost)} · {l.stock} in stock
+   513→                              </p>
+   514→                            </div>
+   515→                            <button
+   516→                              onClick={() => removeLine(l.key)}
+   517→                              className="rounded-md p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+   518→                            >
+   519→                              <Trash2 className="h-4 w-4" />
+   520→                            </button>
+   521→                          </div>
+   522→                          <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+   523→                            <div>
+   524→                              <Label className="text-[10px] uppercase text-muted-foreground">Qty</Label>
+   525→                              <div className="flex items-center gap-1">
+   526→                                <Button size="icon" variant="outline" className="h-7 w-7" type="button"
+   527→                                  onClick={() => updateLine(l.key, { qty: Math.max(1, l.qty - 1) })}>
+   528→                                  <Minus className="h-3 w-3" />
+   529→                                </Button>
+   530→                                <Input
+   531→                                  type="number" min={1} max={l.stock}
+   532→                                  value={l.qty}
+   533→                                  onChange={(e) => {
+   534→                                    const v = Math.max(1, Math.min(l.stock, Number(e.target.value) || 1));
+   535→                                    updateLine(l.key, { qty: v });
+   536→                                  }}
+   537→                                  className="h-7 px-2 text-center"
+   538→                                />
+   539→                                <Button size="icon" variant="outline" className="h-7 w-7" type="button"
+   540→                                  onClick={() => updateLine(l.key, { qty: Math.min(l.stock, l.qty + 1) })}>
+   541→                                  <Plus className="h-3 w-3" />
+   542→                                </Button>
+   543→                              </div>
+   544→                            </div>
+   545→                            <div>
+   546→                              <Label className="text-[10px] uppercase text-muted-foreground">Price</Label>
+   547→                              <Input
+   548→                                type="number" min={0} step="any"
+   549→                                value={l.price}
+   550→                                onChange={(e) => updateLine(l.key, { price: Math.max(0, Number(e.target.value) || 0) })}
+   551→                                className="h-7 px-2"
+   552→                              />
+   553→                            </div>
+   554→                            <div>
+   555→                              <Label className="text-[10px] uppercase text-muted-foreground">Discount</Label>
+   556→                              <Input
+   557→                                type="number" min={0} step="any"
+   558→                                value={l.discount}
+   559→                                onChange={(e) => updateLine(l.key, { discount: Math.max(0, Number(e.target.value) || 0) })}
+   560→                                className="h-7 px-2"
+   561→                              />
+   562→                            </div>
+   563→                            <div>
+   564→                              <Label className="text-[10px] uppercase text-muted-foreground">Total</Label>
+   565→                              <p className="flex h-7 items-center text-sm font-bold text-foreground">
+   566→                                {formatCurrency(Math.max(0, l.qty * l.price - l.discount))}
+   567→                              </p>
+   568→                            </div>
+   569→                          </div>
+   570→                          {l.qty > l.stock && (
+   571→                            <p className="mt-1 text-[11px] text-rose-600">⚠ Exceeds available stock ({l.stock})</p>
+   572→                          )}
+   573→                        </motion.div>
+   574→                      ))}
+   575→                    </AnimatePresence>
+   576→                  </div>
+   577→                </ScrollArea>
+   578→              )}
+   579→            </div>
+   580→          </div>
+   581→
+   582→          {/* Right: checkout panel */}
+   583→          <div className="flex flex-col overflow-hidden bg-muted/20">
+   584→            <ScrollArea className="flex-1 max-h-[58vh]">
+   585→              <div className="space-y-4 p-4">
+   586→                {/* Customer */}
+   587→                <div>
+   588→                  <Label className="text-xs font-medium">Customer <span className="text-muted-foreground">(optional — walk-in if blank)</span></Label>
+   589→                  <Select value={customerId || "walkin"} onValueChange={(v) => setCustomerId(v === "walkin" ? "" : v)}>
+   590→                    <SelectTrigger className="mt-1 w-full"><SelectValue placeholder="Walk-in Customer" /></SelectTrigger>
+   591→                    <SelectContent>
+   592→                      <SelectItem value="walkin">Walk-in Customer</SelectItem>
+   593→                      {(customers.data ?? []).map((c) => (
+   594→                        <SelectItem key={c.id} value={c.id}>{c.name}{c.phone ? ` · ${c.phone}` : ""}</SelectItem>
+   595→                      ))}
+   596→                    </SelectContent>
+   597→                  </Select>
+   598→                </div>
+   599→
+   600→                {/* Payment method */}
+   601→                <div>
+   602→                  <Label className="text-xs font-medium">Payment Method</Label>
+   603→                  <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+   604→                    <SelectTrigger className="mt-1 w-full"><SelectValue /></SelectTrigger>
+   605→                    <SelectContent>
+   606→                      {PAYMENT_METHODS.map((m) => <SelectItem key={m} value={m}>{m.charAt(0) + m.slice(1).toLowerCase()}</SelectItem>)}
+   607→                    </SelectContent>
+   608→                  </Select>
+   609→                </div>
+   610→
+   611→                {/* Payment status */}
+   612→                <div>
+   613→                  <Label className="text-xs font-medium">Payment Status</Label>
+   614→                  <Select value={paymentStatus} onValueChange={setPaymentStatus}>
+   615→                    <SelectTrigger className="mt-1 w-full"><SelectValue /></SelectTrigger>
+   616→                    <SelectContent>
+   617→                      {PAYMENT_STATUSES.map((s) => <SelectItem key={s} value={s}>{s.charAt(0) + s.slice(1).toLowerCase()}</SelectItem>)}
+   618→                    </SelectContent>
+   619→                  </Select>
+   620→                </div>
+   621→
+   622→                {/* Discount + Tax */}
+   623→                <div className="grid grid-cols-2 gap-2">
+   624→                  <div>
+   625→                    <Label className="text-xs font-medium">Discount</Label>
+   626→                    <Input type="number" min={0} step="any" value={overallDiscount}
+   627→                      onChange={(e) => setOverallDiscount(Math.max(0, Number(e.target.value) || 0))} className="mt-1" />
+   628→                  </div>
+   629→                  <div>
+   630→                    <Label className="text-xs font-medium">Tax</Label>
+   631→                    <Input type="number" min={0} step="any" value={tax}
+   632→                      onChange={(e) => setTax(Math.max(0, Number(e.target.value) || 0))} className="mt-1" />
+   633→                  </div>
+   634→                </div>
+   635→
+   636→                {/* Notes */}
+   637→                <div>
+   638→                  <Label className="text-xs font-medium">Notes</Label>
+   639→                  <Textarea value={notes} onChange={(e) => setNotes(e.target.value)}
+   640→                    rows={2} placeholder="Optional invoice notes…" className="mt-1 resize-none" />
+   641→                </div>
+   642→              </div>
+   643→            </ScrollArea>
+   644→
+   645→            {/* Totals + submit */}
+   646→            <div className="border-t bg-background p-4 space-y-2">
+   647→              <div className="flex justify-between text-sm">
+   648→                <span className="text-muted-foreground">Subtotal</span>
+   649→                <span className="font-medium">{formatCurrency(totals.subtotal)}</span>
+   650→              </div>
+   651→              {totals.lineDiscounts > 0 && (
+   652→                <div className="flex justify-between text-sm text-amber-600">
+   653→                  <span>Line discounts</span>
+   654→                  <span>− {formatCurrency(totals.lineDiscounts)}</span>
+   655→                </div>
+   656→              )}
+   657→              {overallDiscount > 0 && (
+   658→                <div className="flex justify-between text-sm text-amber-600">
+   659→                  <span>Discount</span>
+   660→                  <span>− {formatCurrency(overallDiscount)}</span>
+   661→                </div>
+   662→              )}
+   663→              {tax > 0 && (
+   664→                <div className="flex justify-between text-sm">
+   665→                  <span className="text-muted-foreground">Tax</span>
+   666→                  <span className="font-medium">+ {formatCurrency(tax)}</span>
+   667→                </div>
+   668→              )}
+   669→              <div className="my-1 border-t" />
+   670→              <div className="flex justify-between text-base">
+   671→                <span className="font-semibold">Total</span>
+   672→                <span className="text-lg font-bold text-primary">{formatCurrency(totals.total)}</span>
+   673→              </div>
+   674→              <div className="flex justify-between text-xs">
+   675→                <span className="text-muted-foreground">Est. profit</span>
+   676→                <span className={`font-semibold ${totals.profit >= 0 ? "text-emerald-600" : "text-rose-600"}`}>
+   677→                  {formatCurrency(totals.profit)}
+   678→                </span>
+   679→              </div>
+   680→              <Button
+   681→                className="mt-2 w-full gap-1.5" size="lg"
+   682→                disabled={!canSubmit}
+   683→                onClick={() => createSale.mutate()}
+   684→              >
+   685→                {createSale.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Receipt className="h-4 w-4" />}
+   686→                {createSale.isPending ? "Creating…" : "Complete Sale"}
+   687→              </Button>
+   688→            </div>
+   689→          </div>
+   690→        </div>
+   691→      </DialogContent>
+   692→    </Dialog>
+   693→  );
+   694→}
+   695→
+   696→// ────────────────────────────────────────────────────────────────────────────
+   697→// Invoice Dialog (view + print)
+   698→// ────────────────────────────────────────────────────────────────────────────
+   699→function InvoiceDialog({
+   700→  sale, onOpenChange,
+   701→}: {
+   702→  sale: Sale | null;
+   703→  onOpenChange: (o: boolean) => void;
+   704→}) {
+   705→  const open = !!sale;
+   706→  const qc = useQueryClient();
+   707→
+   708→  const handlePrint = () => {
+   709→    if (!sale) return;
+   710→    const rows = sale.items.map((it) => `
+   711→      <tr>
+   712→        <td style="padding:8px 6px;border-bottom:1px solid #eee;font-size:12px">${escapeHtml(it.name)}</td>
+   713→        <td style="padding:8px 6px;border-bottom:1px solid #eee;font-size:12px;text-align:center">${it.qty}</td>
+   714→        <td style="padding:8px 6px;border-bottom:1px solid #eee;font-size:12px;text-align:right">${formatCurrency(it.price, sale.business?.currencySymbol ?? "Rs")}</td>
+   715→        <td style="padding:8px 6px;border-bottom:1px solid #eee;font-size:12px;text-align:right">${it.discount ? "− " + formatCurrency(it.discount, sale.business?.currencySymbol ?? "Rs") : "—"}</td>
+   716→        <td style="padding:8px 6px;border-bottom:1px solid #eee;font-size:12px;text-align:right;font-weight:600">${formatCurrency(it.total, sale.business?.currencySymbol ?? "Rs")}</td>
+   717→      </tr>
+   718→    `).join("");
+   719→
+   720→    const biz = sale.business;
+   721→    const html = `<!doctype html><html><head><meta charset="utf-8"><title>${sale.invoiceNo}</title>
+   722→      <style>
+   723→        * { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #0f172a; }
+   724→        body { padding: 32px; max-width: 720px; margin: 0 auto; }
+   725→        h1 { font-size: 22px; margin: 0; color: #059669; }
+   726→        .muted { color: #64748b; font-size: 12px; }
+   727→        .head { display:flex; justify-content:space-between; align-items:flex-start; border-bottom: 2px solid #059669; padding-bottom: 16px; margin-bottom: 16px; }
+   728→        .meta { text-align: right; }
+   729→        table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+   730→        th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: #64748b; padding: 8px 6px; border-bottom: 2px solid #e2e8f0; }
+   731→        .totals { margin-left: auto; width: 280px; font-size: 13px; }
+   732→        .totals div { display:flex; justify-content:space-between; padding: 4px 0; }
+   733→        .totals .grand { font-size: 16px; font-weight: 700; border-top: 2px solid #0f172a; margin-top: 8px; padding-top: 8px; }
+   734→        .footer { margin-top: 32px; padding-top: 16px; border-top: 1px dashed #cbd5e1; text-align: center; font-size: 11px; color: #64748b; }
+   735→      </style></head><body>
+   736→      <div class="head">
+   737→        <div>
+   738→          <h1>${escapeHtml(biz?.name ?? "PartsHub")}</h1>
+   739→          <p class="muted">${escapeHtml(biz?.address ?? "")}</p>
+   740→          <p class="muted">${biz?.phone ? "Tel: " + escapeHtml(biz.phone) : ""} ${biz?.email ? " · " + escapeHtml(biz.email) : ""}</p>
+   741→        </div>
+   742→        <div class="meta">
+   743→          <h2 style="margin:0;font-size:18px">INVOICE</h2>
+   744→          <p class="muted"><strong>${escapeHtml(sale.invoiceNo)}</strong></p>
+   745→          <p class="muted">${formatDateTime(sale.createdAt)}</p>
+   746→        </div>
+   747→      </div>
+   748→      <div style="display:flex;justify-content:space-between;margin-bottom:16px">
+   749→        <div>
+   750→          <p style="margin:0;font-size:11px;text-transform:uppercase;color:#64748b">Bill To</p>
+   751→          <p style="margin:2px 0 0;font-weight:600">${escapeHtml(sale.customer?.name ?? "Walk-in Customer")}</p>
+   752→          ${sale.customer?.phone ? `<p class="muted">${escapeHtml(sale.customer.phone)}</p>` : ""}
+   753→          ${sale.customer?.address ? `<p class="muted">${escapeHtml(sale.customer.address)}</p>` : ""}
+   754→        </div>
+   755→        <div style="text-align:right">
+   756→          <p style="margin:0;font-size:11px;text-transform:uppercase;color:#64748b">Payment</p>
+   757→          <p style="margin:2px 0 0;font-weight:600">${sale.paymentMethod}</p>
+   758→          <p class="muted">${sale.paymentStatus}</p>
+   759→        </div>
+   760→      </div>
+   761→      <table>
+   762→        <thead>
+   763→          <tr>
+   764→            <th style="text-align:left">Item</th>
+   765→            <th style="text-align:center">Qty</th>
+   766→            <th style="text-align:right">Price</th>
+   767→            <th style="text-align:right">Disc</th>
+   768→            <th style="text-align:right">Total</th>
+   769→          </tr>
+   770→        </thead>
+   771→        <tbody>${rows}</tbody>
+   772→      </table>
+   773→      <div class="totals">
+   774→        <div><span>Subtotal</span><span>${formatCurrency(sale.subtotal, sale.business?.currencySymbol ?? "Rs")}</span></div>
+   775→        ${sale.discount ? `<div><span>Discount</span><span>− ${formatCurrency(sale.discount, sale.business?.currencySymbol ?? "Rs")}</span></div>` : ""}
+   776→        ${sale.tax ? `<div><span>Tax</span><span>+ ${formatCurrency(sale.tax, sale.business?.currencySymbol ?? "Rs")}</span></div>` : ""}
+   777→        <div class="grand"><span>Total</span><span>${formatCurrency(sale.total, sale.business?.currencySymbol ?? "Rs")}</span></div>
+   778→        ${sale.paid > 0 ? `<div><span>Paid</span><span>${formatCurrency(sale.paid, sale.business?.currencySymbol ?? "Rs")}</span></div>` : ""}
+   779→        ${sale.total - sale.paid > 0 ? `<div><span>Balance Due</span><span>${formatCurrency(sale.total - sale.paid, sale.business?.currencySymbol ?? "Rs")}</span></div>` : ""}
+   780→      </div>
+   781→      ${sale.notes ? `<div style="margin-top:16px;padding:12px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc"><p style="margin:0;font-size:11px;text-transform:uppercase;color:#64748b">Notes</p><p style="margin:4px 0 0;font-size:12px">${escapeHtml(sale.notes)}</p></div>` : ""}
+   782→      <div class="footer">
+   783→        <p>Thank you for your business!</p>
+   784→        <p style="margin-top:4px">This is a computer-generated invoice and is valid without signature.</p>
+   785→      </div>
+   786→      </body></html>`;
+   787→    const w = window.open("", "_blank", "width=820,height=720");
+   788→    if (!w) { toast.error("Please allow pop-ups to print invoices"); return; }
+   789→    w.document.write(html);
+   790→    w.document.close();
+   791→    w.focus();
+   792→    setTimeout(() => { w.print(); }, 400);
+   793→  };
+   794→
+   795→  const handleReturn = async () => {
+   796→    if (!sale) return;
+   797→    if (!confirm(`Mark invoice ${sale.invoiceNo} as RETURNED? Items will be restocked.`)) return;
+   798→    try {
+   799→      await api.put(`/sales/${sale.id}`, { status: "RETURNED" });
+   800→      qc.invalidateQueries({ queryKey: ["sales"] });
+   801→      qc.invalidateQueries({ queryKey: ["products"] });
+   802→      toast.success(`Invoice ${sale.invoiceNo} marked as returned.`);
+   803→      onOpenChange(false);
+   804→    } catch (e) {
+   805→      toast.error((e as Error).message);
+   806→    }
+   807→  };
+   808→
+   809→  return (
+   810→    <Dialog open={open} onOpenChange={onOpenChange}>
+   811→      <DialogContent className="sm:max-w-3xl max-h-[92vh] overflow-hidden p-0 gap-0">
+   812→        <DialogHeader className="px-6 py-4 border-b bg-muted/30">
+   813→          <div className="flex items-center justify-between">
+   814→            <div>
+   815→              <DialogTitle className="flex items-center gap-2">
+   816→                <Receipt className="h-5 w-5 text-primary" /> Invoice {sale?.invoiceNo}
+   817→              </DialogTitle>
+   818→              <DialogDescription>{sale ? formatDateTime(sale.createdAt) : ""}</DialogDescription>
+   819→            </div>
+   820→            <div className="flex gap-2">
+   821→              {sale && sale.status !== "RETURNED" && (
+   822→                <Button variant="outline" size="sm" className="gap-1.5 text-amber-600" onClick={handleReturn}>
+   823→                  <Undo2 className="h-4 w-4" /> Return
+   824→                </Button>
+   825→              )}
+   826→              <Button size="sm" className="gap-1.5" onClick={handlePrint}>
+   827→                <Printer className="h-4 w-4" /> Print
+   828→              </Button>
+   829→            </div>
+   830→          </div>
+   831→        </DialogHeader>
+   832→
+   833→        {sale && (
+   834→          <ScrollArea className="max-h-[80vh]">
+   835→            <div className="p-6 space-y-5">
+   836→              {/* Header: business + customer */}
+   837→              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+   838→                <div>
+   839→                  <h3 className="text-lg font-bold text-primary">{sale.business?.name ?? "PartsHub"}</h3>
+   840→                  <p className="text-xs text-muted-foreground">{sale.business?.address}</p>
+   841→                  <p className="text-xs text-muted-foreground">
+   842→                    {sale.business?.phone ? `Tel: ${sale.business.phone}` : ""}
+   843→                    {sale.business?.email ? ` · ${sale.business.email}` : ""}
+   844→                  </p>
+   845→                </div>
+   846→                <div className="text-left sm:text-right">
+   847→                  <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Bill To</p>
+   848→                  <p className="text-sm font-semibold">{sale.customer?.name ?? "Walk-in Customer"}</p>
+   849→                  {sale.customer?.phone && <p className="text-xs text-muted-foreground">{sale.customer.phone}</p>}
+   850→                  {sale.customer?.address && <p className="text-xs text-muted-foreground">{sale.customer.address}</p>}
+   851→                </div>
+   852→              </div>
+   853→
+   854→              <div className="flex flex-wrap items-center gap-3 rounded-lg border bg-muted/30 p-3">
+   855→                <Badge variant="outline" className="font-mono">{sale.invoiceNo}</Badge>
+   856→                <PaymentMethodBadge method={sale.paymentMethod} />
+   857→                <PaymentStatusBadge status={sale.paymentStatus} />
+   858→                {sale.status === "RETURNED" ? (
+   859→                  <Badge variant="outline" className="bg-rose-500/10 text-rose-600 dark:text-rose-400">Returned</Badge>
+   860→                ) : (
+   861→                  <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">Completed</Badge>
+   862→                )}
+   863→                <div className="ml-auto flex items-center gap-2">
+   864→                  <QrDisplay value={sale.invoiceNo} size={64} />
+   865→                </div>
+   866→              </div>
+   867→
+   868→              {/* Items table */}
+   869→              <div className="overflow-hidden rounded-lg border">
+   870→                <table className="w-full text-sm">
+   871→                  <thead className="bg-muted/40">
+   872→                    <tr>
+   873→                      <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase text-muted-foreground">Item</th>
+   874→                      <th className="px-3 py-2 text-center text-[11px] font-semibold uppercase text-muted-foreground">Qty</th>
+   875→                      <th className="px-3 py-2 text-right text-[11px] font-semibold uppercase text-muted-foreground">Price</th>
+   876→                      <th className="px-3 py-2 text-right text-[11px] font-semibold uppercase text-muted-foreground">Disc</th>
+   877→                      <th className="px-3 py-2 text-right text-[11px] font-semibold uppercase text-muted-foreground">Total</th>
+   878→                    </tr>
+   879→                  </thead>
+   880→                  <tbody>
+   881→                    {sale.items.map((it) => (
+   882→                      <tr key={it.id} className="border-t">
+   883→                        <td className="px-3 py-2">
+   884→                          <p className="font-medium">{it.name}</p>
+   885→                          <p className="text-[11px] text-muted-foreground">{it.product?.sku ?? ""}</p>
+   886→                        </td>
+   887→                        <td className="px-3 py-2 text-center">{it.qty}</td>
+   888→                        <td className="px-3 py-2 text-right">{formatCurrency(it.price, sale.business?.currencySymbol ?? "Rs")}</td>
+   889→                        <td className="px-3 py-2 text-right">{it.discount ? "− " + formatCurrency(it.discount, sale.business?.currencySymbol ?? "Rs") : "—"}</td>
+   890→                        <td className="px-3 py-2 text-right font-semibold">{formatCurrency(it.total, sale.business?.currencySymbol ?? "Rs")}</td>
+   891→                      </tr>
+   892→                    ))}
+   893→                  </tbody>
+   894→                </table>
+   895→              </div>
+   896→
+   897→              {/* Totals */}
+   898→              <div className="ml-auto w-full max-w-xs space-y-1.5 text-sm">
+   899→                <Row label="Subtotal" value={formatCurrency(sale.subtotal, sale.business?.currencySymbol ?? "Rs")} />
+   900→                {sale.discount > 0 && <Row label="Discount" value={`− ${formatCurrency(sale.discount, sale.business?.currencySymbol ?? "Rs")}`} muted />}
+   901→                {sale.tax > 0 && <Row label="Tax" value={`+ ${formatCurrency(sale.tax, sale.business?.currencySymbol ?? "Rs")}`} />}
+   902→                <div className="my-1 border-t" />
+   903→                <div className="flex items-center justify-between">
+   904→                  <span className="font-semibold">Total</span>
+   905→                  <span className="text-lg font-bold text-primary">{formatCurrency(sale.total, sale.business?.currencySymbol ?? "Rs")}</span>
+   906→                </div>
+   907→                {sale.paid > 0 && <Row label="Paid" value={formatCurrency(sale.paid, sale.business?.currencySymbol ?? "Rs")} />}
+   908→                {sale.total - sale.paid > 0 && (
+   909→                  <div className="flex items-center justify-between rounded-md bg-amber-500/10 px-2 py-1.5 text-amber-700 dark:text-amber-400">
+   910→                    <span className="text-xs font-medium">Balance Due</span>
+   911→                    <span className="font-semibold">{formatCurrency(sale.total - sale.paid, sale.business?.currencySymbol ?? "Rs")}</span>
+   912→                  </div>
+   913→                )}
+   914→                <div className="flex items-center justify-between pt-1 text-xs">
+   915→                  <span className="text-muted-foreground">Est. profit</span>
+   916→                  <span className={`font-semibold ${sale.profit >= 0 ? "text-emerald-600" : "text-rose-600"}`}>
+   917→                    {formatCurrency(sale.profit, sale.business?.currencySymbol ?? "Rs")}
+   918→                  </span>
+   919→                </div>
+   920→              </div>
+   921→
+   922→              {sale.notes && (
+   923→                <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3">
+   924→                  <p className="mb-1 text-[11px] font-semibold uppercase text-amber-600">Notes</p>
+   925→                  <p className="text-sm">{sale.notes}</p>
+   926→                </div>
+   927→              )}
+   928→
+   929→              {sale.user && (
+   930→                <p className="text-center text-[11px] text-muted-foreground">Served by {sale.user.name}</p>
+   931→              )}
+   932→            </div>
+   933→          </ScrollArea>
+   934→        )}
+   935→      </DialogContent>
+   936→    </Dialog>
+   937→  );
+   938→}
+   939→
+   940→// ────────────────────────────────────────────────────────────────────────────
+   941→// Helpers
+   942→// ────────────────────────────────────────────────────────────────────────────
+   943→function Row({ label, value, muted }: { label: string; value: string; muted?: boolean }) {
+   944→  return (
+   945→    <div className="flex items-center justify-between">
+   946→      <span className={muted ? "text-amber-600" : "text-muted-foreground"}>{label}</span>
+   947→      <span className="font-medium">{value}</span>
+   948→    </div>
+   949→  );
+   950→}
+   951→
+   952→function escapeHtml(s: string): string {
+   953→  return s
+   954→    .replace(/&/g, "&amp;")
+   955→    .replace(/</g, "&lt;")
+   956→    .replace(/>/g, "&gt;")
+   957→    .replace(/"/g, "&quot;")
+   958→    .replace(/'/g, "&#039;");
+   959→}
+   960→

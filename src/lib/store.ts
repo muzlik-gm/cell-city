@@ -27,7 +27,7 @@ interface AppState {
 }
 
 export const useAppStore = create<AppState>((set) => ({
-  view: "dashboard",
+  view: "home",
   setView: (v) => set({ view: v, contextId: null }),
 
   sidebarCollapsed: false,

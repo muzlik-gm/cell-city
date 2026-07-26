@@ -47,20 +47,12 @@ export const IMAGE_KINDS = ["FRONT", "BACK", "CONNECTOR", "FLEX", "IC", "PACKAGI
 export const MOVEMENT_TYPES = ["IN", "OUT", "TRANSFER", "ADJUST", "DAMAGE", "SALE", "PURCHASE", "REPAIR"] as const;
 
 export type ViewKey =
-  | "dashboard"
+  | "home"
   | "inventory"
-  | "compatibility"
-  | "products"
-  | "transfers"
   | "sales"
   | "purchases"
-  | "suppliers"
-  | "customers"
-  | "payments"
   | "repairs"
-  | "ai"
   | "reports"
-  | "analytics"
   | "settings";
 
 export interface Paginated<T> {
