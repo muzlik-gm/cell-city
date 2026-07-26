@@ -106,6 +106,7 @@ function QuickSellInner({
 
   const [qty, setQty] = useState<number>(1);
   const [price, setPrice] = useState<string>(String(sellingPrice || 0));
+  const [discount, setDiscount] = useState<string>("0");
   const [customerId, setCustomerId] = useState<string>("walk-in");
   const [paymentMethod, setPaymentMethod] = useState<string>("CASH");
 
@@ -118,7 +119,9 @@ function QuickSellInner({
   if (safeQty !== qty) setQty(safeQty);
 
   const priceN = Number(price) || 0;
-  const total = safeQty * priceN;
+  const discountN = Math.max(0, Number(discount) || 0);
+  const subtotal = safeQty * priceN;
+  const total = Math.max(0, subtotal - discountN);
   const outOfStock = stock <= 0;
   const canSubmit =
     !outOfStock && safeQty >= 1 && safeQty <= stock && priceN > 0;
@@ -133,8 +136,10 @@ function QuickSellInner({
             productId: product.id,
             qty: safeQty,
             price: priceN,
+            discount: discountN,
           },
         ],
+        discount: discountN,
         paymentMethod,
         paymentStatus: "PAID" as const,
       };
@@ -297,6 +302,26 @@ function QuickSellInner({
               </div>
             </div>
 
+            {/* ── Discount (optional) ────────────────────────────────── */}
+            <div>
+              <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Discount
+              </label>
+              <div className="relative">
+                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted-foreground">
+                  Rs
+                </span>
+                <Input
+                  type="number"
+                  min={0}
+                  inputMode="decimal"
+                  value={discount}
+                  onChange={(e) => setDiscount(e.target.value)}
+                  className="h-12 rounded-xl pl-10 text-base font-semibold"
+                />
+              </div>
+            </div>
+
             {/* ── Customer (optional, walk-in default) ────────────────── */}
             <div>
               <label className="mb-1.5 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
@@ -369,6 +394,12 @@ function QuickSellInner({
         <Separator />
         <div className="flex items-center justify-between gap-3 px-5 py-3">
           <div className="min-w-0">
+            {discountN > 0 && (
+              <p className="text-[10px] text-muted-foreground">
+                <span>{formatCurrency(subtotal)}</span>
+                <span className="mx-1 text-rose-500">− {formatCurrency(discountN)}</span>
+              </p>
+            )}
             <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
               Total {safeQty > 1 ? `· ${safeQty} × ${formatCurrency(priceN)}` : ""}
             </p>

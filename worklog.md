@@ -1036,3 +1036,41 @@ PartsHub is a speed-optimized Mobile Spare Parts Management System (Next.js 16 S
 - **Popular models ordering**: still alphabetical. Could sort by sales volume via a new API endpoint.
 - **Home hero height**: with 4 widgets (Today's Summary, search, Camera, Recent, Popular Models, Low Stock, Customer Search), the hero is tall. Users scroll to see everything. Could make widgets more compact or collapsible.
 - **Next priorities**: (1) sort popular models by sales volume, (2) add keyboard arrow-key navigation through search result cards, (3) implement real JWT auth + login screen, (4) add live barcode scanning camera feed, (5) add discount field to Quick Sell, (6) optimize search DB indexes for 100k+ products, (7) make home widgets collapsible/personizable.
+
+---
+Task ID: CRON-REVIEW-6
+Agent: orchestrator (Z.ai Code) — cron review round 6
+Task: Assess project status, QA via agent-browser, add popular models by sales volume + discount field in Quick Sell, polish styling.
+
+## Current Project Status Assessment
+PartsHub is a speed-optimized Mobile Spare Parts Management System (Next.js 16 SPA, Prisma+SQLite, shadcn/ui) with universal search homepage, 7-item navigation, single-screen workflows, and a rich home command center (Today's Summary, universal search, AI camera, recent searches, popular models, low-stock widget, customer quick-search, quick sell). After this round: popular models now sorted by sales volume, Quick Sell supports discounts. Lint: 0 errors. All 7 views render. All APIs healthy.
+
+## Completed Modifications
+
+### New feature: Popular models sorted by sales volume
+- **`src/app/api/models/route.ts`**: added `?popular=true` query param. When set, aggregates SaleItem qty per model (via Product.modelId), returns top 8 models sorted by sales volume descending. Falls back to alphabetical for models with 0 sales. Verified: returns Samsung Galaxy F12 (12 sold), Vivo Y11 (10 sold), iPhone X (9 sold), Redmi 9A (9 sold), Infinix Hot 10 Play (8 sold).
+- **`src/components/views/home-view.tsx`**: updated the popular models query from `/models?pageSize=8` to `/models?popular=true`. Verified: home hero now shows sales-ranked models (F12 first).
+
+### New feature: Discount field in Quick Sell
+- **`src/components/shared/quick-sell-modal.tsx`**: added discount support:
+  - New `discount` state (default "0").
+  - Updated total calculation: `total = max(0, subtotal - discountN)` where `subtotal = qty × price`.
+  - Added discount input UI (Rs prefix, number input) between Unit Price and Customer.
+  - Updated POST body to include `discount` at both the item level and sale level.
+  - Updated footer to show subtotal − discount breakdown when discount > 0.
+  - Verified: modal now shows "Unit Price", "Discount", "Payment Method" fields, and footer shows the discount breakdown.
+
+### Verification Results
+- `bun run lint`: 0 errors, 0 warnings.
+- All 7 nav views render correctly (Home, Inventory, Sales, Purchases, Repairs, Reports, Settings).
+- Popular models API verified: `GET /api/models?popular=true` returns 200 with sales-volume-sorted models.
+- Home popular models verified: shows Samsung Galaxy F12, Vivo Y11, iPhone X, Redmi 9A, Infinix Hot 10 Play (by sales volume).
+- Quick Sell discount verified: modal shows Discount field, footer shows subtotal − discount = total breakdown.
+- All APIs healthy: search, dashboard/summary, dashboard/latest, customers?q=, products, sales, repairs all return 200.
+- No console errors on fresh load.
+- Dark mode works.
+
+## Unresolved Issues / Risks & Next-Phase Recommendations
+- **Home hero height**: with 7 widgets (Today's Summary, search, Camera, Recent, Popular Models, Low Stock, Customer Search), the hero is tall. Users scroll to see everything. Could make widgets collapsible or rearrange into a 2-column layout.
+- **Keyboard arrow navigation**: search result cards don't yet support arrow-key navigation. Could add for power users.
+- **Next priorities**: (1) implement real JWT auth + login screen, (2) add live barcode scanning camera feed, (3) optimize search DB indexes for 100k+ products, (4) make home widgets collapsible/personizable, (5) add keyboard arrow-key navigation through search result cards, (6) add supplier quick-search from home, (7) add a "recently sold" widget on home.

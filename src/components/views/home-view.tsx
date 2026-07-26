@@ -90,7 +90,7 @@ export function HomeView() {
   // Popular models (top by product count) for the hero
   const popular = useQuery({
     queryKey: ["popular-models"],
-    queryFn: () => api.get<any[]>("/models?pageSize=8"),
+    queryFn: () => api.get<any[]>("/models?popular=true"),
     staleTime: 120_000,
   });
 
