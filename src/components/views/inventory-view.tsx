@@ -18,6 +18,7 @@ import { formatCurrency, downloadBlob, toCSV } from "@/lib/format";
 import { toast } from "sonner";
 import { useAppStore } from "@/lib/store";
 import { ScannerButton } from "@/components/shared/scanner-button";
+import { QuickRestockButton } from "@/components/shared/quick-restock-button";
 
 interface Product {
   id: string; sku: string; barcode: string | null; name: string;
@@ -127,23 +128,31 @@ export function InventoryView() {
         </div>
       ),
     },
-    { key: "brand", header: "Brand", render: (p) => <span className="text-sm">{p.brand?.name ?? "—"}</span> },
-    { key: "model", header: "Model", render: (p) => <span className="text-sm">{p.model?.name ?? "—"}</span> },
-    { key: "partType", header: "Part", render: (p) => <Badge variant="secondary">{p.partType?.name ?? "—"}</Badge> },
+    { key: "brand", header: "Brand", className: "min-w-[90px]", render: (p) => <span className="text-sm">{p.brand?.name ?? "—"}</span> },
+    { key: "model", header: "Model", className: "min-w-[140px]", render: (p) => <span className="text-sm">{p.model?.name ?? "—"}</span> },
+    { key: "partType", header: "Part", className: "min-w-[90px]", render: (p) => <Badge variant="secondary">{p.partType?.name ?? "—"}</Badge> },
     { key: "quality", header: "Quality", render: (p) => <QualityBadge quality={p.quality} /> },
     { key: "stock", header: "Stock", render: (p) => <StockBadge stock={p.stock} minStock={p.minStock} /> },
-    { key: "location", header: "Location", render: (p) => (
-      <span className="text-xs text-muted-foreground">{p.shelf?.code ?? "—"} / {p.warehouse?.name?.split(" ")[0] ?? "—"}</span>
+    { key: "location", header: "Location", className: "min-w-[120px] whitespace-nowrap", render: (p) => (
+      <span className="text-xs text-muted-foreground whitespace-nowrap">{p.shelf?.code ?? "—"} · {p.warehouse?.name?.split(" ")[0] ?? "—"}</span>
     )},
-    { key: "price", header: "Price", render: (p) => (
+    { key: "price", header: "Price", className: "text-right whitespace-nowrap", render: (p) => (
       <div className="text-right">
         <p className="text-sm font-semibold">{formatCurrency(p.sellingPrice)}</p>
         <p className="text-[11px] text-muted-foreground">cost {formatCurrency(p.purchasePrice)}</p>
       </div>
     )},
     { key: "actions", header: "", className: "text-right", render: (p) => (
-      <div className="flex justify-end gap-1">
+      <div className="flex justify-end gap-1" onClick={(e) => e.stopPropagation()}>
         <Button size="sm" variant="ghost" className="h-8" onClick={(e) => { e.stopPropagation(); setDetail(p); }}>View</Button>
+        <QuickRestockButton
+          product={p}
+          variant="outline"
+          size="sm"
+          label="Restock"
+          className="h-8 px-2.5 text-xs"
+          stopPropagation
+        />
         <Button size="sm" variant="ghost" className="h-8" onClick={(e) => { e.stopPropagation(); setEditing(p); setFormOpen(true); }}>Edit</Button>
         <Button size="sm" variant="ghost" className="h-8 text-destructive" onClick={(e) => { e.stopPropagation(); onDelete(p.id); }}>Del</Button>
       </div>

@@ -82,9 +82,9 @@ export function DashboardView() {
 
       {/* KPI cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Today's Sales" value={formatCurrency(s.todaySalesTotal)} icon={DollarSign} accent="emerald" subtitle={`${s.todaySalesCount} invoices`} trend={12} trendLabel="vs yesterday" />
+        <StatCard label="Today's Sales" value={formatCurrency(s.todaySalesTotal)} icon={DollarSign} accent="emerald" subtitle={`${s.todaySalesCount} invoice${s.todaySalesCount === 1 ? "" : "s"}`} trend={12} trendLabel="vs yesterday" />
         <StatCard label="Today's Profit" value={formatCurrency(s.todayProfit)} icon={TrendingUp} accent="teal" subtitle="From completed sales" trend={8} trendLabel="this week" />
-        <StatCard label="Today's Purchases" value={formatCurrency(s.todayPurchasesTotal)} icon={Truck} accent="amber" subtitle={`${s.todayPurchasesCount} orders`} />
+        <StatCard label="Today's Purchases" value={formatCurrency(s.todayPurchasesTotal)} icon={Truck} accent="amber" subtitle={s.todayPurchasesCount > 0 ? `${s.todayPurchasesCount} order${s.todayPurchasesCount === 1 ? "" : "s"}` : "No orders today"} />
         <StatCard label="Inventory Value" value={formatCurrency(s.inventoryValue)} icon={Boxes} accent="purple" subtitle={`${formatNumber(s.totalStockUnits)} units · ${s.totalProducts} SKUs`} />
       </div>
 
@@ -149,15 +149,15 @@ export function DashboardView() {
               <p className="py-8 text-center text-xs text-muted-foreground">No sales data yet</p>
             ) : (
               (charts.data?.topProducts ?? []).slice(0, 5).map((p: any, i: number) => (
-                <div key={i} className="group flex items-center gap-3 rounded-lg p-1.5 transition hover:bg-muted/50">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-xs font-bold text-primary">
+                <div key={i} className="group flex items-start gap-3 rounded-lg p-1.5 transition hover:bg-muted/50">
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-[11px] font-bold text-primary">
                     {i + 1}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-xs font-medium" title={p.name}>{p.name}</p>
-                    <p className="text-[11px] text-muted-foreground">{formatCurrency(p.revenue)} revenue</p>
+                    <p className="line-clamp-2 text-xs font-medium leading-snug" title={p.name}>{p.name}</p>
+                    <p className="mt-0.5 text-[11px] text-muted-foreground">{formatCurrency(p.revenue)} revenue</p>
                   </div>
-                  <Badge variant="secondary" className="font-semibold">{p.qty} sold</Badge>
+                  <Badge variant="secondary" className="mt-0.5 shrink-0 font-semibold">{p.qty} sold</Badge>
                 </div>
               ))
             )}

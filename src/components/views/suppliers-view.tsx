@@ -27,10 +27,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import {
   Truck, Plus, Search, Star, Phone, MessageCircle, Mail, MapPin, User,
   Pencil, Trash2, Loader2, Save, Package, ShoppingCart, TrendingUp,
-  Building2, Contact, Wallet,
+  Building2, Contact, Wallet, FileText, Clock,
 } from "lucide-react";
 import { formatCurrency, formatDate, formatDateTime, initials } from "@/lib/format";
 import { toast } from "sonner";
+import { StatementDialog } from "@/components/shared/statement-dialog";
+import { ActivityTimeline } from "@/components/shared/activity-timeline";
 
 // ─── Types ───────────────────────────────────────────────────────────────
 interface Supplier {
@@ -141,6 +143,7 @@ export function SuppliersView() {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Supplier | null>(null);
   const [detailId, setDetailId] = useState<string | null>(null);
+  const [statementId, setStatementId] = useState<string | null>(null);
 
   const queryStr = useMemo(() => {
     const p = new URLSearchParams();
@@ -346,6 +349,17 @@ export function SuppliersView() {
         supplierId={detailId}
         onOpenChange={(o) => !o && setDetailId(null)}
         onEdit={(s) => { setDetailId(null); openEdit(s); }}
+        onViewStatement={(s) => setStatementId(s.id)}
+      />
+
+      <StatementDialog
+        partyType="supplier"
+        partyId={statementId ?? ""}
+        partyName={
+          suppliers.find((s) => s.id === statementId)?.name ?? "Supplier"
+        }
+        open={!!statementId}
+        onOpenChange={(o) => !o && setStatementId(null)}
       />
     </div>
   );
@@ -496,11 +510,12 @@ function SupplierFormInner({
 
 // ─── Supplier Detail Sheet ───────────────────────────────────────────────
 function SupplierDetailSheet({
-  supplierId, onOpenChange, onEdit,
+  supplierId, onOpenChange, onEdit, onViewStatement,
 }: {
   supplierId: string | null;
   onOpenChange: (o: boolean) => void;
   onEdit: (s: Supplier) => void;
+  onViewStatement: (s: Supplier) => void;
 }) {
   const open = !!supplierId;
   const { data: supplier, isLoading } = useQuery<SupplierDetail>({
@@ -540,9 +555,19 @@ function SupplierDetailSheet({
                     </div>
                   </div>
                 </div>
-                <Button size="sm" variant="outline" className="gap-1.5" onClick={() => onEdit(supplier)}>
-                  <Pencil className="h-3.5 w-3.5" /> Edit
-                </Button>
+                <div className="flex shrink-0 items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="gap-1.5"
+                    onClick={() => onViewStatement(supplier)}
+                  >
+                    <FileText className="h-3.5 w-3.5" /> Statement
+                  </Button>
+                  <Button size="sm" variant="outline" className="gap-1.5" onClick={() => onEdit(supplier)}>
+                    <Pencil className="h-3.5 w-3.5" /> Edit
+                  </Button>
+                </div>
               </div>
             </SheetHeader>
 
@@ -636,6 +661,9 @@ function SupplierDetailSheet({
                     <TabsTrigger value="purchases">Purchases</TabsTrigger>
                     <TabsTrigger value="products">Products Supplied</TabsTrigger>
                     <TabsTrigger value="prices">Price History</TabsTrigger>
+                    <TabsTrigger value="activity">
+                      <Clock className="mr-1.5 h-3.5 w-3.5" /> Activity
+                    </TabsTrigger>
                   </TabsList>
 
                   <TabsContent value="purchases">
@@ -718,6 +746,34 @@ function SupplierDetailSheet({
                         ))}
                       </div>
                     )}
+                  </TabsContent>
+
+                  <TabsContent value="activity">
+                    <div className="rounded-xl border bg-card p-4 shadow-soft">
+                      <div className="mb-3 flex items-center justify-between gap-2">
+                        <div>
+                          <p className="text-sm font-semibold">Recent Activity</p>
+                          <p className="text-[11px] text-muted-foreground">
+                            Latest purchases &amp; payments — running balance shown next to each entry.
+                          </p>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="gap-1.5"
+                          onClick={() => onViewStatement(supplier)}
+                        >
+                          <FileText className="h-3.5 w-3.5" /> Full Statement
+                        </Button>
+                      </div>
+                      <ActivityTimeline
+                        partyType="supplier"
+                        partyId={supplier.id}
+                        limit={10}
+                        emptyTitle="No activity yet"
+                        emptyDescription="Purchases and payments for this supplier will appear here in chronological order."
+                      />
+                    </div>
                   </TabsContent>
                 </Tabs>
               </div>

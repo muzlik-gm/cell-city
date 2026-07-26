@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -7,10 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { QrDisplay, BarcodeDisplay } from "@/components/shared/qr-barcode";
 import { QualityBadge, StockBadge, ConditionBadge } from "@/components/shared/badges";
-import { useQuery } from "@tanstack/react-query";
+import { StockAdjustDialog } from "@/components/shared/stock-adjust-dialog";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { formatCurrency, formatDate, formatDateTime } from "@/lib/format";
-import { Pencil, Package, TrendingUp, ArrowDownToLine, ArrowUpFromLine } from "lucide-react";
+import { Pencil, Package, TrendingUp, ArrowDownToLine, ArrowUpFromLine, SlidersHorizontal } from "lucide-react";
 import { EmptyState } from "@/components/shared/states";
 
 export function ProductDetailSheet({
@@ -20,6 +22,8 @@ export function ProductDetailSheet({
   onOpenChange: (o: boolean) => void;
   onEdit: (p: any) => void;
 }) {
+  const qc = useQueryClient();
+  const [adjustOpen, setAdjustOpen] = useState(false);
   const open = !!product;
   const detail = useQuery({
     queryKey: ["product", product?.id],
@@ -40,9 +44,20 @@ export function ProductDetailSheet({
                   <SheetTitle className="text-base">{p.name}</SheetTitle>
                   <p className="mt-0.5 text-xs text-muted-foreground">{p.sku} · {p.barcode ?? "No barcode"}</p>
                 </div>
-                <Button size="sm" variant="outline" className="gap-1.5" onClick={() => onEdit(p)}>
-                  <Pencil className="h-3.5 w-3.5" /> Edit
-                </Button>
+                <div className="flex shrink-0 items-center gap-1.5">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="gap-1.5"
+                    onClick={() => setAdjustOpen(true)}
+                    title="Adjust stock"
+                  >
+                    <SlidersHorizontal className="h-3.5 w-3.5" /> Adjust Stock
+                  </Button>
+                  <Button size="sm" variant="outline" className="gap-1.5" onClick={() => onEdit(p)}>
+                    <Pencil className="h-3.5 w-3.5" /> Edit
+                  </Button>
+                </div>
               </div>
             </SheetHeader>
             <ScrollArea className="h-[calc(100vh-80px)]">
@@ -187,6 +202,17 @@ export function ProductDetailSheet({
                 </Tabs>
               </div>
             </ScrollArea>
+
+            <StockAdjustDialog
+              product={adjustOpen ? p : null}
+              open={adjustOpen}
+              onOpenChange={(o) => {
+                setAdjustOpen(o);
+                if (!o) {
+                  qc.invalidateQueries({ queryKey: ["product", p.id] });
+                }
+              }}
+            />
           </>
         )}
       </SheetContent>

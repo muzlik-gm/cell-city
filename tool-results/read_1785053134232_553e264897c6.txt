@@ -1,0 +1,202 @@
+   200→- **"Add to Sale" handoff pattern** — Reuses the existing convention from `products-view.tsx`: `setContextId(p.id)` + `setView("sales")` + success toast describing the next step.
+   201→
+   202→### Verification
+   203→- **API live curl tests**: `POST /api/ai/identify` with a real PNG and `mode=phone` → 200 in ~4-6s → VLM identified "Samsung Galaxy A12" @ 85% confidence with possible alternatives M12 (70%) / A32 (40%), 9 matched catalog models, 45 compatibility peers, 27 in-stock products with prices/shelves. LCD mode correctly returned "Not an LCD assembly - Software login interface" when fed a non-LCD image. 400 path verified (no file → `{"error":"No image file provided"}`).
+   204→- **End-to-end UI test via agent-browser**: navigated to AI view → mode cards + upload zone rendered → switched to LCD mode (copy + tips updated) → uploaded PNG via `eval`/DataTransfer → "Analyze Image" enabled → clicked → results rendered with detected model heading "Samsung Galaxy A12", "Brand: Samsung · Model: Galaxy A12", confidence gauge, Possible Alternatives bars, Matched Models chips ("Keywords: Samsung · A12, A32, M12, Galaxy A12"), Compatible Models chips, Available Products table with real rows ("Samsung Galaxy A12 Nacho Touch Glass COPY Green" etc.) and "Add to Sale" buttons, plus "Recent Identifications" history strip showing the just-completed entry.
+   205→- **Lint**: `bun run lint` → **0 errors / 0 warnings** in my 2 new files. (Initially had 5 unused `eslint-disable-next-line @next/next/no-img-element` warnings because Next 16 + Turbopack doesn't flag plain `<img>` tags — removed all 5 directives cleanly.) Pre-existing errors in `topbar.tsx`, `product-form.tsx`, `settings-view.tsx`, `repairs-view.tsx`, `sales-view.tsx`, `suppliers-view.tsx`, `inventory-view.tsx`, `image-upload.tsx`, `product-detail.tsx`, `seed.ts` are out of scope.
+   206→- **TypeScript**: `npx tsc --noEmit --skipLibCheck` → **0 errors** in my 2 new files. Pre-existing errors in other agents' views — out of scope.
+   207→- **Dev log**: only `✓ Compiled` entries and `200` responses for `/` and `/api/ai/identify`. Zero `⨯` errors referencing my files.
+   208→- Agent work record saved at `/agent-ctx/2-e-ai-identification.md`.
+   209→
+   210→### Stage Summary
+   211→AI Identification module complete and production-ready. Two files created (1 API route + 1 view). The endpoint receives a photo, saves it locally, sends it as base64 to GLM-4.6V with a strict-JSON prompt for either phone or LCD identification, parses the response with multi-strategy fallback, then cross-references the live Prisma catalog (PhoneModel by name/brand, ModelCompatibility bidirectionally, and active Products for matched+compatible model ids). The view delivers a premium AI product feel: illustrated mode cards, drag-drop upload zone, animated scanning state with corner brackets + moving scan line + sequential step checklist, circular confidence gauge with color-coded thresholds, possible-alternatives confidence bars, matched-model chips with keyword display, compatible-model chips grouped by part type, a responsive product table with "Add to Sale" handoff to Sales, and a clickable history strip of recent identifications. Fully emerald design system (with teal + purple accents), TanStack Query mutation, sonner toasts, Framer Motion throughout, mobile-first responsive. API verified end-to-end via curl, UI verified end-to-end via agent-browser. No regressions; dev server compiles cleanly.
+   212→
+   213→---
+   214→
+   215→## Task 2-f — Reports, Analytics & Settings
+   216→
+   217→- **Task ID:** 2-f
+   218→- **Agent:** Reports, Analytics & Settings subagent (Z.ai Code)
+   219→- **Task:** Build the Reports, Analytics & Settings modules for PartsHub — 4 API route handlers (analytics, reports, settings, settings/backup) + 3 polished SPA view components (analytics-view, reports-view, settings-view).
+   220→
+   221→### Work Log
+   222→
+   223→**Files created (7):**
+   224→
+   225→1. `src/app/api/analytics/route.ts` — `GET /api/analytics?range=30|90|365`. Comprehensive payload: KPIs (revenue, profit, margin %, AOV, purchase spend, damage value), 12-month revenue/profit trend, inventory value by part category, top 10 products/brands/models/customers, sales by payment method, slow-moving (no sales/repair usage in 30 days), fast-moving (top 15 sellers in range, augmented with current stock), supplier performance (totals, on-time %, rating, items supplied), repair-by-status + repair-by-month trends, damage-by-reason summary.
+   226→2. `src/app/api/reports/route.ts` — `GET /api/reports?type=<9 types>[&format=csv][&from=ISO][&to=ISO]`. All 9 types (inventory, sales, profit, supplier, customer, repair, purchase, lowstock, damaged) return `{ type, rows, count }` JSON or `text/csv` with `Content-Disposition` header. Date-range filter supported for time-series reports.
+   227→3. `src/app/api/settings/route.ts` — `GET` returns all settings as `{key: value}`. `PUT` accepts a key-value map body, sanitizes values, runs `db.$transaction` of `upsert` for each entry, returns the full updated map.
+   228→4. `src/app/api/settings/backup/route.ts` — `GET` returns JSON dump of 20 tables (settings, brands, models, partTypes, warehouses, shelves, suppliers, customers, users [no passwordHash], products, sales, saleItems, purchases, purchaseItems, repairJobs, repairJobParts, damagedInventory, inventoryMovements, priceHistory, compatibility). Includes `exportedAt`, `version`, `counts`, `data`.
+   229→5. `src/components/views/analytics-view.tsx` — PageHeader with 30/90/365-day toggle · 4 KPI StatCards · charts grid (monthly revenue/profit area, inventory-by-category donut, payment-method donut, repair-status donut, repair-volume bar) · inventory velocity (slow vs fast moving, two columns with scrollable lists) · top products DataTable · top brands + top models horizontal bars · top customers + supplier performance cards (with on-time progress bar + 5-star rating) · inventory value breakdown DataTable. Emerald palette only. Framer Motion + Recharts.
+   230→6. `src/components/views/reports-view.tsx` — 9 selectable report cards (color-coded, with icons + descriptions) · date range filter (per-report `hasDateFilter` flag) · export buttons: PDF (print-optimized HTML popup + window.print), Excel/CSV (client `toCSV`+`downloadBlob`), CSV server (`/api/reports?type=X&format=csv`), Export Preview · preview DataTable with auto-generated columns and currency/number/date heuristics.
+   231→7. `src/components/views/settings-view.tsx` — 5 tabs: Business (8-field form), Invoice (4 prefix fields + live preview), Appearance (theme toggle via next-themes + language select + color system swatches), Users (DataTable + Add User dialog + read-only permissions matrix 8 modules × 5 roles), Backup (Export Database JSON + Restore visual + Data Safety card). Form hydration uses React 19 "adjust state during render" pattern (no useEffect, zero lint errors). Save actions show success toast.
+   232→
+   233→### Key decisions
+   234→- **Strict file scope** — did NOT modify any existing files. The Users tab's Add User dialog POSTs to existing `/api/users`; on 405 it shows a friendly toast explaining the POST handler is not yet wired.
+   235→- **Emerald palette only** — no indigo/blue in any new code.
+   236→- **Inventory velocity** — slow-moving = no SALE-item AND no used REPAIR-job-part in last 30 days; fast-moving = top 15 sellers by qty in range.
+   237→- **Supplier on-time rate** — `received / total_purchases × 100` (no delivery-date tracking in schema).
+   238→- **CSV export** — two paths: server (`?format=csv` with `Content-Disposition`) for guaranteed escaping, client (`toCSV`+`downloadBlob`) for instant preview.
+   239→- **PDF export** — `window.open()` + `document.write()` of print-optimized HTML table + `window.print()` (no external PDF lib).
+   240→- **Hydration without lint errors** — `useSyncExternalStore` for next-themes mounted flag (replaces `useEffect(() => setMounted(true), [])`) and "adjust state during render" pattern for form hydration (replaces `useEffect` setting form state from props).
+   241→
+   242→### Verification
+   243→- `bun run lint`: **0 errors / 0 warnings in my 7 new files**. Remaining 2 errors (`topbar.tsx`, `product-form.tsx`) + 5 warnings are pre-existing in other agents' files — out of scope.
+   244→- `npx tsc --noEmit --skipLibCheck`: **0 errors** in my 7 new files. (70+ errors in output all reference other agents' files: inventory-view, sales-view, suppliers-view, purchases-view, repairs-view, customers/route.ts, damaged/route.ts, examples, skills.)
+   245→- Dev server log: clean — only `✓ Compiled in NNN ms` and `200` responses for my new routes. No `⨯` / `Module not found` / `SyntaxError` referencing my files.
+   246→- Live API smoke tests: all 9 report types return correct counts (inventory=111, sales=50, profit=98, supplier=4, customer=4, repair=8, purchase=10, lowstock=9, damaged=6). All 9 CSV exports return 200 with correct `Content-Type`/`Content-Disposition`. PUT /api/settings verified round-trip. GET /api/analytics verified with both range=30 and range=90. GET /api/settings/backup returns full counts (15 settings, 111 products, 50 sales, 300 compatibility links, etc.). GET / → 200 in ~330ms.
+   247→
+   248→### Stage Summary
+   249→All three modules are production-ready and feature-complete. Analytics delivers a comprehensive BI dashboard with KPIs, interactive charts (area/donut/bar), inventory velocity comparison, top performers, and supplier scorecards. Reports exposes all 9 report types with both JSON preview and CSV download (with proper `Content-Disposition`), plus a print-to-PDF flow. Settings provides a 5-tab interface (Business, Invoice, Appearance, Users, Backup) with real persistence via PUT /api/settings, a working database JSON export, theme toggle, and a read-only permissions matrix. All views honor the emerald design system, TanStack Query, sonner toasts, Framer Motion, Recharts, and the shared component library. Zero lint errors and zero TS errors in my files. No regressions — the rest of the SPA continues to compile and load cleanly.
+   250→
+   251→Agent work record saved at `/agent-ctx/2-f-reports-analytics-settings.md`.
+   252→
+   253→---
+   254→Task ID: FINAL
+   255→Agent: orchestrator (Z.ai Code)
+   256→Task: Integration, lint cleanup, agent-browser QA, and finalization of PartsHub.
+   257→
+   258→Work Log:
+   259→- Fixed 2 lint errors (react-hooks/set-state-in-effect) in topbar.tsx (introduced `useMounted` hook via useSyncExternalStore) and product-form.tsx (keyed-remount pattern with lazy initial state).
+   260→- Removed unused eslint-disable directives across image-upload, product-detail, inventory-view, seed.ts via `lint --fix`.
+   261→- Added missing POST handler to /api/users (was deferred by settings subagent) so Add User in Settings works.
+   262→- Ran full agent-browser QA across every view: Dashboard, Inventory, Products, Compatibility, Sales (POS dialog verified — cart/customer/payment), Purchases, Suppliers, Customers, Repairs (kanban + damaged tab), AI Identification (mode cards + upload zone + verified identify API returns 200 in ~4s), Reports (9 report types), Analytics (charts + KPIs), Settings (5 tabs). All render with real seeded data.
+   263→- Verified dark mode toggle applies `class="dark"` to html.
+   264→- API smoke tests: 10/11 endpoints return 200 (reports correctly 400 without ?type= param). AI identify endpoint confirmed working with VLM.
+   265→- Verified no runtime errors in dev.log during full navigation.
+   266→
+   267→Stage Summary:
+   268→- Project COMPLETE and production-ready. All 13 modules functional.
+   269→- Lint: 0 errors, 0 warnings.
+   270→- Tech: Next.js 16 App Router (single `/` SPA), Prisma+SQLite, shadcn/ui, TanStack Query, Recharts, Framer Motion, z-ai-web-dev-sdk VLM for AI identification.
+   271→- 111 seeded products, 14 days sales, 30 days purchases, 8 repairs, damaged inventory, 10 brands, ~28 models with bidirectional compatibility, 4 suppliers, 4 customers, 2 warehouses, 7 shelves.
+   272→- Next phase recommendations: implement real JWT auth + login screen, warehouse transfer UI, QR scanner (camera) for POS, image embeddings for AI similarity search, virtualized tables for 100k+ products, xlsx export library, customer/supplier outstanding balance payment recording flows.
+   273→
+   274→---
+   275→
+   276→## Task 3-a — Warehouse Transfer & Movement History module
+   277→
+   278→- **Task ID:** 3-a
+   279→- **Agent:** Warehouse Transfer & Movement History subagent (Z.ai Code)
+   280→- **Task:** Add a Warehouse Transfer & Movement History module to PartsHub — REST APIs (`/api/transfers` GET/POST + `/api/movements` GET) + a polished SPA view (`transfers-view.tsx`) for moving stock between warehouses and viewing the full movement audit trail. Wire into the sidebar (Catalog group after Compatibility), the ViewKey union, and the view router.
+   281→
+   282→### Work Log
+   283→
+   284→**Files created (3):**
+   285→
+   286→1. `src/app/api/transfers/route.ts` —
+   287→   - GET: lists `InventoryMovement` rows where `type=TRANSFER`, with filters (`productId`, `fromWarehouseId`, `toWarehouseId`, `from`, `to`) + pagination. Includes product (brand/model/partType), fromWarehouse, toWarehouse, user. Also returns a `stats` payload: `thisMonth` count, `unitsMoved` sum, `activeWarehouses` distinct count.
+   288→   - POST: validates `{ productId, fromWarehouseId, toWarehouseId, qty, note?, userId? }` — product must exist & be active, warehouses must differ and be active, qty must be a positive int ≤ `product.stock`. Auto-resolves `userId` from first user if absent. Generates `TRF-YYYYMMDD-NNN` ref (daily sequence). Creates the `InventoryMovement type=TRANSFER` row. Stock is NOT decremented (schema tracks stock at the product level — a single `warehouseId/shelfId/stock` per Product). If the entire stock moves, updates `product.warehouseId` to the destination and clears `shelfId` (relocated bin). Returns the created movement with all relations.
+   289→
+   290→2. `src/app/api/movements/route.ts` —
+   291→   - GET: lists ALL inventory movements (audit trail) with filters (`type` single-or-comma-list, `productId`, `fromWarehouseId`, `toWarehouseId`, `from`, `to`) + pagination. Includes product (brand/model/partType), fromWarehouse, toWarehouse, user.
+   292→
+   293→3. `src/components/views/transfers-view.tsx` (~750 lines) —
+   294→   - PageHeader with "New Transfer" primary action.
+   295→   - 3 StatCards (transfers this month / units moved / active warehouses) — teal/emerald/purple accents.
+   296→   - Teal info banner explaining product-level stock tracking.
+   297→   - Filters card (type Select + date input + Clear button).
+   298→   - Movement history DataTable — 7 columns (Date+ref / Product / Type / From→To route / Qty / Note / User). Color-coded type badges (TRANSFER=teal, IN=emerald, OUT=rose, SALE=rose, PURCHASE=emerald, DAMAGE=amber, ADJUST=amber, REPAIR=purple). The From→To column visualizes the route with rose-tinted source chip → emerald-tinted destination chip + ArrowRight glyph. Server-side pagination. Loading skeletons + adaptive empty state.
+   299→   - New Transfer Dialog: product search/select with live `/api/products?q=` lookup and Framer Motion dropdown; from-warehouse auto-filled from product's current warehouse; to-warehouse excludes the chosen source; qty input with available-stock display card and inline validation; optional note Textarea; teal info callout restating stock-tracking semantics; Cancel + Create Transfer buttons with spinner during mutation; success toast with the generated TRF ref. Invalidates `movements`, `transfers`, `transfers-stats`, `products` queries.
+   300→
+   301→**Files modified (3):**
+   302→
+   303→1. `src/lib/types.ts` — added `"transfers"` to the `ViewKey` union.
+   304→2. `src/components/sidebar.tsx` — added `ArrowLeftRight` import and `{ key: "transfers", label: "Transfers", icon: ArrowLeftRight, group: "Catalog" }` immediately after `compatibility`.
+   305→3. `src/components/view-router.tsx` — imported `TransfersView` and registered `transfers: <TransfersView />` between `compatibility` and `sales`.
+   306→
+   307→### Key decisions
+   308→
+   309→- **Stock semantics**: Per the task brief, the Prisma schema tracks stock at the product level (`Product.stock`, single `warehouseId`/`shelfId`), not per-warehouse. Transfer therefore does NOT decrement/increment stock counts — it records an `InventoryMovement type=TRANSFER` row (audit) and, when the entire stock moves, relocates the product's `warehouseId` to the destination. Two prominent teal info banners (page-level + dialog-level) communicate this to the user.
+   310→- **Two endpoints, one table**: The history DataTable uses `/api/movements` (all movement types) rather than `/api/transfers` (transfer-only) — the task says the table should "combine transfers + all movements" as the audit trail. The `/api/transfers` GET's `stats` payload powers the 3 KPI cards.
+   311→- **Type filter accepts a comma-list** so future "show me only stock-changing events" filters (`SALE,PURCHASE,DAMAGE`) are one line away.
+   312→- **`TRF-YYYYMMDD-NNN` ref** matches the `INV-…` (sales) and `PO-…` (purchases) daily-sequence convention.
+   313→- **Color-coded type badges** follow the brief precisely; NO indigo/blue anywhere.
+   314→- **`resolvedUserId: string | null`** typed explicitly to avoid the TS "null not assignable to string | undefined" error that the equivalent code in `sales/route.ts` still has (pre-existing out of scope).
+   315→
+   316→### Verification
+   317→
+   318→- `bun run lint`: **0 errors / 0 warnings** in all 5 files I touched. The only remaining lint error in the project is in `src/components/shared/barcode-scanner.tsx` (line 269 `react-hooks/set-state-in-effect`) — added concurrently by another agent, out of scope for Task 3-a.
+   319→- `npx tsc --noEmit --skipLibCheck`: **0 errors** in all 5 files I touched. (Initially had 2: `string | null` not assignable to `string | undefined` in `transfers/route.ts` — fixed by typing `resolvedUserId` explicitly. And `Movement[]` not assignable to `(Movement & Record<string, unknown>)[]` in `transfers-view.tsx` — fixed by casting the data prop. The same pattern error persists in other agents' `inventory-view.tsx`/`purchases-view.tsx` and is out of scope.)
+   320→- Dev log: only `✓ Compiled in NNN ms` entries reference my new files; the only `⨯` errors in the recent log are from another agent's `src/app/api/payments/route.ts:47` calling `db.payment.count` (likely needs `prisma generate` after the Payment model was added — NOT my code, NOT my schema change). The Next.js dev server compiled my files cleanly.
+   321→- Sidebar ordering verified: `Inventory → Products → Compatibility → Transfers → AI Identification` in the Catalog group, matching the task spec.
+   322→- Agent work record saved at `/agent-ctx/3-a-warehouse-transfers.md`.
+   323→
+   324→### Stage Summary
+   325→
+   326→The Warehouse Transfer & Movement History module is complete and production-ready. Three new files (2 API routes + 1 view) and three minimal modifications (ViewKey union, sidebar NAV, view-router) deliver: (1) a validated, audit-trailed transfer endpoint that creates `InventoryMovement type=TRANSFER` rows and gracefully handles the product-level stock semantics (relocates bin when entire stock moves; otherwise just records the movement); (2) a unified movements endpoint with type/date/product/warehouse filters + pagination; (3) a polished SPA view with three live KPI stat cards, an explanatory info banner, a 7-column color-coded movement history DataTable with type/date filters, and a New Transfer dialog featuring live product search, auto-filled source warehouse, destination-excluding warehouse select, qty-vs-available-stock validation, and clear success/error toasts. All design-system rules honored (emerald palette, soft shadows, rounded corners, NO indigo/blue, mobile-first responsive, Framer Motion transitions). Zero lint errors and zero TS errors in my files. No regressions.
+   327→
+   328→---
+   329→
+   330→## Task 3-b — QR/Barcode Camera Scanner (Sales POS + Inventory)
+   331→
+   332→- **Task ID:** 3-b
+   333→- **Agent:** QR/Barcode Scanner subagent (Z.ai Code)
+   334→- **Task:** Build a reusable camera-based QR/barcode scanner component (native `BarcodeDetector` API + graceful fallback) and integrate it into the Sales POS dialog and Inventory filter bar so users can scan a product code to instantly find/add it.
+   335→
+   336→### Work Log
+   337→
+   338→**Files created (2):**
+   339→
+   340→1. `src/components/shared/barcode-scanner.tsx` (~530 lines) — `BarcodeScannerDialog`. Native `BarcodeDetector` API with TS shim (`declare global { interface Window { BarcodeDetector?: any } }`). Uses `navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } } })` for the back camera. rAF loop draws video frames to a hidden `<canvas>` (with `willReadFrequently: true`) and calls `detector.detect(canvas)`. Polished overlay: dimmed vignette, emerald corner brackets, animated emerald scan line (custom `barcode-scan-move` keyframes), pulsing "Scanning…" pill with `animate-ping`, sound toggle (Web Audio API beep — 1080 Hz sine, exponentially decaying 200 ms envelope), last-found pill. 1.5 s same-code debounce. Continuous-scan toggle (stay open) + Restart camera button. Manual entry input always visible below video (mono font, Enter to submit). Graceful error states for `unsupported` (BarcodeDetector missing), `permission-denied`, `no-camera`, `in-use`, `unknown` — each with icon, descriptive copy, and Retry CTA (where applicable). Cleanup is bullet-proof: `stopCamera()` cancels rAF, stops all MediaStream tracks, nulls `video.srcObject`, resets debounce ref. Called on close (lifecycle effect cleanup), on unmount (separate effect), and from the Restart button. Props: `open`, `onOpenChange`, `onDetected: (value: string) => void`, `continuous?: boolean`.
+   341→
+   342→2. `src/components/shared/scanner-button.tsx` (~75 lines) — `ScannerButton`. Renders a shadcn `Button` with `ScanLine` icon + optional label (hidden on `<sm` for mobile compactness). Internally manages a `useState` for dialog open state and renders a paired `BarcodeScannerDialog`. Props: `onDetected`, `label?` (default "Scan"), `className?`, `variant?`, `size?`, `continuous?`, `disabled?`.
+   343→
+   344→**Files modified (2) — surgical edits only:**
+   345→
+   346→3. `src/components/views/sales-view.tsx` — Added import for `ScannerButton`. Added `handleScanDetected(code)` in `SaleFormDialog` that calls `api.get('/products?q=<code>&pageSize=10')`. If exactly 1 match → `addToCart(product)` + success toast. If multiple → `setSearch(code)` so the existing search-results UI shows them. If 0 → `toast.error("No product found for code X")`. Wrapped the existing search `<Input>` in a `flex gap-2` row and appended `<ScannerButton label="Scan" onDetected={handleScanDetected} className="shrink-0" />` next to it. No other changes — search results, cart, checkout panel, and invoice dialog untouched.
+   347→
+   348→4. `src/components/views/inventory-view.tsx` — Added import for `ScannerButton`. Added `handleScanDetected(code)` that calls `api.get('/products?q=<code>&pageSize=10')`. If 1 match → `setDetail(product)` (opens the existing `ProductDetailSheet`). If multiple → `setQ(code); setPage(1)` to filter the table. If 0 → error toast. Wrapped the existing search `<Input>` in a `flex flex-1 gap-2` row and appended `<ScannerButton label="Scan" onDetected={handleScanDetected} className="shrink-0" />` next to it. Filter chips, DataTable, and product form untouched.
+   349→
+   350→### Key decisions
+   351→- **Native `BarcodeDetector` only, no npm package** — per task spec. Detects QR + EAN/UPC/Code128/Code39/DataMatrix/PDF417/Aztec/ITF/Codabar out of the box in Chrome/Edge/Android.
+   352→- **`handleDetectionRef` pattern** — `useRef` holding the latest `handleDetection` callback, kept in sync via a tiny effect. The rAF loop reads `handleDetectionRef.current(value)` so toggling sound/continuous-mode takes effect immediately without restarting the loop. Avoids stale-closure bugs and exhaustive-deps churn.
+   353→- **"Adjust state during render" pattern** — used for both the support-check (`if (supported === null && open) setSupported(...)`) and the close-reset (`wasOpen` tracker). Avoids the `react-hooks/set-state-in-effect` rule (Next 16 enables it) entirely.
+   354→- **`queueMicrotask` deferral for `startCamera`** — the lifecycle effect defers `startCamera()` to a microtask so its synchronous `setStatus`/`setError` calls happen outside the effect body. Same rule, same fix.
+   355→- **Async-verify `getSupportedFormats()`** — some browsers ship a stub `BarcodeDetector` that throws. The async verify downgrades `supported` to `false` if `getSupportedFormats()` rejects, routing the UI to the manual-entry fallback view. The setState lives in `.catch()` (asynchronous) so it doesn't trip the lint rule.
+   356→- **No new API routes** — reuses existing `GET /api/products?q=` which already searches name, SKU, barcode, lcdCode, connectorType, model name, brand name.
+   357→
+   358→### Verification
+   359→- **`bun run lint`** → **0 errors / 0 warnings** across the whole project (including my 2 new files and 2 modified views).
+   360→- **`npx tsc --noEmit --skipLibCheck`** → **0 errors** in `barcode-scanner.tsx` and `scanner-button.tsx`; pre-existing TS errors in `sales-view.tsx`/`inventory-view.tsx` (lines I didn't touch: `Customer.address`, `Product.lcdCode`, DataTable generic mismatch) remain out of scope.
+   361→- **Dev log**: zero `⨯` / `Module not found` / `SyntaxError` referencing my files. Only the pre-existing `payments-view` import warning (different agent's pending work) and 400/404 on `/api/payments` (also out of scope).
+   362→- Lint cycle: first pass had 2 unused eslint-disable directives + 1 unused `toast` import → removed. Then hit `react-hooks/set-state-in-effect` and `react-hooks/refs` rules → refactored to "adjust state during render" + `queueMicrotask` deferral + moved ref mutation into `stopCamera`. Final state: 0 problems.
+   363→- Agent work record saved at `/agent-ctx/3-b-qr-barcode-scanner.md`.
+   364→
+   365→### Stage Summary
+   366→The QR/Barcode Camera Scanner feature is production-ready and fully integrated. Two new reusable shared components (`BarcodeScannerDialog` + `ScannerButton`) deliver a polished, native-API scanning experience with animated emerald overlay, audio feedback, continuous mode, and graceful error handling for every failure mode (unsupported browser, permission denied, no camera, camera busy, unknown). The manual-entry fallback is always visible so the scanner is useful even on Safari/Firefox where `BarcodeDetector` isn't available. Surgical integration into the Sales POS dialog and Inventory filter bar means users can scan a product code → if exactly one product matches, it's auto-added to cart (POS) or its detail sheet opens (Inventory); if multiple match, the existing search UI filters to them; if zero, a clear toast tells the user. Zero lint errors, zero TS errors in my files. No regressions to existing functionality — all edits were additive and minimal.
+   367→
+   368→---
+   369→
+   370→## Task 3-c — Payment Recording module
+   371→
+   372→- **Task ID:** 3-c
+   373→- **Agent:** Payment Recording subagent (Z.ai Code)
+   374→- **Task:** Build the Payment Recording module for PartsHub — a new `Payment` Prisma model tracking individual payment transactions against customer/supplier outstanding balances, 2 REST API route handlers (POST/GET list + GET/DELETE by id) with linked sale/purchase paid-status syncing and party balance updates, and a polished SPA view with Customer/Supplier tabs, monthly + outstanding stats, a Record Payment dialog with "pay full" quick-fill, and a filterable history table.
+   375→
+   376→### Work Log
+   377→
+   378→**Files created/modified (7):**
+   379→
+   380→1. **`prisma/schema.prisma`** (modified) — added a new `Payment` model: `id`, `partyType` (CUSTOMER|SUPPLIER), `partyId`, optional `saleId`, optional `purchaseId`, `amount`, `method` (default CASH), `note`, `date`. Indexes on `[partyType, partyId]` and `[date]`. Schema pushed with `bun run db:push` (auto-runs `prisma generate`).
+   381→2. **`src/lib/db.ts`** (modified) — added a staleness guard so a cached `globalThis.prisma` that's missing newer models (e.g. `payment`) is dropped and replaced with a fresh `PrismaClient` bound to the regenerated client. Necessary because the dev server keeps the prisma client in `globalThis` across HMRs — without this guard, `db.payment` would be `undefined` after a schema migration until a manual dev-server restart. Safe no-op in production (no cached instance exists).
+   382→3. **`src/app/api/payments/route.ts`** (new, ~210 lines) — `GET /api/payments` (list with filters: `partyType`, `partyId`, `method`, `from`, `to`, `q`; pagination via `page`/`pageSize` capped at 200; each row enriched with resolved `partyName`/`partySub`/`invoiceNo`/`poNo` via batched customer+supplier+sale+purchase lookups; `q` is applied client-side on the enriched fields). `POST /api/payments` (validates partyType ∈ {CUSTOMER, SUPPLIER}, partyId required, amount > 0, method ∈ {CASH, CARD, BANK, MOBILE, CREDIT}, rejects saleId+purchaseId combo, rejects cross-type links; resolves party + optional linked sale/purchase; runs `db.$transaction`: create Payment → if saleId, increment `sale.paid` + recompute `paymentStatus` (PAID if paid≥total, PARTIAL if paid>0, else UNPAID) → if purchaseId, same for purchase → decrement `customer.balance` or `supplier.balance` by amount).
+   383→4. **`src/app/api/payments/[id]/route.ts`** (new, ~100 lines) — `GET /api/payments/:id` (single payment with enriched party name/sub + embedded `sale`/`purchase` summary objects). `DELETE /api/payments/:id` (reverses the payment in a `db.$transaction`: if saleId, decrement `sale.paid` (clamped to ≥0) + recompute status; if purchaseId, same for purchase; increment `customer.balance`/`supplier.balance` by amount; delete the Payment row; returns 204).
+   384→5. **`src/lib/types.ts`** (modified) — added `"payments"` to the `ViewKey` union (placed after `"customers"` to match sidebar ordering).
+   385→6. **`src/components/sidebar.tsx`** (modified) — imported `Wallet` from lucide-react; added `{ key: "payments", label: "Payments", icon: Wallet, group: "Commerce" }` to the NAV array right after the Customers entry.
+   386→7. **`src/components/view-router.tsx`** (modified) — imported `PaymentsView` from `@/components/views/payments-view`; added `payments: <PaymentsView />` to the views map.
+   387→8. **`src/components/views/payments-view.tsx`** (new, ~810 lines) — full module:
+   388→   - PageHeader "Payments" with description "Record customer payments and supplier payments, track outstanding balances" + "Record Payment" primary action.
+   389→   - **4 StatCards**: Received This Month (emerald, from customers), Paid This Month (teal, to suppliers), Outstanding Receivable (amber if >0 else emerald, sum of `outstandingBalance` across customers), Outstanding Payable (amber if >0 else emerald, sum across suppliers).
+   390→   - **Tabs**: "Customer Payments" (User icon) and "Supplier Payments" (Building2 icon). Each tab shows its own filter card + history table.
+   391→   - **Filter card**: search input (filters on party name, invoice/PO, note), date-range from/to (`<Input type="date">`), method Select (All methods + 5 PAYMENT_METHODS), and a Clear button that appears when any filter is active.
+   392→   - **History DataTable** (uses shared `DataTable` + `Column`): Date (formatDateTime), Party (avatar icon + name + sub), Type (emerald "Received" badge with ArrowDownLeft for customers / teal "Paid" badge with ArrowUpRight for suppliers), Linked Invoice/PO (Receipt icon + invoiceNo OR FileText icon + poNo OR "On account"), Amount (right-aligned, emerald for received / teal for paid), Method (secondary badge), Note (truncated with title), Actions (delete button with confirm dialog).
+   393→   - **Empty state**: dedicated card with Wallet icon + context-aware title/description + "Record Payment" CTA when no payments exist; standard DataTable empty state when filters return nothing.
+   394→   - **Error state**: dedicated card with ErrorState + retry button.
+   395→   - **Record Payment dialog**: 2-button Customer/Supplier toggle (auto-set from active tab, syncs if user switches tab while dialog open); party Select with embedded search Input (filters by name/phone/company) and outstanding-balance badge on each option; "Current outstanding" amber summary card; optional linked invoice/PO Select (loads PARTIAL+UNPAID sales or purchases for the selected party via existing `/api/sales`/`/api/purchases` endpoints); outstanding breakdown text (Invoice total · Paid · Outstanding) when a doc is selected; amount Input (type=number) with "Pay full ⨯" quick-fill button (auto-fills `Math.round(displayOutstanding)` — uses the linked-doc outstanding when one is selected, else the party's `outstandingBalance`); method Select; optional note Textarea; amber warning when amount exceeds the selected doc's outstanding; Cancel + Record Payment buttons with loading spinner.
+   396→   - Form state is managed with the React 19 **"adjust state when props change" pattern** (no `useEffect` with `setState` — tracks `lastSeenOpen`/`lastSeenDefaultPartyType`/`lastSeenPartyType` and adjusts synchronously during render) to satisfy the strict `react-hooks/set-state-in-effect` lint rule.
+   397→   - All TanStack Query mutations invalidate `payments`, `customers`, `suppliers`, `sales`, `purchases` so every dependent UI surface stays in sync.
+   398→   - Emerald + teal design system only (no indigo/blue). Framer Motion transitions inherited from the `ViewRouter`. Mobile-first responsive (grid collapses 4→2→1, filter card stacks vertically on small screens, dialog scrolls when content overflows).
+   399→
+
+[showing lines 200-399 of 478; use offset=400 with limit to continue reading]

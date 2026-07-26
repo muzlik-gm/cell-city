@@ -26,10 +26,12 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Users, Plus, Search, Phone, MessageCircle, Mail, MapPin, Building2,
   Pencil, Trash2, Loader2, Save, ShoppingCart, Wrench, Wallet,
-  RotateCcw, Receipt,
+  RotateCcw, Receipt, FileText, Clock,
 } from "lucide-react";
 import { formatCurrency, formatDate, formatDateTime, initials } from "@/lib/format";
 import { toast } from "sonner";
+import { StatementDialog } from "@/components/shared/statement-dialog";
+import { ActivityTimeline } from "@/components/shared/activity-timeline";
 
 // ─── Types ───────────────────────────────────────────────────────────────
 interface Customer {
@@ -110,6 +112,7 @@ export function CustomersView() {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Customer | null>(null);
   const [detailId, setDetailId] = useState<string | null>(null);
+  const [statementId, setStatementId] = useState<string | null>(null);
 
   const queryStr = useMemo(() => {
     const p = new URLSearchParams();
@@ -300,6 +303,17 @@ export function CustomersView() {
         customerId={detailId}
         onOpenChange={(o) => !o && setDetailId(null)}
         onEdit={(c) => { setDetailId(null); openEdit(c); }}
+        onViewStatement={(c) => setStatementId(c.id)}
+      />
+
+      <StatementDialog
+        partyType="customer"
+        partyId={statementId ?? ""}
+        partyName={
+          customers.find((c) => c.id === statementId)?.name ?? "Customer"
+        }
+        open={!!statementId}
+        onOpenChange={(o) => !o && setStatementId(null)}
       />
     </div>
   );
@@ -427,11 +441,12 @@ function CustomerFormInner({
 
 // ─── Customer Detail Sheet ───────────────────────────────────────────────
 function CustomerDetailSheet({
-  customerId, onOpenChange, onEdit,
+  customerId, onOpenChange, onEdit, onViewStatement,
 }: {
   customerId: string | null;
   onOpenChange: (o: boolean) => void;
   onEdit: (c: Customer) => void;
+  onViewStatement: (c: Customer) => void;
 }) {
   const open = !!customerId;
   const { data: customer, isLoading } = useQuery<CustomerDetail>({
@@ -469,9 +484,19 @@ function CustomerDetailSheet({
                     </div>
                   </div>
                 </div>
-                <Button size="sm" variant="outline" className="gap-1.5" onClick={() => onEdit(customer)}>
-                  <Pencil className="h-3.5 w-3.5" /> Edit
-                </Button>
+                <div className="flex shrink-0 items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="gap-1.5"
+                    onClick={() => onViewStatement(customer)}
+                  >
+                    <FileText className="h-3.5 w-3.5" /> Statement
+                  </Button>
+                  <Button size="sm" variant="outline" className="gap-1.5" onClick={() => onEdit(customer)}>
+                    <Pencil className="h-3.5 w-3.5" /> Edit
+                  </Button>
+                </div>
               </div>
             </SheetHeader>
 
@@ -557,6 +582,9 @@ function CustomerDetailSheet({
                   <TabsList className="mb-4">
                     <TabsTrigger value="sales">Purchase History</TabsTrigger>
                     <TabsTrigger value="repairs">Repair History</TabsTrigger>
+                    <TabsTrigger value="activity">
+                      <Clock className="mr-1.5 h-3.5 w-3.5" /> Activity
+                    </TabsTrigger>
                   </TabsList>
 
                   <TabsContent value="sales">
@@ -626,6 +654,34 @@ function CustomerDetailSheet({
                         ))}
                       </div>
                     )}
+                  </TabsContent>
+
+                  <TabsContent value="activity">
+                    <div className="rounded-xl border bg-card p-4 shadow-soft">
+                      <div className="mb-3 flex items-center justify-between gap-2">
+                        <div>
+                          <p className="text-sm font-semibold">Recent Activity</p>
+                          <p className="text-[11px] text-muted-foreground">
+                            Latest sales, repairs &amp; payments — running balance shown next to each entry.
+                          </p>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="gap-1.5"
+                          onClick={() => onViewStatement(customer)}
+                        >
+                          <FileText className="h-3.5 w-3.5" /> Full Statement
+                        </Button>
+                      </div>
+                      <ActivityTimeline
+                        partyType="customer"
+                        partyId={customer.id}
+                        limit={10}
+                        emptyTitle="No activity yet"
+                        emptyDescription="Sales, repair jobs, and payments for this customer will appear here in chronological order."
+                      />
+                    </div>
                   </TabsContent>
                 </Tabs>
               </div>

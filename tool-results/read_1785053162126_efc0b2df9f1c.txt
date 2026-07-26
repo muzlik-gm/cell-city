@@ -1,0 +1,602 @@
+     1→     1→"use client";
+     2→     2→
+     3→     3→import { useState, useMemo } from "react";
+     4→     4→import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+     5→     5→import { api } from "@/lib/api";
+     6→     6→import { PageHeader } from "@/components/shared/page-header";
+     7→     7→import { StatCard } from "@/components/shared/stat-card";
+     8→     8→import { DataTable, type Column } from "@/components/shared/data-table";
+     9→     9→import { EmptyState } from "@/components/shared/states";
+    10→    10→import { PaymentStatusBadge, RepairStatusBadge } from "@/components/shared/badges";
+    11→    11→import { Button } from "@/components/ui/button";
+    12→    12→import { Input } from "@/components/ui/input";
+    13→    13→import { Label } from "@/components/ui/label";
+    14→    14→import { Textarea } from "@/components/ui/textarea";
+    15→    15→import { Badge } from "@/components/ui/badge";
+    16→    16→import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+    17→    17→import { Card } from "@/components/ui/card";
+    18→    18→import {
+    19→    19→  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+    20→    20→} from "@/components/ui/dialog";
+    21→    21→import {
+    22→    22→  Sheet, SheetContent, SheetHeader, SheetTitle,
+    23→    23→} from "@/components/ui/sheet";
+    24→    24→import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+    25→    25→import { ScrollArea } from "@/components/ui/scroll-area";
+    26→    26→import {
+    27→    27→  Users, Plus, Search, Phone, MessageCircle, Mail, MapPin, Building2,
+    28→    28→  Pencil, Trash2, Loader2, Save, ShoppingCart, Wrench, Wallet,
+    29→    29→  RotateCcw, Receipt,
+    30→    30→} from "lucide-react";
+    31→    31→import { formatCurrency, formatDate, formatDateTime, initials } from "@/lib/format";
+    32→    32→import { toast } from "sonner";
+    33→    33→
+    34→    34→// ─── Types ───────────────────────────────────────────────────────────────
+    35→    35→interface Customer {
+    36→    36→  id: string;
+    37→    37→  name: string;
+    38→    38→  phone: string | null;
+    39→    39→  whatsapp: string | null;
+    40→    40→  email: string | null;
+    41→    41→  address: string | null;
+    42→    42→  company: string | null;
+    43→    43→  balance: number;
+    44→    44→  notes: string | null;
+    45→    45→  active: boolean;
+    46→    46→  createdAt: string;
+    47→    47→  updatedAt: string;
+    48→    48→  outstandingBalance: number;
+    49→    49→  _count?: { sales: number; repairJobs: number };
+    50→    50→}
+    51→    51→
+    52→    52→interface SaleItem {
+    53→    53→  id: string;
+    54→    54→  name: string;
+    55→    55→  qty: number;
+    56→    56→  price: number;
+    57→    57→  total: number;
+    58→    58→  product?: { name: string; sku: string } | null;
+    59→    59→}
+    60→    60→
+    61→    61→interface Sale {
+    62→    62→  id: string;
+    63→    63→  invoiceNo: string;
+    64→    64→  total: number;
+    65→    65→  paid: number;
+    66→    66→  profit: number;
+    67→    67→  paymentStatus: string;
+    68→    68→  status: string;
+    69→    69→  paymentMethod: string;
+    70→    70→  createdAt: string;
+    71→    71→  items: SaleItem[];
+    72→    72→}
+    73→    73→
+    74→    74→interface RepairJob {
+    75→    75→  id: string;
+    76→    76→  ticketNo: string;
+    77→    77→  problem: string;
+    78→    78→  status: string;
+    79→    79→  paymentStatus: string;
+    80→    80→  total: number;
+    81→    81→  paid: number;
+    82→    82→  createdAt: string;
+    83→    83→  model?: { name: string; brand?: { name: string } | null } | null;
+    84→    84→}
+    85→    85→
+    86→    86→interface CustomerDetail extends Customer {
+    87→    87→  sales: Sale[];
+    88→    88→  repairJobs: RepairJob[];
+    89→    89→}
+    90→    90→
+    91→    91→// ─── Helpers ─────────────────────────────────────────────────────────────
+    92→    92→function sanitizePhone(raw: string | null | undefined): string {
+    93→    93→  if (!raw) return "";
+    94→    94→  return raw.replace(/[^\d+]/g, "").replace(/(^\+?)(\+)+/, "$1");
+    95→    95→}
+    96→    96→
+    97→    97→function whatsappLink(raw: string | null | undefined): string {
+    98→    98→  const digits = sanitizePhone(raw).replace(/^\+/, "").replace(/^0+/, "");
+    99→    99→  return `https://wa.me/${digits}`;
+   100→   100→}
+   101→   101→
+   102→   102→function telLink(raw: string | null | undefined): string {
+   103→   103→  return `tel:${sanitizePhone(raw)}`;
+   104→   104→}
+   105→   105→
+   106→   106→// ─── Main View ───────────────────────────────────────────────────────────
+   107→   107→export function CustomersView() {
+   108→   108→  const qc = useQueryClient();
+   109→   109→  const [q, setQ] = useState("");
+   110→   110→  const [formOpen, setFormOpen] = useState(false);
+   111→   111→  const [editing, setEditing] = useState<Customer | null>(null);
+   112→   112→  const [detailId, setDetailId] = useState<string | null>(null);
+   113→   113→
+   114→   114→  const queryStr = useMemo(() => {
+   115→   115→    const p = new URLSearchParams();
+   116→   116→    if (q) p.set("q", q);
+   117→   117→    return p.toString();
+   118→   118→  }, [q]);
+   119→   119→
+   120→   120→  const { data: customers = [], isLoading } = useQuery<Customer[]>({
+   121→   121→    queryKey: ["customers", queryStr],
+   122→   122→    queryFn: () => api.get<Customer[]>(`/customers${queryStr ? `?${queryStr}` : ""}`),
+   123→   123→  });
+   124→   124→
+   125→   125→  // Stats
+   126→   126→  const totalCustomers = customers.length;
+   127→   127→  const totalOutstanding = customers.reduce((s, c) => s + (c.outstandingBalance ?? 0), 0);
+   128→   128→  const returning = customers.filter(
+   129→   129→    (c) => (c._count?.sales ?? 0) + (c._count?.repairJobs ?? 0) >= 2
+   130→   130→  ).length;
+   131→   131→
+   132→   132→  const openAdd = () => { setEditing(null); setFormOpen(true); };
+   133→   133→  const openEdit = (c: Customer) => { setEditing(c); setFormOpen(true); };
+   134→   134→
+   135→   135→  const onDelete = async (c: Customer) => {
+   136→   136→    if (!confirm(`Deactivate customer "${c.name}"? This will hide them from selection lists.`)) return;
+   137→   137→    try {
+   138→   138→      await api.del(`/customers/${c.id}`);
+   139→   139→      qc.invalidateQueries({ queryKey: ["customers"] });
+   140→   140→      toast.success("Customer deactivated");
+   141→   141→    } catch (e) {
+   142→   142→      toast.error((e as Error).message);
+   143→   143→    }
+   144→   144→  };
+   145→   145→
+   146→   146→  const columns: Column<Customer>[] = [
+   147→   147→    {
+   148→   148→      key: "name", header: "Customer", className: "min-w-[220px]",
+   149→   149→      render: (c) => (
+   150→   150→        <div className="flex items-center gap-3">
+   151→   151→          <Avatar className="h-10 w-10 bg-primary/10 text-primary">
+   152→   152→            <AvatarFallback className="bg-primary/10 text-xs font-semibold text-primary">
+   153→   153→              {initials(c.name)}
+   154→   154→            </AvatarFallback>
+   155→   155→          </Avatar>
+   156→   156→          <div className="min-w-0">
+   157→   157→            <p className="truncate text-sm font-medium">{c.name}</p>
+   158→   158→            <p className="truncate text-xs text-muted-foreground">
+   159→   159→              {c.company ?? "—"}{c.email ? ` · ${c.email}` : ""}
+   160→   160→            </p>
+   161→   161→          </div>
+   162→   162→        </div>
+   163→   163→      ),
+   164→   164→    },
+   165→   165→    {
+   166→   166→      key: "phone", header: "Phone / WhatsApp", className: "min-w-[170px]",
+   167→   167→      render: (c) => (
+   168→   168→        <div className="flex flex-col gap-0.5 text-xs">
+   169→   169→          {c.phone ? (
+   170→   170→            <a href={telLink(c.phone)} className="inline-flex items-center gap-1.5 text-foreground hover:text-primary" onClick={(e) => e.stopPropagation()}>
+   171→   171→              <Phone className="h-3 w-3 text-muted-foreground" /> {c.phone}
+   172→   172→            </a>
+   173→   173→          ) : <span className="text-muted-foreground">No phone</span>}
+   174→   174→          {c.whatsapp && (
+   175→   175→            <a href={whatsappLink(c.whatsapp)} target="_blank" rel="noreferrer"
+   176→   176→               className="inline-flex items-center gap-1.5 text-emerald-600 hover:underline"
+   177→   177→               onClick={(e) => e.stopPropagation()}>
+   178→   178→              <MessageCircle className="h-3 w-3" /> WhatsApp
+   179→   179→            </a>
+   180→   180→          )}
+   181→   181→        </div>
+   182→   182→      ),
+   183→   183→    },
+   184→   184→    {
+   185→   185→      key: "purchases", header: "Purchases", className: "text-center",
+   186→   186→      render: (c) => (
+   187→   187→        <div className="text-center">
+   188→   188→          <p className="text-sm font-semibold">{c._count?.sales ?? 0}</p>
+   189→   189→          <p className="text-[11px] text-muted-foreground">orders</p>
+   190→   190→        </div>
+   191→   191→      ),
+   192→   192→    },
+   193→   193→    {
+   194→   194→      key: "repairs", header: "Repairs", className: "text-center",
+   195→   195→      render: (c) => (
+   196→   196→        <div className="text-center">
+   197→   197→          <p className="text-sm font-semibold">{c._count?.repairJobs ?? 0}</p>
+   198→   198→          <p className="text-[11px] text-muted-foreground">jobs</p>
+   199→   199→        </div>
+   200→   200→      ),
+   201→   201→    },
+   202→   202→    {
+   203→   203→      key: "outstanding", header: "Outstanding", className: "text-right",
+   204→   204→      render: (c) => {
+   205→   205→        const amt = c.outstandingBalance ?? 0;
+   206→   206→        return (
+   207→   207→          <div className="text-right">
+   208→   208→            <p className={`text-sm font-semibold ${amt > 0 ? "text-amber-600 dark:text-amber-400" : "text-emerald-600"}`}>
+   209→   209→              {formatCurrency(amt)}
+   210→   210→            </p>
+   211→   211→            <p className="text-[11px] text-muted-foreground">{amt > 0 ? "receivable" : "settled"}</p>
+   212→   212→          </div>
+   213→   213→        );
+   214→   214→      },
+   215→   215→    },
+   216→   216→    {
+   217→   217→      key: "actions", header: "", className: "text-right",
+   218→   218→      render: (c) => (
+   219→   219→        <div className="flex justify-end gap-1">
+   220→   220→          <Button size="sm" variant="ghost" className="h-8" onClick={(e) => { e.stopPropagation(); setDetailId(c.id); }}>View</Button>
+   221→   221→          <Button size="sm" variant="ghost" className="h-8" onClick={(e) => { e.stopPropagation(); openEdit(c); }}>
+   222→   222→            <Pencil className="h-3.5 w-3.5" />
+   223→   223→          </Button>
+   224→   224→          <Button size="sm" variant="ghost" className="h-8 text-destructive" onClick={(e) => { e.stopPropagation(); onDelete(c); }}>
+   225→   225→            <Trash2 className="h-3.5 w-3.5" />
+   226→   226→          </Button>
+   227→   227→        </div>
+   228→   228→      ),
+   229→   229→    },
+   230→   230→  ];
+   231→   231→
+   232→   232→  return (
+   233→   233→    <div className="space-y-5">
+   234→   234→      <PageHeader
+   235→   235→        title="Customers"
+   236→   236→        description="Manage buyers, track receivables, purchase and repair history"
+   237→   237→        icon={Users}
+   238→   238→        actions={
+   239→   239→          <Button size="sm" className="gap-1.5" onClick={openAdd}>
+   240→   240→            <Plus className="h-4 w-4" /> Add Customer
+   241→   241→          </Button>
+   242→   242→        }
+   243→   243→      />
+   244→   244→
+   245→   245→      {/* Stats */}
+   246→   246→      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+   247→   247→        <StatCard
+   248→   248→          label="Total Customers"
+   249→   249→          value={totalCustomers}
+   250→   250→          icon={Users}
+   251→   251→          accent="emerald"
+   252→   252→          subtitle="Active buyers"
+   253→   253→        />
+   254→   254→        <StatCard
+   255→   255→          label="Outstanding Receivable"
+   256→   256→          value={formatCurrency(totalOutstanding)}
+   257→   257→          icon={Wallet}
+   258→   258→          accent={totalOutstanding > 0 ? "amber" : "emerald"}
+   259→   259→          subtitle="Across all customers"
+   260→   260→        />
+   261→   261→        <StatCard
+   262→   262→          label="Returning Customers"
+   263→   263→          value={returning}
+   264→   264→          icon={RotateCcw}
+   265→   265→          accent="teal"
+   266→   266→          subtitle={totalCustomers ? `${Math.round((returning / totalCustomers) * 100)}% of base` : "No data yet"}
+   267→   267→        />
+   268→   268→      </div>
+   269→   269→
+   270→   270→      {/* Search */}
+   271→   271→      <Card className="p-4 shadow-soft">
+   272→   272→        <div className="relative max-w-sm">
+   273→   273→          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+   274→   274→          <Input
+   275→   275→            value={q}
+   276→   276→            onChange={(e) => setQ(e.target.value)}
+   277→   277→            placeholder="Search by name, company, phone, email…"
+   278→   278→            className="pl-9"
+   279→   279→          />
+   280→   280→        </div>
+   281→   281→      </Card>
+   282→   282→
+   283→   283→      <DataTable
+   284→   284→        columns={columns}
+   285→   285→        data={customers}
+   286→   286→        loading={isLoading}
+   287→   287→        onRowClick={(c) => setDetailId(c.id)}
+   288→   288→        rowKey={(c) => c.id}
+   289→   289→        emptyTitle="No customers found"
+   290→   290→        emptyDescription={q ? "Try a different search term." : "Add your first customer to start tracking sales & repairs."}
+   291→   291→      />
+   292→   292→
+   293→   293→      <CustomerFormDialog
+   294→   294→        open={formOpen}
+   295→   295→        onOpenChange={setFormOpen}
+   296→   296→        customer={editing}
+   297→   297→      />
+   298→   298→
+   299→   299→      <CustomerDetailSheet
+   300→   300→        customerId={detailId}
+   301→   301→        onOpenChange={(o) => !o && setDetailId(null)}
+   302→   302→        onEdit={(c) => { setDetailId(null); openEdit(c); }}
+   303→   303→      />
+   304→   304→    </div>
+   305→   305→  );
+   306→   306→}
+   307→   307→
+   308→   308→// ─── Customer Form Dialog ────────────────────────────────────────────────
+   309→   309→interface CustomerFormValues {
+   310→   310→  id?: string;
+   311→   311→  name: string;
+   312→   312→  phone: string;
+   313→   313→  whatsapp: string;
+   314→   314→  email: string;
+   315→   315→  address: string;
+   316→   316→  company: string;
+   317→   317→  notes: string;
+   318→   318→}
+   319→   319→
+   320→   320→const emptyForm: CustomerFormValues = {
+   321→   321→  name: "", phone: "", whatsapp: "", email: "", address: "", company: "", notes: "",
+   322→   322→};
+   323→   323→
+   324→   324→function CustomerFormDialog({
+   325→   325→  open, onOpenChange, customer,
+   326→   326→}: {
+   327→   327→  open: boolean;
+   328→   328→  onOpenChange: (o: boolean) => void;
+   329→   329→  customer: Customer | null;
+   330→   330→}) {
+   331→   331→  // Keyed remount strategy: the inner form holds its own state initialized
+   332→   332→  // from `customer`. When `customer` (or open state) changes, React remounts
+   333→   333→  // the inner form, resetting state cleanly without setState-in-effect.
+   334→   334→  return (
+   335→   335→    <Dialog open={open} onOpenChange={onOpenChange}>
+   336→   336→      <DialogContent className="max-w-2xl gap-0 p-0">
+   337→   337→        <CustomerFormInner
+   338→   338→          key={open ? (customer?.id ?? "new") : "closed"}
+   339→   339→          customer={customer}
+   340→   340→          onOpenChange={onOpenChange}
+   341→   341→        />
+   342→   342→      </DialogContent>
+   343→   343→    </Dialog>
+   344→   344→  );
+   345→   345→}
+   346→   346→
+   347→   347→function CustomerFormInner({
+   348→   348→  customer, onOpenChange,
+   349→   349→}: {
+   350→   350→  customer: Customer | null;
+   351→   351→  onOpenChange: (o: boolean) => void;
+   352→   352→}) {
+   353→   353→  const qc = useQueryClient();
+   354→   354→  const [form, setForm] = useState<CustomerFormValues>(() =>
+   355→   355→    customer
+   356→   356→      ? {
+   357→   357→          id: customer.id,
+   358→   358→          name: customer.name,
+   359→   359→          phone: customer.phone ?? "",
+   360→   360→          whatsapp: customer.whatsapp ?? "",
+   361→   361→          email: customer.email ?? "",
+   362→   362→          address: customer.address ?? "",
+   363→   363→          company: customer.company ?? "",
+   364→   364→          notes: customer.notes ?? "",
+   365→   365→        }
+   366→   366→      : emptyForm
+   367→   367→  );
+   368→   368→
+   369→   369→  const save = useMutation({
+   370→   370→    mutationFn: async () => {
+   371→   371→      if (form.id) return api.put(`/customers/${form.id}`, form);
+   372→   372→      return api.post("/customers", form);
+   373→   373→    },
+   374→   374→    onSuccess: () => {
+   375→   375→      qc.invalidateQueries({ queryKey: ["customers"] });
+   376→   376→      toast.success(form.id ? "Customer updated" : "Customer created");
+   377→   377→      onOpenChange(false);
+   378→   378→    },
+   379→   379→    onError: (e: Error) => toast.error(e.message),
+   380→   380→  });
+   381→   381→
+   382→   382→  const set = (k: keyof CustomerFormValues, v: string) =>
+   383→   383→    setForm((f) => ({ ...f, [k]: v }));
+   384→   384→
+   385→   385→  return (
+   386→   386→    <>
+   387→   387→      <DialogHeader className="border-b px-6 py-4">
+   388→   388→        <DialogTitle>{form.id ? "Edit Customer" : "New Customer"}</DialogTitle>
+   389→   389→      </DialogHeader>
+   390→   390→        <ScrollArea className="max-h-[70vh]">
+   391→   391→          <div className="space-y-4 px-6 py-5">
+   392→   392→            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+   393→   393→              <Field label="Customer Name *">
+   394→   394→                <Input value={form.name} onChange={(e) => set("name", e.target.value)} placeholder="e.g. John Doe" />
+   395→   395→              </Field>
+   396→   396→              <Field label="Company">
+   397→   397→                <Input value={form.company} onChange={(e) => set("company", e.target.value)} placeholder="Shop / business name" />
+   398→   398→              </Field>
+   399→   399→              <Field label="Phone">
+   400→   400→                <Input value={form.phone} onChange={(e) => set("phone", e.target.value)} placeholder="+92 300 1234567" />
+   401→   401→              </Field>
+   402→   402→              <Field label="WhatsApp">
+   403→   403→                <Input value={form.whatsapp} onChange={(e) => set("whatsapp", e.target.value)} placeholder="+92 300 1234567" />
+   404→   404→              </Field>
+   405→   405→              <Field label="Email" className="sm:col-span-2">
+   406→   406→                <Input type="email" value={form.email} onChange={(e) => set("email", e.target.value)} placeholder="customer@email.com" />
+   407→   407→              </Field>
+   408→   408→              <Field label="Address" className="sm:col-span-2">
+   409→   409→                <Input value={form.address} onChange={(e) => set("address", e.target.value)} placeholder="Street, City, Country" />
+   410→   410→              </Field>
+   411→   411→              <Field label="Notes" className="sm:col-span-2">
+   412→   412→                <Textarea rows={3} value={form.notes} onChange={(e) => set("notes", e.target.value)} placeholder="Preferences, payment habits, special instructions…" />
+   413→   413→              </Field>
+   414→   414→            </div>
+   415→   415→          </div>
+   416→   416→        </ScrollArea>
+   417→   417→        <DialogFooter className="border-t px-6 py-4">
+   418→   418→          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+   419→   419→          <Button onClick={() => save.mutate()} disabled={save.isPending || !form.name.trim()}>
+   420→   420→            {save.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+   421→   421→            {form.id ? "Save Changes" : "Create Customer"}
+   422→   422→          </Button>
+   423→   423→        </DialogFooter>
+   424→   424→    </>
+   425→   425→  );
+   426→   426→}
+   427→   427→
+   428→   428→// ─── Customer Detail Sheet ───────────────────────────────────────────────
+   429→   429→function CustomerDetailSheet({
+   430→   430→  customerId, onOpenChange, onEdit,
+   431→   431→}: {
+   432→   432→  customerId: string | null;
+   433→   433→  onOpenChange: (o: boolean) => void;
+   434→   434→  onEdit: (c: Customer) => void;
+   435→   435→}) {
+   436→   436→  const open = !!customerId;
+   437→   437→  const { data: customer, isLoading } = useQuery<CustomerDetail>({
+   438→   438→    queryKey: ["customer", customerId],
+   439→   439→    queryFn: () => api.get<CustomerDetail>(`/customers/${customerId!}`),
+   440→   440→    enabled: !!customerId,
+   441→   441→  });
+   442→   442→
+   443→   443→  return (
+   444→   444→    <Sheet open={open} onOpenChange={onOpenChange}>
+   445→   445→      <SheetContent side="right" className="w-full overflow-hidden p-0 sm:max-w-2xl">
+   446→   446→        {isLoading && (
+   447→   447→          <div className="flex h-full items-center justify-center">
+   448→   448→            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+   449→   449→          </div>
+   450→   450→        )}
+   451→   451→        {customer && (
+   452→   452→          <>
+   453→   453→            <SheetHeader className="border-b px-6 py-4">
+   454→   454→              <div className="flex items-start justify-between gap-3">
+   455→   455→                <div className="flex min-w-0 items-start gap-3">
+   456→   456→                  <Avatar className="h-12 w-12 bg-primary/10 text-primary">
+   457→   457→                    <AvatarFallback className="bg-primary/10 text-sm font-semibold text-primary">
+   458→   458→                      {initials(customer.name)}
+   459→   459→                    </AvatarFallback>
+   460→   460→                  </Avatar>
+   461→   461→                  <div className="min-w-0">
+   462→   462→                    <SheetTitle className="text-base">{customer.name}</SheetTitle>
+   463→   463→                    <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+   464→   464→                      {customer.company && (
+   465→   465→                        <span className="inline-flex items-center gap-1"><Building2 className="h-3 w-3" /> {customer.company}</span>
+   466→   466→                      )}
+   467→   467→                      <span className="text-muted-foreground/70">Since {formatDate(customer.createdAt)}</span>
+   468→   468→                      {!customer.active && <Badge variant="outline" className="text-rose-600">Inactive</Badge>}
+   469→   469→                    </div>
+   470→   470→                  </div>
+   471→   471→                </div>
+   472→   472→                <Button size="sm" variant="outline" className="gap-1.5" onClick={() => onEdit(customer)}>
+   473→   473→                  <Pencil className="h-3.5 w-3.5" /> Edit
+   474→   474→                </Button>
+   475→   475→              </div>
+   476→   476→            </SheetHeader>
+   477→   477→
+   478→   478→            <ScrollArea className="h-[calc(100vh-90px)]">
+   479→   479→              <div className="px-6 py-5">
+   480→   480→                {/* Summary cards */}
+   481→   481→                <div className="grid grid-cols-3 gap-3">
+   482→   482→                  <div className="rounded-xl border p-3">
+   483→   483→                    <p className="text-[11px] text-muted-foreground">Outstanding</p>
+   484→   484→                    <p className={`mt-1 text-lg font-bold ${(customer.outstandingBalance ?? 0) > 0 ? "text-amber-600 dark:text-amber-400" : "text-emerald-600"}`}>
+   485→   485→                      {formatCurrency(customer.outstandingBalance ?? 0)}
+   486→   486→                    </p>
+   487→   487→                  </div>
+   488→   488→                  <div className="rounded-xl border p-3">
+   489→   489→                    <p className="text-[11px] text-muted-foreground">Sales</p>
+   490→   490→                    <p className="mt-1 text-lg font-bold">{customer._count?.sales ?? customer.sales?.length ?? 0}</p>
+   491→   491→                  </div>
+   492→   492→                  <div className="rounded-xl border p-3">
+   493→   493→                    <p className="text-[11px] text-muted-foreground">Repairs</p>
+   494→   494→                    <p className="mt-1 text-lg font-bold">{customer._count?.repairJobs ?? customer.repairJobs?.length ?? 0}</p>
+   495→   495→                  </div>
+   496→   496→                </div>
+   497→   497→
+   498→   498→                {/* Contact info */}
+   499→   499→                <div className="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-2">
+   500→   500→                  {customer.phone && (
+   501→   501→                    <a href={telLink(customer.phone)} className="flex items-center gap-3 rounded-lg border p-3 hover:border-primary/40 hover:bg-muted/40">
+   502→   502→                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600"><Phone className="h-4 w-4" /></div>
+   503→   503→                      <div className="min-w-0">
+   504→   504→                        <p className="text-[11px] text-muted-foreground">Phone</p>
+   505→   505→                        <p className="truncate text-sm font-medium">{customer.phone}</p>
+   506→   506→                      </div>
+   507→   507→                    </a>
+   508→   508→                  )}
+   509→   509→                  {customer.whatsapp && (
+   510→   510→                    <a href={whatsappLink(customer.whatsapp)} target="_blank" rel="noreferrer" className="flex items-center gap-3 rounded-lg border p-3 hover:border-primary/40 hover:bg-muted/40">
+   511→   511→                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600"><MessageCircle className="h-4 w-4" /></div>
+   512→   512→                      <div className="min-w-0">
+   513→   513→                        <p className="text-[11px] text-muted-foreground">WhatsApp</p>
+   514→   514→                        <p className="truncate text-sm font-medium">{customer.whatsapp}</p>
+   515→   515→                      </div>
+   516→   516→                    </a>
+   517→   517→                  )}
+   518→   518→                  {customer.email && (
+   519→   519→                    <a href={`mailto:${customer.email}`} className="flex items-center gap-3 rounded-lg border p-3 hover:border-primary/40 hover:bg-muted/40">
+   520→   520→                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-teal-500/10 text-teal-600"><Mail className="h-4 w-4" /></div>
+   521→   521→                      <div className="min-w-0">
+   522→   522→                        <p className="text-[11px] text-muted-foreground">Email</p>
+   523→   523→                        <p className="truncate text-sm font-medium">{customer.email}</p>
+   524→   524→                      </div>
+   525→   525→                    </a>
+   526→   526→                  )}
+   527→   527→                  {customer.address && (
+   528→   528→                    <div className="flex items-center gap-3 rounded-lg border p-3">
+   529→   529→                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600"><MapPin className="h-4 w-4" /></div>
+   530→   530→                      <div className="min-w-0">
+   531→   531→                        <p className="text-[11px] text-muted-foreground">Address</p>
+   532→   532→                        <p className="truncate text-sm font-medium">{customer.address}</p>
+   533→   533→                      </div>
+   534→   534→                    </div>
+   535→   535→                  )}
+   536→   536→                  {customer.company && (
+   537→   537→                    <div className="flex items-center gap-3 rounded-lg border p-3">
+   538→   538→                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-purple-500/10 text-purple-600"><Building2 className="h-4 w-4" /></div>
+   539→   539→                      <div className="min-w-0">
+   540→   540→                        <p className="text-[11px] text-muted-foreground">Company</p>
+   541→   541→                        <p className="truncate text-sm font-medium">{customer.company}</p>
+   542→   542→                      </div>
+   543→   543→                    </div>
+   544→   544→                  )}
+   545→   545→                </div>
+   546→   546→
+   547→   547→                {/* Notes */}
+   548→   548→                {customer.notes && (
+   549→   549→                  <div className="mt-4 rounded-xl border border-amber-500/20 bg-amber-500/5 p-4">
+   550→   550→                    <p className="mb-1 text-xs font-semibold text-amber-600">Notes</p>
+   551→   551→                    <p className="text-sm">{customer.notes}</p>
+   552→   552→                  </div>
+   553→   553→                )}
+   554→   554→
+   555→   555→                {/* Tabs */}
+   556→   556→                <Tabs defaultValue="sales" className="mt-5">
+   557→   557→                  <TabsList className="mb-4">
+   558→   558→                    <TabsTrigger value="sales">Purchase History</TabsTrigger>
+   559→   559→                    <TabsTrigger value="repairs">Repair History</TabsTrigger>
+   560→   560→                  </TabsList>
+   561→   561→
+   562→   562→                  <TabsContent value="sales">
+   563→   563→                    {!customer.sales?.length ? (
+   564→   564→                      <EmptyState icon={Receipt} title="No purchases yet" description="Sales invoices for this customer will appear here." />
+   565→   565→                    ) : (
+   566→   566→                      <div className="space-y-2">
+   567→   567→                        {customer.sales.map((s) => (
+   568→   568→                          <div key={s.id} className="rounded-lg border p-3">
+   569→   569→                            <div className="flex items-center justify-between gap-2">
+   570→   570→                              <div className="min-w-0">
+   571→   571→                                <div className="flex items-center gap-2">
+   572→   572→                                  <p className="text-sm font-semibold">{s.invoiceNo}</p>
+   573→   573→                                  <PaymentStatusBadge status={s.paymentStatus} />
+   574→   574→                                  <Badge variant="secondary" className="text-[10px]">{s.status}</Badge>
+   575→   575→                                  <Badge variant="outline" className="text-[10px]">{s.paymentMethod}</Badge>
+   576→   576→                                </div>
+   577→   577→                                <p className="text-[11px] text-muted-foreground">{formatDateTime(s.createdAt)} · {s.items?.length ?? 0} items</p>
+   578→   578→                              </div>
+   579→   579→                              <div className="text-right">
+   580→   580→                                <p className="text-sm font-semibold">{formatCurrency(s.total)}</p>
+   581→   581→                                <p className="text-[11px] text-muted-foreground">paid {formatCurrency(s.paid)}</p>
+   582→   582→                              </div>
+   583→   583→                            </div>
+   584→   584→                            {s.items?.length > 0 && (
+   585→   585→                              <div className="mt-2 space-y-1 border-t pt-2">
+   586→   586→                                {s.items.map((it) => (
+   587→   587→                                  <div key={it.id} className="flex items-center justify-between text-xs text-muted-foreground">
+   588→   588→                                    <span className="truncate">{it.name} <span className="text-[10px]">×{it.qty}</span></span>
+   589→   589→                                    <span className="font-medium text-foreground">{formatCurrency(it.total)}</span>
+   590→   590→                                  </div>
+   591→   591→                                ))}
+   592→   592→                              </div>
+   593→   593→                            )}
+   594→   594→                          </div>
+   595→   595→                        ))}
+   596→   596→                      </div>
+   597→   597→                    )}
+   598→   598→                  </TabsContent>
+   599→   599→
+   600→   600→                  <TabsContent value="repairs">
+
+[showing lines 1-600 of 649; use offset=601 with limit to continue reading]

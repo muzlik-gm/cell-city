@@ -10,14 +10,13 @@ import {
   Moon,
   Menu,
   Plus,
-  Bell,
   Command as CommandIcon,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useMounted } from "@/hooks/use-mounted";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
-import { Badge } from "@/components/ui/badge";
+import { NotificationsBell } from "@/components/shared/notifications-bell";
 
 export function Topbar() {
   const { theme, setTheme } = useTheme();
@@ -74,11 +73,11 @@ export function Topbar() {
       {/* Global search trigger */}
       <button
         onClick={() => setCommandOpen(true)}
-        className="group ml-2 flex h-9 w-full max-w-md items-center gap-2 rounded-lg border bg-muted/50 px-3 text-sm text-muted-foreground transition hover:border-primary/40 hover:bg-muted lg:ml-6"
+        className="group ml-2 flex h-9 w-full max-w-md items-center gap-2 rounded-lg border bg-muted/50 pl-3 pr-2.5 text-sm text-muted-foreground transition hover:border-primary/40 hover:bg-muted lg:ml-6"
       >
-        <Search className="h-4 w-4" />
-        <span className="flex-1 text-left">Search products, models, invoices…</span>
-        <kbd className="hidden items-center gap-0.5 rounded border bg-background px-1.5 py-0.5 text-[10px] font-medium sm:flex">
+        <Search className="h-4 w-4 shrink-0" />
+        <span className="flex-1 truncate text-left">Search products, models, invoices…</span>
+        <kbd className="hidden shrink-0 items-center gap-0.5 rounded border bg-background px-1.5 py-0.5 text-[10px] font-medium sm:flex">
           <CommandIcon className="h-2.5 w-2.5" />K
         </kbd>
       </button>
@@ -94,20 +93,7 @@ export function Topbar() {
           New Sale
         </Button>
 
-        <Button
-          variant="ghost"
-          size="icon"
-          className="relative h-9 w-9 rounded-lg"
-          onClick={() => setView("inventory")}
-          aria-label="Low stock alerts"
-        >
-          <Bell className="h-[18px] w-[18px]" />
-          {mounted && (lowStock.data?.count ?? 0) > 0 && (
-            <Badge className="absolute -right-1 -top-1 h-4 min-w-4 justify-center rounded-full bg-destructive px-1 text-[10px] text-destructive-foreground">
-              {lowStock.data?.count}
-            </Badge>
-          )}
-        </Button>
+        <NotificationsBell count={lowStock.data?.count ?? 0} mounted={mounted} />
 
         <Button
           variant="ghost"
