@@ -31,6 +31,8 @@ interface Product {
 interface SmartProductCardProps {
   product: Product;
   onSell?: (p: Product) => void;
+  /** When provided, the Sell button uses this (e.g. opens a quick-sell modal) instead of onSell. */
+  onQuickSell?: (p: Product) => void;
   onEdit?: (p: Product) => void;
   onHistory?: (p: Product) => void;
   onPrintQR?: (p: Product) => void;
@@ -38,12 +40,12 @@ interface SmartProductCardProps {
   className?: string;
 }
 
-export function SmartProductCard({ product: p, onSell, onEdit, onHistory, onPrintQR, onReceive, className }: SmartProductCardProps) {
+export function SmartProductCard({ product: p, onSell, onQuickSell, onEdit, onHistory, onPrintQR, onReceive, className }: SmartProductCardProps) {
   const [imgError, setImgError] = useState(false);
   const profit = p.sellingPrice - p.purchasePrice;
 
   return (
-    <div className={cn("group relative flex flex-col overflow-hidden rounded-2xl border bg-card shadow-soft transition-all hover:shadow-lg", className)}>
+    <div className={cn("group relative flex flex-col rounded-2xl border bg-card shadow-soft transition-all hover:shadow-lg", className)}>
       {/* Top: image + key info */}
       <div className="flex gap-3 p-3">
         {/* Image */}
@@ -117,7 +119,7 @@ export function SmartProductCard({ product: p, onSell, onEdit, onHistory, onPrin
       {/* Quick actions — always visible */}
       <div className="grid grid-cols-5 gap-px border-t bg-muted/40">
         <button
-          onClick={() => onSell?.(p)}
+          onClick={() => (onQuickSell ? onQuickSell(p) : onSell?.(p))}
           className="flex flex-col items-center gap-0.5 bg-card py-2 text-[10px] font-medium text-primary transition hover:bg-primary/5"
         >
           <ShoppingCart className="h-4 w-4" />

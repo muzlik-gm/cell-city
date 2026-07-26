@@ -1,0 +1,195 @@
+/home/z/my-project/tool-results/read_1785051031372_c2c21f514873.txt:    16→- Dashboard view + APIs (`/api/dashboard/summary`, `/charts`, `/latest`, `/low-stock-count`). KPIs, 30-day revenue/profit area chart, top products, low stock, latest sales, popular brands & models bar charts. VERIFIED via agent-browser.
+/home/z/my-project/tool-results/read_1785051031372_c2c21f514873.txt-    17→- Inventory view (full): filters (search, brand, part, warehouse, low-stock), paginated data table, add/edit product dialog (tabbed: basic/pricing/location/images/notes), product detail sheet (overview/images/QR+barcode/price history/movements), CSV export, delete.
+/home/z/my-project/tool-results/read_1785051031372_c2c21f514873.txt-    18→- Products API (list w/ filters+pagination, create, get-by-id, update w/ price history + movement tracking, soft delete).
+--
+/home/z/my-project/tool-results/read_1785055784725_d619395cbf0a.txt:    16→    16→- Dashboard view + APIs (`/api/dashboard/summary`, `/charts`, `/latest`, `/low-stock-count`). KPIs, 30-day revenue/profit area chart, top products, low stock, latest sales, popular brands & models bar charts. VERIFIED via agent-browser.
+/home/z/my-project/tool-results/read_1785055784725_d619395cbf0a.txt-    17→    17→- Inventory view (full): filters (search, brand, part, warehouse, low-stock), paginated data table, add/edit product dialog (tabbed: basic/pricing/location/images/notes), product detail sheet (overview/images/QR+barcode/price history/movements), CSV export, delete.
+/home/z/my-project/tool-results/read_1785055784725_d619395cbf0a.txt-    18→    18→- Products API (list w/ filters+pagination, create, get-by-id, update w/ price history + movement tracking, soft delete).
+--
+/home/z/my-project/tool-results/read_1785055784725_d619395cbf0a.txt:   632→   632→1. **Notifications Bell Panel** (`src/components/shared/notifications-bell.tsx`): replaced the simple low-stock bell with a Popover dropdown showing low-stock product alerts (fetches `/dashboard/latest` on open). Each alert shows product name, shelf/warehouse, stock badge. Clicking an alert navigates to Inventory. Empty state shows "All stocked up". Footer "View all inventory" link. Wired into Topbar.
+/home/z/my-project/tool-results/read_1785055784725_d619395cbf0a.txt-   633→   633→2. **Customer/Supplier Statement + PDF** (Task 4-a):
+/home/z/my-project/tool-results/read_1785055784725_d619395cbf0a.txt-   634→   634→   - `src/app/api/statements/[partyType]/[partyId]/route.ts` — full statement with opening/closing balance, running balance per transaction, date range filter. Customer = sales+repairs+payments; Supplier = purchases+payments.
+--
+/home/z/my-project/tool-results/read_1785055784725_d619395cbf0a.txt:   647→   647→- API smoke tests: /api/customers, /api/suppliers, /api/payments, /api/transfers, /api/movements, /api/dashboard/summary, /api/statements/customer/[id] all return 200.
+/home/z/my-project/tool-results/read_1785055784725_d619395cbf0a.txt-   648→   648→- Statement dialog opens with real transaction data. Restock dialog opens without errors.
+/home/z/my-project/tool-results/read_1785055784725_d619395cbf0a.txt-   649→   649→- Dark mode still works.
+--
+/home/z/my-project/tool-results/read_1785055829182_262dc5fb89d3.txt:    16→    16→- Dashboard view + APIs (`/api/dashboard/summary`, `/charts`, `/latest`, `/low-stock-count`). KPIs, 30-day revenue/profit area chart, top products, low stock, latest sales, popular brands & models bar charts. VERIFIED via agent-browser.
+/home/z/my-project/tool-results/read_1785055829182_262dc5fb89d3.txt-    17→    17→- Inventory view (full): filters (search, brand, part, warehouse, low-stock), paginated data table, add/edit product dialog (tabbed: basic/pricing/location/images/notes), product detail sheet (overview/images/QR+barcode/price history/movements), CSV export, delete.
+/home/z/my-project/tool-results/read_1785055829182_262dc5fb89d3.txt-    18→    18→- Products API (list w/ filters+pagination, create, get-by-id, update w/ price history + movement tracking, soft delete).
+--
+/home/z/my-project/tool-results/read_1785051032051_c2c21f514873.txt:    16→- Dashboard view + APIs (`/api/dashboard/summary`, `/charts`, `/latest`, `/low-stock-count`). KPIs, 30-day revenue/profit area chart, top products, low stock, latest sales, popular brands & models bar charts. VERIFIED via agent-browser.
+/home/z/my-project/tool-results/read_1785051032051_c2c21f514873.txt-    17→- Inventory view (full): filters (search, brand, part, warehouse, low-stock), paginated data table, add/edit product dialog (tabbed: basic/pricing/location/images/notes), product detail sheet (overview/images/QR+barcode/price history/movements), CSV export, delete.
+/home/z/my-project/tool-results/read_1785051032051_c2c21f514873.txt-    18→- Products API (list w/ filters+pagination, create, get-by-id, update w/ price history + movement tracking, soft delete).
+--
+/home/z/my-project/tool-results/bash_1785051034746_4394162bedfc.txt:    16→- Dashboard view + APIs (`/api/dashboard/summary`, `/charts`, `/latest`, `/low-stock-count`). KPIs, 30-day revenue/profit area chart, top products, low stock, latest sales, popular brands & models bar charts. VERIFIED via agent-browser.
+/home/z/my-project/tool-results/bash_1785051034746_4394162bedfc.txt-    17→- Inventory view (full): filters (search, brand, part, warehouse, low-stock), paginated data table, add/edit product dialog (tabbed: basic/pricing/location/images/notes), product detail sheet (overview/images/QR+barcode/price history/movements), CSV export, delete.
+/home/z/my-project/tool-results/bash_1785051034746_4394162bedfc.txt-    18→- Products API (list w/ filters+pagination, create, get-by-id, update w/ price history + movement tracking, soft delete).
+--
+/home/z/my-project/tool-results/read_1785050449065_c2c21f514873.txt:    16→- Dashboard view + APIs (`/api/dashboard/summary`, `/charts`, `/latest`, `/low-stock-count`). KPIs, 30-day revenue/profit area chart, top products, low stock, latest sales, popular brands & models bar charts. VERIFIED via agent-browser.
+/home/z/my-project/tool-results/read_1785050449065_c2c21f514873.txt-    17→- Inventory view (full): filters (search, brand, part, warehouse, low-stock), paginated data table, add/edit product dialog (tabbed: basic/pricing/location/images/notes), product detail sheet (overview/images/QR+barcode/price history/movements), CSV export, delete.
+/home/z/my-project/tool-results/read_1785050449065_c2c21f514873.txt-    18→- Products API (list w/ filters+pagination, create, get-by-id, update w/ price history + movement tracking, soft delete).
+--
+/home/z/my-project/tool-results/read_1785053116195_eb7ce67ca978.txt:    16→    16→- Dashboard view + APIs (`/api/dashboard/summary`, `/charts`, `/latest`, `/low-stock-count`). KPIs, 30-day revenue/profit area chart, top products, low stock, latest sales, popular brands & models bar charts. VERIFIED via agent-browser.
+/home/z/my-project/tool-results/read_1785053116195_eb7ce67ca978.txt-    17→    17→- Inventory view (full): filters (search, brand, part, warehouse, low-stock), paginated data table, add/edit product dialog (tabbed: basic/pricing/location/images/notes), product detail sheet (overview/images/QR+barcode/price history/movements), CSV export, delete.
+/home/z/my-project/tool-results/read_1785053116195_eb7ce67ca978.txt-    18→    18→- Products API (list w/ filters+pagination, create, get-by-id, update w/ price history + movement tracking, soft delete).
+--
+/home/z/my-project/tool-results/bash_1785053206927_aae56af8353d.txt: GET /api/dashboard/latest 200 in 53ms (compile: 19ms, render: 34ms)
+/home/z/my-project/tool-results/bash_1785053206927_aae56af8353d.txt- GET / 200 in 326ms (compile: 63ms, render: 264ms)
+/home/z/my-project/tool-results/bash_1785053206927_aae56af8353d.txt-prisma:query SELECT 1
+--
+/home/z/my-project/tool-results/bash_1785053206927_aae56af8353d.txt: GET /api/dashboard/latest 200 in 17ms (compile: 1944µs, render: 15ms)
+/home/z/my-project/tool-results/bash_1785053206927_aae56af8353d.txt: GET /api/dashboard/summary 200 in 39ms (compile: 11ms, render: 28ms)
+/home/z/my-project/tool-results/bash_1785053206927_aae56af8353d.txt-prisma:query SELECT COUNT(*) AS `_count$_all` FROM (SELECT `main`.`Product`.`id` FROM `main`.`Product` WHERE (`main`.`Product`.`active` = ? AND `main`.`Product`.`stock` <= `main`.`Product`.`minStock`) LIMIT ? OFFSET ?) AS `sub`
+/home/z/my-project/tool-results/bash_1785053206927_aae56af8353d.txt-prisma:query SELECT `main`.`Product`.`id`, `main`.`Product`.`sku`, `main`.`Product`.`barcode`, `main`.`Product`.`qrCode`, `main`.`Product`.`name`, `main`.`Product`.`brandId`, `main`.`Product`.`modelId`, `main`.`Product`.`partTypeId`, `main`.`Product`.`quality`, `main`.`Product`.`condition`, `main`.`Product`.`color`, `main`.`Product`.`supplierId`, `main`.`Product`.`purchasePrice`, `main`.`Product`.`sellingPrice`, `main`.`Product`.`stock`, `main`.`Product`.`minStock`, `main`.`Product`.`warehouseId`, `main`.`Product`.`shelfId`, `main`.`Product`.`connectorType`, `main`.`Product`.`lcdCode`, `main`.`Product`.`warranty`, `main`.`Product`.`notes`, `main`.`Product`.`active`, `main`.`Product`.`createdAt`, `main`.`Product`.`updatedAt` FROM `main`.`Product` WHERE `main`.`Product`.`id` IN (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) LIMIT ? OFFSET ?
+--
+/home/z/my-project/tool-results/bash_1785051044270_dd43c36403a8.txt:- Dashboard view + APIs (`/api/dashboard/summary`, `/charts`, `/latest`, `/low-stock-count`). KPIs, 30-day revenue/profit area chart, top products, low stock, latest sales, popular brands & models bar charts. VERIFIED via agent-browser.
+/home/z/my-project/tool-results/bash_1785051044270_dd43c36403a8.txt-- Inventory view (full): filters (search, brand, part, warehouse, low-stock), paginated data table, add/edit product dialog (tabbed: basic/pricing/location/images/notes), product detail sheet (overview/images/QR+barcode/price history/movements), CSV export, delete.
+/home/z/my-project/tool-results/bash_1785051044270_dd43c36403a8.txt-- Products API (list w/ filters+pagination, create, get-by-id, update w/ price history + movement tracking, soft delete).
+--
+/home/z/my-project/tool-results/read_1785055789958_a359c10230a4.txt:    16→- Dashboard view + APIs (`/api/dashboard/summary`, `/charts`, `/latest`, `/low-stock-count`). KPIs, 30-day revenue/profit area chart, top products, low stock, latest sales, popular brands & models bar charts. VERIFIED via agent-browser.
+/home/z/my-project/tool-results/read_1785055789958_a359c10230a4.txt-    17→- Inventory view (full): filters (search, brand, part, warehouse, low-stock), paginated data table, add/edit product dialog (tabbed: basic/pricing/location/images/notes), product detail sheet (overview/images/QR+barcode/price history/movements), CSV export, delete.
+/home/z/my-project/tool-results/read_1785055789958_a359c10230a4.txt-    18→- Products API (list w/ filters+pagination, create, get-by-id, update w/ price history + movement tracking, soft delete).
+--
+/home/z/my-project/tool-results/read_1785055789958_a359c10230a4.txt:   632→1. **Notifications Bell Panel** (`src/components/shared/notifications-bell.tsx`): replaced the simple low-stock bell with a Popover dropdown showing low-stock product alerts (fetches `/dashboard/latest` on open). Each alert shows product name, shelf/warehouse, stock badge. Clicking an alert navigates to Inventory. Empty state shows "All stocked up". Footer "View all inventory" link. Wired into Topbar.
+/home/z/my-project/tool-results/read_1785055789958_a359c10230a4.txt-   633→2. **Customer/Supplier Statement + PDF** (Task 4-a):
+/home/z/my-project/tool-results/read_1785055789958_a359c10230a4.txt-   634→   - `src/app/api/statements/[partyType]/[partyId]/route.ts` — full statement with opening/closing balance, running balance per transaction, date range filter. Customer = sales+repairs+payments; Supplier = purchases+payments.
+--
+/home/z/my-project/tool-results/read_1785055789958_a359c10230a4.txt:   647→- API smoke tests: /api/customers, /api/suppliers, /api/payments, /api/transfers, /api/movements, /api/dashboard/summary, /api/statements/customer/[id] all return 200.
+/home/z/my-project/tool-results/read_1785055789958_a359c10230a4.txt-   648→- Statement dialog opens with real transaction data. Restock dialog opens without errors.
+/home/z/my-project/tool-results/read_1785055789958_a359c10230a4.txt-   649→- Dark mode still works.
+--
+/home/z/my-project/tool-results/read_1785051040749_aafa3e00ff26.txt:    16→- Dashboard view + APIs (`/api/dashboard/summary`, `/charts`, `/latest`, `/low-stock-count`). KPIs, 30-day revenue/profit area chart, top products, low stock, latest sales, popular brands & models bar charts. VERIFIED via agent-browser.
+/home/z/my-project/tool-results/read_1785051040749_aafa3e00ff26.txt-    17→- Inventory view (full): filters (search, brand, part, warehouse, low-stock), paginated data table, add/edit product dialog (tabbed: basic/pricing/location/images/notes), product detail sheet (overview/images/QR+barcode/price history/movements), CSV export, delete.
+/home/z/my-project/tool-results/read_1785051040749_aafa3e00ff26.txt-    18→- Products API (list w/ filters+pagination, create, get-by-id, update w/ price history + movement tracking, soft delete).
+--
+/home/z/my-project/tool-results/read_1785053112859_dea250f95f8a.txt:    16→- Dashboard view + APIs (`/api/dashboard/summary`, `/charts`, `/latest`, `/low-stock-count`). KPIs, 30-day revenue/profit area chart, top products, low stock, latest sales, popular brands & models bar charts. VERIFIED via agent-browser.
+/home/z/my-project/tool-results/read_1785053112859_dea250f95f8a.txt-    17→- Inventory view (full): filters (search, brand, part, warehouse, low-stock), paginated data table, add/edit product dialog (tabbed: basic/pricing/location/images/notes), product detail sheet (overview/images/QR+barcode/price history/movements), CSV export, delete.
+/home/z/my-project/tool-results/read_1785053112859_dea250f95f8a.txt-    18→- Products API (list w/ filters+pagination, create, get-by-id, update w/ price history + movement tracking, soft delete).
+--
+/home/z/my-project/tool-results/read_1785051050767_c2c21f514873.txt:    16→- Dashboard view + APIs (`/api/dashboard/summary`, `/charts`, `/latest`, `/low-stock-count`). KPIs, 30-day revenue/profit area chart, top products, low stock, latest sales, popular brands & models bar charts. VERIFIED via agent-browser.
+/home/z/my-project/tool-results/read_1785051050767_c2c21f514873.txt-    17→- Inventory view (full): filters (search, brand, part, warehouse, low-stock), paginated data table, add/edit product dialog (tabbed: basic/pricing/location/images/notes), product detail sheet (overview/images/QR+barcode/price history/movements), CSV export, delete.
+/home/z/my-project/tool-results/read_1785051050767_c2c21f514873.txt-    18→- Products API (list w/ filters+pagination, create, get-by-id, update w/ price history + movement tracking, soft delete).
+--
+/home/z/my-project/tool-results/bash_1785053124578_558d005a1b33.txt:- Dashboard view + APIs (`/api/dashboard/summary`, `/charts`, `/latest`, `/low-stock-count`). KPIs, 30-day revenue/profit area chart, top products, low stock, latest sales, popular brands & models bar charts. VERIFIED via agent-browser.
+/home/z/my-project/tool-results/bash_1785053124578_558d005a1b33.txt-- Inventory view (full): filters (search, brand, part, warehouse, low-stock), paginated data table, add/edit product dialog (tabbed: basic/pricing/location/images/notes), product detail sheet (overview/images/QR+barcode/price history/movements), CSV export, delete.
+/home/z/my-project/tool-results/bash_1785053124578_558d005a1b33.txt-- Products API (list w/ filters+pagination, create, get-by-id, update w/ price history + movement tracking, soft delete).
+--
+/home/z/my-project/tool-results/read_1785051035184_3c8fb25b0fb7.txt:    16→    16→- Dashboard view + APIs (`/api/dashboard/summary`, `/charts`, `/latest`, `/low-stock-count`). KPIs, 30-day revenue/profit area chart, top products, low stock, latest sales, popular brands & models bar charts. VERIFIED via agent-browser.
+/home/z/my-project/tool-results/read_1785051035184_3c8fb25b0fb7.txt-    17→    17→- Inventory view (full): filters (search, brand, part, warehouse, low-stock), paginated data table, add/edit product dialog (tabbed: basic/pricing/location/images/notes), product detail sheet (overview/images/QR+barcode/price history/movements), CSV export, delete.
+/home/z/my-project/tool-results/read_1785051035184_3c8fb25b0fb7.txt-    18→    18→- Products API (list w/ filters+pagination, create, get-by-id, update w/ price history + movement tracking, soft delete).
+--
+/home/z/my-project/tool-results/read_1785053122130_79d29129b027.txt:    16→- Dashboard view + APIs (`/api/dashboard/summary`, `/charts`, `/latest`, `/low-stock-count`). KPIs, 30-day revenue/profit area chart, top products, low stock, latest sales, popular brands & models bar charts. VERIFIED via agent-browser.
+/home/z/my-project/tool-results/read_1785053122130_79d29129b027.txt-    17→- Inventory view (full): filters (search, brand, part, warehouse, low-stock), paginated data table, add/edit product dialog (tabbed: basic/pricing/location/images/notes), product detail sheet (overview/images/QR+barcode/price history/movements), CSV export, delete.
+/home/z/my-project/tool-results/read_1785053122130_79d29129b027.txt-    18→- Products API (list w/ filters+pagination, create, get-by-id, update w/ price history + movement tracking, soft delete).
+--
+/home/z/my-project/tool-results/bash_1785051122844_16d428f878c1.txt: GET /api/dashboard/latest 200 in 26ms (compile: 13ms, render: 13ms)
+/home/z/my-project/tool-results/bash_1785051122844_16d428f878c1.txt-prisma:query SELECT 1
+/home/z/my-project/tool-results/bash_1785051122844_16d428f878c1.txt-prisma:query SELECT `main`.`Sale`.`id`, `main`.`Sale`.`invoiceNo`, `main`.`Sale`.`customerId`, `main`.`Sale`.`userId`, `main`.`Sale`.`subtotal`, `main`.`Sale`.`discount`, `main`.`Sale`.`tax`, `main`.`Sale`.`total`, `main`.`Sale`.`profit`, `main`.`Sale`.`paid`, `main`.`Sale`.`paymentMethod`, `main`.`Sale`.`paymentStatus`, `main`.`Sale`.`status`, `main`.`Sale`.`notes`, `main`.`Sale`.`createdAt` FROM `main`.`Sale` WHERE (`main`.`Sale`.`createdAt` >= ? AND `main`.`Sale`.`status` = ?) LIMIT ? OFFSET ?
+--
+/home/z/my-project/tool-results/bash_1785051122844_16d428f878c1.txt: GET /api/dashboard/summary 200 in 25ms (compile: 3ms, render: 21ms)
+/home/z/my-project/tool-results/bash_1785051122844_16d428f878c1.txt-prisma:query SELECT COUNT(*) AS `_count$_all` FROM (SELECT `main`.`Product`.`id` FROM `main`.`Product` WHERE (`main`.`Product`.`active` = ? AND `main`.`Product`.`stock` <= `main`.`Product`.`minStock`) LIMIT ? OFFSET ?) AS `sub`
+/home/z/my-project/tool-results/bash_1785051122844_16d428f878c1.txt-prisma:query SELECT `main`.`Sale`.`id`, `main`.`Sale`.`invoiceNo`, `main`.`Sale`.`customerId`, `main`.`Sale`.`userId`, `main`.`Sale`.`subtotal`, `main`.`Sale`.`discount`, `main`.`Sale`.`tax`, `main`.`Sale`.`total`, `main`.`Sale`.`profit`, `main`.`Sale`.`paid`, `main`.`Sale`.`paymentMethod`, `main`.`Sale`.`paymentStatus`, `main`.`Sale`.`status`, `main`.`Sale`.`notes`, `main`.`Sale`.`createdAt` FROM `main`.`Sale` WHERE (`main`.`Sale`.`createdAt` >= ? AND `main`.`Sale`.`status` = ?) LIMIT ? OFFSET ?
+--
+/home/z/my-project/tool-results/bash_1785051122844_16d428f878c1.txt: GET /api/dashboard/latest 200 in 24ms (compile: 10ms, render: 14ms)
+/home/z/my-project/tool-results/bash_1785051122844_16d428f878c1.txt-✓ Compiled in 202ms
+/home/z/my-project/tool-results/bash_1785051122844_16d428f878c1.txt-✓ Compiled in 232ms
+--
+/home/z/my-project/tool-results/bash_1785051122844_16d428f878c1.txt: GET /api/dashboard/summary 200 in 25ms (compile: 4ms, render: 20ms)
+/home/z/my-project/tool-results/bash_1785051122844_16d428f878c1.txt- GET /api/dashboard/charts 200 in 31ms (compile: 8ms, render: 22ms)
+/home/z/my-project/tool-results/bash_1785051122844_16d428f878c1.txt-prisma:query SELECT `main`.`Purchase`.`id`, `main`.`Purchase`.`poNo`, `main`.`Purchase`.`supplierId`, `main`.`Purchase`.`userId`, `main`.`Purchase`.`subtotal`, `main`.`Purchase`.`discount`, `main`.`Purchase`.`tax`, `main`.`Purchase`.`total`, `main`.`Purchase`.`paid`, `main`.`Purchase`.`paymentStatus`, `main`.`Purchase`.`status`, `main`.`Purchase`.`notes`, `main`.`Purchase`.`createdAt` FROM `main`.`Purchase` WHERE 1=1 ORDER BY `main`.`Purchase`.`createdAt` DESC LIMIT ? OFFSET ?
+--
+/home/z/my-project/tool-results/bash_1785051122844_16d428f878c1.txt: GET /api/dashboard/latest 200 in 50ms (compile: 12ms, render: 38ms)
+/home/z/my-project/tool-results/bash_1785051122844_16d428f878c1.txt-in 50ms (compile: 12ms, render: 38ms)
+--
+/home/z/my-project/tool-results/read_1785051038103_c2ffcd2e4062.txt:    16→    16→- Dashboard view + APIs (`/api/dashboard/summary`, `/charts`, `/latest`, `/low-stock-count`). KPIs, 30-day revenue/profit area chart, top products, low stock, latest sales, popular brands & models bar charts. VERIFIED via agent-browser.
+/home/z/my-project/tool-results/read_1785051038103_c2ffcd2e4062.txt-    17→    17→- Inventory view (full): filters (search, brand, part, warehouse, low-stock), paginated data table, add/edit product dialog (tabbed: basic/pricing/location/images/notes), product detail sheet (overview/images/QR+barcode/price history/movements), CSV export, delete.
+/home/z/my-project/tool-results/read_1785051038103_c2ffcd2e4062.txt-    18→    18→- Products API (list w/ filters+pagination, create, get-by-id, update w/ price history + movement tracking, soft delete).
+--
+/home/z/my-project/tool-results/read_1785055779660_a359c10230a4.txt:    16→- Dashboard view + APIs (`/api/dashboard/summary`, `/charts`, `/latest`, `/low-stock-count`). KPIs, 30-day revenue/profit area chart, top products, low stock, latest sales, popular brands & models bar charts. VERIFIED via agent-browser.
+/home/z/my-project/tool-results/read_1785055779660_a359c10230a4.txt-    17→- Inventory view (full): filters (search, brand, part, warehouse, low-stock), paginated data table, add/edit product dialog (tabbed: basic/pricing/location/images/notes), product detail sheet (overview/images/QR+barcode/price history/movements), CSV export, delete.
+/home/z/my-project/tool-results/read_1785055779660_a359c10230a4.txt-    18→- Products API (list w/ filters+pagination, create, get-by-id, update w/ price history + movement tracking, soft delete).
+--
+/home/z/my-project/tool-results/read_1785055779660_a359c10230a4.txt:   632→1. **Notifications Bell Panel** (`src/components/shared/notifications-bell.tsx`): replaced the simple low-stock bell with a Popover dropdown showing low-stock product alerts (fetches `/dashboard/latest` on open). Each alert shows product name, shelf/warehouse, stock badge. Clicking an alert navigates to Inventory. Empty state shows "All stocked up". Footer "View all inventory" link. Wired into Topbar.
+/home/z/my-project/tool-results/read_1785055779660_a359c10230a4.txt-   633→2. **Customer/Supplier Statement + PDF** (Task 4-a):
+/home/z/my-project/tool-results/read_1785055779660_a359c10230a4.txt-   634→   - `src/app/api/statements/[partyType]/[partyId]/route.ts` — full statement with opening/closing balance, running balance per transaction, date range filter. Customer = sales+repairs+payments; Supplier = purchases+payments.
+--
+/home/z/my-project/tool-results/read_1785055779660_a359c10230a4.txt:   647→- API smoke tests: /api/customers, /api/suppliers, /api/payments, /api/transfers, /api/movements, /api/dashboard/summary, /api/statements/customer/[id] all return 200.
+/home/z/my-project/tool-results/read_1785055779660_a359c10230a4.txt-   648→- Statement dialog opens with real transaction data. Restock dialog opens without errors.
+/home/z/my-project/tool-results/read_1785055779660_a359c10230a4.txt-   649→- Dark mode still works.
+--
+/home/z/my-project/tool-results/bash_1785055801372_31974c1a94e2.txt:1. **Notifications Bell Panel** (`src/components/shared/notifications-bell.tsx`): replaced the simple low-stock bell with a Popover dropdown showing low-stock product alerts (fetches `/dashboard/latest` on open). Each alert shows product name, shelf/warehouse, stock badge. Clicking an alert navigates to Inventory. Empty state shows "All stocked up". Footer "View all inventory" link. Wired into Topbar.
+/home/z/my-project/tool-results/bash_1785055801372_31974c1a94e2.txt-2. **Customer/Supplier Statement + PDF** (Task 4-a):
+/home/z/my-project/tool-results/bash_1785055801372_31974c1a94e2.txt-   - `src/app/api/statements/[partyType]/[partyId]/route.ts` — full statement with opening/closing balance, running balance per transaction, date range filter. Customer = sales+repairs+payments; Supplier = purchases+payments.
+--
+/home/z/my-project/tool-results/bash_1785055801372_31974c1a94e2.txt:- API smoke tests: /api/customers, /api/suppliers, /api/payments, /api/transfers, /api/movements, /api/dashboard/summary, /api/statements/customer/[id] all return 200.
+/home/z/my-project/tool-results/bash_1785055801372_31974c1a94e2.txt-- Statement dialog opens with real transaction data. Restock dialog opens without errors.
+/home/z/my-project/tool-results/bash_1785055801372_31974c1a94e2.txt-- Dark mode still works.
+--
+/home/z/my-project/tool-results/read_1785051032536_c2c21f514873.txt:    16→- Dashboard view + APIs (`/api/dashboard/summary`, `/charts`, `/latest`, `/low-stock-count`). KPIs, 30-day revenue/profit area chart, top products, low stock, latest sales, popular brands & models bar charts. VERIFIED via agent-browser.
+/home/z/my-project/tool-results/read_1785051032536_c2c21f514873.txt-    17→- Inventory view (full): filters (search, brand, part, warehouse, low-stock), paginated data table, add/edit product dialog (tabbed: basic/pricing/location/images/notes), product detail sheet (overview/images/QR+barcode/price history/movements), CSV export, delete.
+/home/z/my-project/tool-results/read_1785051032536_c2c21f514873.txt-    18→- Products API (list w/ filters+pagination, create, get-by-id, update w/ price history + movement tracking, soft delete).
+--
+/home/z/my-project/tool-results/read_1785051041176_c2c21f514873.txt:    16→- Dashboard view + APIs (`/api/dashboard/summary`, `/charts`, `/latest`, `/low-stock-count`). KPIs, 30-day revenue/profit area chart, top products, low stock, latest sales, popular brands & models bar charts. VERIFIED via agent-browser.
+/home/z/my-project/tool-results/read_1785051041176_c2c21f514873.txt-    17→- Inventory view (full): filters (search, brand, part, warehouse, low-stock), paginated data table, add/edit product dialog (tabbed: basic/pricing/location/images/notes), product detail sheet (overview/images/QR+barcode/price history/movements), CSV export, delete.
+/home/z/my-project/tool-results/read_1785051041176_c2c21f514873.txt-    18→- Products API (list w/ filters+pagination, create, get-by-id, update w/ price history + movement tracking, soft delete).
+--
+/home/z/my-project/tool-results/read_1785053121849_42f1cf04485b.txt:    16→- Dashboard view + APIs (`/api/dashboard/summary`, `/charts`, `/latest`, `/low-stock-count`). KPIs, 30-day revenue/profit area chart, top products, low stock, latest sales, popular brands & models bar charts. VERIFIED via agent-browser.
+/home/z/my-project/tool-results/read_1785053121849_42f1cf04485b.txt-    17→- Inventory view (full): filters (search, brand, part, warehouse, low-stock), paginated data table, add/edit product dialog (tabbed: basic/pricing/location/images/notes), product detail sheet (overview/images/QR+barcode/price history/movements), CSV export, delete.
+/home/z/my-project/tool-results/read_1785053121849_42f1cf04485b.txt-    18→- Products API (list w/ filters+pagination, create, get-by-id, update w/ price history + movement tracking, soft delete).
+--
+/home/z/my-project/tool-results/read_1785053112352_dea250f95f8a.txt:    16→- Dashboard view + APIs (`/api/dashboard/summary`, `/charts`, `/latest`, `/low-stock-count`). KPIs, 30-day revenue/profit area chart, top products, low stock, latest sales, popular brands & models bar charts. VERIFIED via agent-browser.
+/home/z/my-project/tool-results/read_1785053112352_dea250f95f8a.txt-    17→- Inventory view (full): filters (search, brand, part, warehouse, low-stock), paginated data table, add/edit product dialog (tabbed: basic/pricing/location/images/notes), product detail sheet (overview/images/QR+barcode/price history/movements), CSV export, delete.
+/home/z/my-project/tool-results/read_1785053112352_dea250f95f8a.txt-    18→- Products API (list w/ filters+pagination, create, get-by-id, update w/ price history + movement tracking, soft delete).
+--
+/home/z/my-project/tool-results/read_1785055795427_e736e1248acc.txt:    16→- Dashboard view + APIs (`/api/dashboard/summary`, `/charts`, `/latest`, `/low-stock-count`). KPIs, 30-day revenue/profit area chart, top products, low stock, latest sales, popular brands & models bar charts. VERIFIED via agent-browser.
+/home/z/my-project/tool-results/read_1785055795427_e736e1248acc.txt-    17→- Inventory view (full): filters (search, brand, part, warehouse, low-stock), paginated data table, add/edit product dialog (tabbed: basic/pricing/location/images/notes), product detail sheet (overview/images/QR+barcode/price history/movements), CSV export, delete.
+/home/z/my-project/tool-results/read_1785055795427_e736e1248acc.txt-    18→- Products API (list w/ filters+pagination, create, get-by-id, update w/ price history + movement tracking, soft delete).
+--
+/home/z/my-project/tool-results/read_1785055779921_a359c10230a4.txt:    16→- Dashboard view + APIs (`/api/dashboard/summary`, `/charts`, `/latest`, `/low-stock-count`). KPIs, 30-day revenue/profit area chart, top products, low stock, latest sales, popular brands & models bar charts. VERIFIED via agent-browser.
+/home/z/my-project/tool-results/read_1785055779921_a359c10230a4.txt-    17→- Inventory view (full): filters (search, brand, part, warehouse, low-stock), paginated data table, add/edit product dialog (tabbed: basic/pricing/location/images/notes), product detail sheet (overview/images/QR+barcode/price history/movements), CSV export, delete.
+/home/z/my-project/tool-results/read_1785055779921_a359c10230a4.txt-    18→- Products API (list w/ filters+pagination, create, get-by-id, update w/ price history + movement tracking, soft delete).
+--
+/home/z/my-project/tool-results/read_1785055779921_a359c10230a4.txt:   632→1. **Notifications Bell Panel** (`src/components/shared/notifications-bell.tsx`): replaced the simple low-stock bell with a Popover dropdown showing low-stock product alerts (fetches `/dashboard/latest` on open). Each alert shows product name, shelf/warehouse, stock badge. Clicking an alert navigates to Inventory. Empty state shows "All stocked up". Footer "View all inventory" link. Wired into Topbar.
+/home/z/my-project/tool-results/read_1785055779921_a359c10230a4.txt-   633→2. **Customer/Supplier Statement + PDF** (Task 4-a):
+/home/z/my-project/tool-results/read_1785055779921_a359c10230a4.txt-   634→   - `src/app/api/statements/[partyType]/[partyId]/route.ts` — full statement with opening/closing balance, running balance per transaction, date range filter. Customer = sales+repairs+payments; Supplier = purchases+payments.
+--
+/home/z/my-project/tool-results/read_1785055779921_a359c10230a4.txt:   647→- API smoke tests: /api/customers, /api/suppliers, /api/payments, /api/transfers, /api/movements, /api/dashboard/summary, /api/statements/customer/[id] all return 200.
+/home/z/my-project/tool-results/read_1785055779921_a359c10230a4.txt-   648→- Statement dialog opens with real transaction data. Restock dialog opens without errors.
+/home/z/my-project/tool-results/read_1785055779921_a359c10230a4.txt-   649→- Dark mode still works.
+--
+/home/z/my-project/tool-results/read_1785057299581_212c9f5ade60.txt:    16→- Dashboard view + APIs (`/api/dashboard/summary`, `/charts`, `/latest`, `/low-stock-count`). KPIs, 30-day revenue/profit area chart, top products, low stock, latest sales, popular brands & models bar charts. VERIFIED via agent-browser.
+/home/z/my-project/tool-results/read_1785057299581_212c9f5ade60.txt-    17→- Inventory view (full): filters (search, brand, part, warehouse, low-stock), paginated data table, add/edit product dialog (tabbed: basic/pricing/location/images/notes), product detail sheet (overview/images/QR+barcode/price history/movements), CSV export, delete.
+/home/z/my-project/tool-results/read_1785057299581_212c9f5ade60.txt-    18→- Products API (list w/ filters+pagination, create, get-by-id, update w/ price history + movement tracking, soft delete).
+--
+/home/z/my-project/tool-results/read_1785057299581_212c9f5ade60.txt:   632→1. **Notifications Bell Panel** (`src/components/shared/notifications-bell.tsx`): replaced the simple low-stock bell with a Popover dropdown showing low-stock product alerts (fetches `/dashboard/latest` on open). Each alert shows product name, shelf/warehouse, stock badge. Clicking an alert navigates to Inventory. Empty state shows "All stocked up". Footer "View all inventory" link. Wired into Topbar.
+/home/z/my-project/tool-results/read_1785057299581_212c9f5ade60.txt-   633→2. **Customer/Supplier Statement + PDF** (Task 4-a):
+/home/z/my-project/tool-results/read_1785057299581_212c9f5ade60.txt-   634→   - `src/app/api/statements/[partyType]/[partyId]/route.ts` — full statement with opening/closing balance, running balance per transaction, date range filter. Customer = sales+repairs+payments; Supplier = purchases+payments.
+--
+/home/z/my-project/tool-results/read_1785057299581_212c9f5ade60.txt:   647→- API smoke tests: /api/customers, /api/suppliers, /api/payments, /api/transfers, /api/movements, /api/dashboard/summary, /api/statements/customer/[id] all return 200.
+/home/z/my-project/tool-results/read_1785057299581_212c9f5ade60.txt-   648→- Statement dialog opens with real transaction data. Restock dialog opens without errors.
+/home/z/my-project/tool-results/read_1785057299581_212c9f5ade60.txt-   649→- Dark mode still works.
+--
+/home/z/my-project/tool-results/read_1785051034926_3c8fb25b0fb7.txt:    16→    16→- Dashboard view + APIs (`/api/dashboard/summary`, `/charts`, `/latest`, `/low-stock-count`). KPIs, 30-day revenue/profit area chart, top products, low stock, latest sales, popular brands & models bar charts. VERIFIED via agent-browser.
+/home/z/my-project/tool-results/read_1785051034926_3c8fb25b0fb7.txt-    17→    17→- Inventory view (full): filters (search, brand, part, warehouse, low-stock), paginated data table, add/edit product dialog (tabbed: basic/pricing/location/images/notes), product detail sheet (overview/images/QR+barcode/price history/movements), CSV export, delete.
+/home/z/my-project/tool-results/read_1785051034926_3c8fb25b0fb7.txt-    18→    18→- Products API (list w/ filters+pagination, create, get-by-id, update w/ price history + movement tracking, soft delete).
+--
+/home/z/my-project/tool-results/read_1785053115060_eb7ce67ca978.txt:    16→    16→- Dashboard view + APIs (`/api/dashboard/summary`, `/charts`, `/latest`, `/low-stock-count`). KPIs, 30-day revenue/profit area chart, top products, low stock, latest sales, popular brands & models bar charts. VERIFIED via agent-browser.
+/home/z/my-project/tool-results/read_1785053115060_eb7ce67ca978.txt-    17→    17→- Inventory view (full): filters (search, brand, part, warehouse, low-stock), paginated data table, add/edit product dialog (tabbed: basic/pricing/location/images/notes), product detail sheet (overview/images/QR+barcode/price history/movements), CSV export, delete.
+/home/z/my-project/tool-results/read_1785053115060_eb7ce67ca978.txt-    18→    18→- Products API (list w/ filters+pagination, create, get-by-id, update w/ price history + movement tracking, soft delete).
+--
+/home/z/my-project/src/components/shared/notifications-bell.tsx:    queryFn: () => api.get<{ lowStock: any[] }>("/dashboard/latest"),
+/home/z/my-project/src/components/shared/notifications-bell.tsx-    enabled: open,
+/home/z/my-project/src/components/shared/notifications-bell.tsx-  });
+--
+/home/z/my-project/worklog.md:- Dashboard view + APIs (`/api/dashboard/summary`, `/charts`, `/latest`, `/low-stock-count`). KPIs, 30-day revenue/profit area chart, top products, low stock, latest sales, popular brands & models bar charts. VERIFIED via agent-browser.
+/home/z/my-project/worklog.md-- Inventory view (full): filters (search, brand, part, warehouse, low-stock), paginated data table, add/edit product dialog (tabbed: basic/pricing/location/images/notes), product detail sheet (overview/images/QR+barcode/price history/movements), CSV export, delete.
+/home/z/my-project/worklog.md-- Products API (list w/ filters+pagination, create, get-by-id, update w/ price history + movement tracking, soft delete).
+--
+/home/z/my-project/worklog.md:1. **Notifications Bell Panel** (`src/components/shared/notifications-bell.tsx`): replaced the simple low-stock bell with a Popover dropdown showing low-stock product alerts (fetches `/dashboard/latest` on open). Each alert shows product name, shelf/warehouse, stock badge. Clicking an alert navigates to Inventory. Empty state shows "All stocked up". Footer "View all inventory" link. Wired into Topbar.
+/home/z/my-project/worklog.md-2. **Customer/Supplier Statement + PDF** (Task 4-a):
+/home/z/my-project/worklog.md-   - `src/app/api/statements/[partyType]/[partyId]/route.ts` — full statement with opening/closing balance, running balance per transaction, date range filter. Customer = sales+repairs+payments; Supplier = purchases+payments.
+--
+/home/z/my-project/worklog.md:- API smoke tests: /api/customers, /api/suppliers, /api/payments, /api/transfers, /api/movements, /api/dashboard/summary, /api/statements/customer/[id] all return 200.
+/home/z/my-project/worklog.md-- Statement dialog opens with real transaction data. Restock dialog opens without errors.
+/home/z/my-project/worklog.md-- Dark mode still works.

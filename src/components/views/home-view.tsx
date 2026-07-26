@@ -9,6 +9,8 @@ import { ProductFormDialog } from "@/components/shared/product-form";
 import { StockAdjustDialog } from "@/components/shared/stock-adjust-dialog";
 import { QrDisplay } from "@/components/shared/qr-barcode";
 import { AiCameraModal } from "@/components/shared/ai-camera-modal";
+import { QuickSellModal } from "@/components/shared/quick-sell-modal";
+import { LowStockWidget } from "@/components/shared/low-stock-widget";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,6 +37,7 @@ export function HomeView() {
   const [qrProduct, setQrProduct] = useState<any>(null);
   const [adjustProduct, setAdjustProduct] = useState<any>(null);
   const [aiOpen, setAiOpen] = useState(false);
+  const [quickSellProduct, setQuickSellProduct] = useState<any>(null);
   const [recentSearches, setRecentSearches] = useState<string[]>(() => {
     if (typeof window === "undefined") return [];
     try {
@@ -242,6 +245,9 @@ export function HomeView() {
                 </div>
               </div>
             )}
+
+            {/* Low-stock alerts widget */}
+            <LowStockWidget />
           </div>
         )}
       </div>
@@ -345,6 +351,7 @@ export function HomeView() {
                     key={p.id}
                     product={p}
                     onSell={handleSell}
+                    onQuickSell={(prod) => setQuickSellProduct(prod)}
                     onEdit={(prod) => { setEditing(prod); setFormOpen(true); }}
                     onPrintQR={(prod) => setQrProduct(prod)}
                     onHistory={(prod) => setSelected(prod)}
@@ -407,6 +414,8 @@ export function HomeView() {
       <StockAdjustDialog product={adjustProduct} open={!!adjustProduct} onOpenChange={(o) => !o && setAdjustProduct(null)} />
       {/* AI Camera modal */}
       <AiCameraModal open={aiOpen} onOpenChange={setAiOpen} />
+      {/* Quick sell modal */}
+      <QuickSellModal product={quickSellProduct} open={!!quickSellProduct} onOpenChange={(o) => !o && setQuickSellProduct(null)} />
     </div>
   );
 }
