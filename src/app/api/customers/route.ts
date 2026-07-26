@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
       { company: { contains: q } },
       { phone: { contains: q } },
       { whatsapp: { contains: q } },
-      { email: { contains: q, mode: "insensitive" } },
+      { email: { contains: q } },
       { address: { contains: q } },
     ];
   }

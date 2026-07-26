@@ -939,3 +939,100 @@ PartsHub is a speed-optimized Mobile Spare Parts Management System (Next.js 16 S
 - **Popular models ordering**: still alphabetical. Could sort by sales volume.
 - **Quick Sell**: doesn't currently support discounts or tax. For simple walk-in sales this is fine; complex sales still use the full Sales POS.
 - **Next priorities**: (1) sort popular models by sales volume, (2) add discount field to Quick Sell, (3) add keyboard arrow-key navigation through search result cards, (4) implement real JWT auth + login screen, (5) add live barcode scanning camera feed, (6) add customer/supplier quick-search from home, (7) optimize search DB indexes for 100k+ products.
+
+---
+
+## Task 7-a — Home Hero: Today's Summary Widget + Customer Quick-Search
+
+- **Task ID**: 7-a
+- **Agent**: Z.ai Code (fullstack agent)
+- **Task**: Add two speed-focused widgets to the PartsHub home hero — a compact 4-tile "Today's Summary" stats strip (instant business pulse) and a debounced "Customer Quick-Search" with two-click flow to start a sale or repair.
+
+### Work Log
+
+#### Files created
+
+1. **`src/components/shared/today-summary-widget.tsx`** — Compact stats strip for the home hero.
+   - Fetches `/api/dashboard/summary` (query key `home-today-summary`, 30s stale). Gated on `useMounted` for SSR safety.
+   - Renders 4 clickable tiles in a single row on `sm+` (2x2 on mobile, `grid-cols-2 sm:grid-cols-4`):
+     - **Today's Sales** — emerald accent, `DollarSign` icon, `formatCurrency(todaySalesTotal)`, sub: `"N sales"`. Click → `setView("sales")`.
+     - **Today's Profit** — teal accent, `TrendingUp` icon, `formatCurrency(todayProfit)`, sub: `"+X% vs avg"` derived from `monthProfit / dayOfMonth`. Trend sub text turns emerald (up) or rose (down). Click → `setView("reports")`.
+     - **Pending Repairs** — purple accent, `Wrench` icon, integer count, sub: "needs attention" / "all clear". Click → `setView("repairs")`.
+     - **Low Stock** — amber accent, `AlertTriangle` icon, integer count, sub: "restock soon" / "all stocked". Click → `setView("inventory")`.
+   - Each tile: 88px tall, accent edge bar on the left (opacity 70 → 100 on hover), icon chip top-left, animated `ArrowRight` appears top-right on hover, large tabular-nums value, label, and uppercase sub-text.
+   - Loading state: 4 animated skeleton tiles (`animate-pulse bg-muted/50`).
+   - Error state: 4 dashed "Unavailable" placeholder tiles (degrades gracefully).
+   - Trend math only renders for the profit tile; other tiles keep a muted sub-text status. No false trend indicators.
+
+2. **`src/components/shared/customer-quick-search.tsx`** — Google-Search-like customer lookup for the home hero.
+   - 200ms debounced search of `/api/customers?q=` (query key `customer-quick-search`, 30s stale). Gated on `useMounted`.
+   - Input is `h-12 rounded-xl` with a `Users` icon (primary color) on the left, a `Loader2` spinner (while fetching) or an `X` clear button on the right.
+   - Dropdown appears below the input (`Card`, `z-30`, `max-h-[22rem]`) when query is non-empty and the input is focused. Click-outside handler closes the dropdown and deselects.
+   - **Results list**: each row shows initials avatar (emerald), name (with optional company), phone (or "No phone"), and a rose "Due {amount}" badge when `outstandingBalance > 0`. Capped at 8 rows with a "+N more — refine your search" footer.
+   - **Selected-customer panel**: clicking a row swaps the dropdown to a detail panel with a "Back to results" button, a highlighted customer card (initials, name, phone, due badge), and a 2-column grid of quick-action buttons:
+     - **New Sale** (emerald primary, `ShoppingCart`) → `setView("sales")` then `setContextId(customer.id)` (set AFTER `setView` because `setView` resets `contextId`).
+     - **New Repair** (outline, `Wrench`) → `setView("repairs")` then `setContextId(customer.id)`.
+   - **Loading state**: 4 animated placeholder rows (avatar circle + two bars).
+   - **Empty state**: muted `Users` icon, "No customers found" + helper text + an emerald "Add customer" button → `setView("settings")`.
+   - Resets query/state after navigating away.
+
+#### Files modified (additive only)
+
+3. **`src/components/views/home-view.tsx`** — Three surgical edits, no rewrites:
+   - Added imports for `TodaySummaryWidget` and `CustomerQuickSearch` next to the existing `LowStockWidget` import.
+   - Placed `<TodaySummaryWidget />` at the TOP of the existing hero `motion.div` block (before the "Search anything" badge), wrapped in `<div className="mb-6 w-full">`. Because the hero is gated by `!debounced`, the widget disappears cleanly when the user starts typing a universal search.
+   - Placed `<CustomerQuickSearch />` immediately after `<LowStockWidget />` inside the existing `{!debounced && (...)}` block within the search bar container — so it sits in the hero column below the low-stock alerts.
+
+### Stage Summary
+
+- Lint: `bun run lint` passes with 0 errors across all touched files.
+- Dev server (port 3000) hot-reloaded cleanly; `dev.log` confirms `GET /api/dashboard/summary 200 in 18ms` (TodaySummaryWidget fired on home render).
+- Design system: emerald/teal/purple/amber accents only — no indigo/blue. Uses `bg-primary`, `text-primary`, `shadow-soft`, `rounded-xl/2xl`, ring-inset border tokens consistent with `LowStockWidget` and `StatCard`.
+- Responsive: both widgets use `mx-auto max-w-2xl`; summary tiles wrap 4→2 on mobile, customer search dropdown is full-width.
+- Accessibility: all interactive tiles and dropdown rows are real `<button>` elements with `aria-label`s; dropdown closes on outside-click; clear button has `aria-label`.
+- Speed: today's KPIs are immediately visible at the top of the hero (no scroll, no click). Customer → New Sale/Repair in exactly 2 clicks. Debounced 200ms on the customer search to avoid spamming the API.
+
+---
+Task ID: CRON-REVIEW-5
+Agent: orchestrator (Z.ai Code) — cron review round 5
+Task: Assess project status, QA via agent-browser, fix customers API bug, add Today's Summary widget + Customer Quick-Search on home, polish styling.
+
+## Current Project Status Assessment
+PartsHub is a speed-optimized Mobile Spare Parts Management System (Next.js 16 SPA, Prisma+SQLite, shadcn/ui) with universal search homepage, 7-item navigation, single-screen workflows. After this round: customers API bug fixed (500 on ?q= search), Today's Summary widget + Customer Quick-Search added to home hero. Lint: 0 errors. All 7 views render. The home page is now a complete command center with instant business pulse.
+
+## Completed Modifications
+
+### Bug fix: customers API 500 on search
+- **`src/app/api/customers/route.ts`**: the `?q=` search was returning 500 because `{ email: { contains: q, mode: "insensitive" } }` is not supported by SQLite (Prisma's `mode: "insensitive"` is PostgreSQL-only). Removed the `mode: "insensitive"` — SQLite `contains` is already case-insensitive by default. Verified: `GET /api/customers?q=ahmed` now returns 200.
+
+### New feature: Today's Summary widget
+- **`src/components/shared/today-summary-widget.tsx`**: compact 4-tile stats strip at the top of the home hero. Fetches `/api/dashboard/summary`. Shows:
+  - Today's Sales (emerald, with count) — clickable → Sales
+  - Today's Profit (teal, with trend) — clickable → Sales
+  - Pending Repairs (purple) — clickable → Repairs
+  - Low Stock (amber) — clickable → Inventory
+  - Each tile: icon, label, big value (formatCurrency for money), accent edge bar, hover arrow.
+  - Loading skeleton tiles, error fallback tiles.
+  - Responsive: 4-up on desktop, 2x2 on mobile.
+
+### New feature: Customer Quick-Search
+- **`src/components/shared/customer-quick-search.tsx`**: Google-Search-like customer lookup on the home hero. Features:
+  - Search input with Users icon, 200ms debounce.
+  - Dropdown results: initials avatar, name, phone, "Due" badge for outstanding balance.
+  - Clicking a customer reveals "New Sale" + "New Repair" buttons.
+  - Empty state with "Add customer" link → Settings.
+  - Click-outside-to-close, clear button.
+  - Verified: searching "ahmed" returns "Ahmed Mobile Shop".
+
+### Verification Results
+- `bun run lint`: 0 errors, 0 warnings.
+- All 7 nav views render correctly (Home, Inventory, Sales, Purchases, Repairs, Reports, Settings).
+- Today's Summary widget verified: shows Today's Sales, Today's Profit, Pending Repairs, Low Stock on home hero.
+- Customer Quick-Search verified: searching "ahmed" returns Ahmed Mobile Shop with New Sale/New Repair actions.
+- Customers API fix verified: `?q=ahmed` returns 200 (was 500).
+- Dark mode works.
+
+## Unresolved Issues / Risks & Next-Phase Recommendations
+- **Popular models ordering**: still alphabetical. Could sort by sales volume via a new API endpoint.
+- **Home hero height**: with 4 widgets (Today's Summary, search, Camera, Recent, Popular Models, Low Stock, Customer Search), the hero is tall. Users scroll to see everything. Could make widgets more compact or collapsible.
+- **Next priorities**: (1) sort popular models by sales volume, (2) add keyboard arrow-key navigation through search result cards, (3) implement real JWT auth + login screen, (4) add live barcode scanning camera feed, (5) add discount field to Quick Sell, (6) optimize search DB indexes for 100k+ products, (7) make home widgets collapsible/personizable.

@@ -11,6 +11,8 @@ import { QrDisplay } from "@/components/shared/qr-barcode";
 import { AiCameraModal } from "@/components/shared/ai-camera-modal";
 import { QuickSellModal } from "@/components/shared/quick-sell-modal";
 import { LowStockWidget } from "@/components/shared/low-stock-widget";
+import { TodaySummaryWidget } from "@/components/shared/today-summary-widget";
+import { CustomerQuickSearch } from "@/components/shared/customer-quick-search";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -150,6 +152,10 @@ export function HomeView() {
             exit={{ opacity: 0, y: -10 }}
             className="flex flex-col items-center pt-12 sm:pt-20"
           >
+            {/* Today's business pulse — instant KPIs at the top of the hero */}
+            <div className="mb-6 w-full">
+              <TodaySummaryWidget />
+            </div>
             <div className="mb-3 flex items-center gap-2 rounded-full border bg-card px-3 py-1 text-xs font-medium text-muted-foreground shadow-soft">
               <Sparkles className="h-3.5 w-3.5 text-primary" />
               Search anything · finds parts, models, compatibility & more
@@ -248,6 +254,9 @@ export function HomeView() {
 
             {/* Low-stock alerts widget */}
             <LowStockWidget />
+
+            {/* Customer quick-search */}
+            <CustomerQuickSearch />
           </div>
         )}
       </div>
