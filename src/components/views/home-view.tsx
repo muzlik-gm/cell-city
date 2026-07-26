@@ -17,6 +17,7 @@ import { SupplierQuickSearch } from "@/components/shared/supplier-quick-search";
 import { RecentlySoldWidget } from "@/components/shared/recently-sold-widget";
 import { TopPartsWidget } from "@/components/shared/top-parts-widget";
 import { CollapsibleWidget } from "@/components/shared/collapsible-widget";
+import { CompatibilityResults } from "@/components/shared/compatibility-results";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -101,7 +102,19 @@ export function HomeView() {
     staleTime: 30_000,
   });
 
-  const hasResults = data && (
+  // Compatibility-first search: groups products by part type with stock per quality
+  const compatQ = useQuery({
+    queryKey: ["compatibility-search", debounced],
+    queryFn: () => api.get<any>(`/compatibility-search?q=${encodeURIComponent(debounced)}`),
+    enabled: debounced.length > 0,
+    staleTime: 30_000,
+  });
+
+  // If compatibility search found phone models with part groups, show that view.
+  // Otherwise fall back to the universal search results (products, customers, etc.).
+  const showCompatibility = compatQ.data?.partGroups?.length > 0;
+
+  const hasResults = showCompatibility || (data && (
     (data.products?.length ?? 0) > 0 ||
     (data.compatibleProducts?.length ?? 0) > 0 ||
     (data.models?.length ?? 0) > 0 ||
@@ -109,7 +122,7 @@ export function HomeView() {
     (data.customers?.length ?? 0) > 0 ||
     (data.suppliers?.length ?? 0) > 0 ||
     (data.sales?.length ?? 0) > 0
-  );
+  ));
 
   const allProducts = data ? [...(data.products ?? []), ...(data.compatibleProducts ?? [])] : [];
   // Deduplicate by id
@@ -190,10 +203,10 @@ export function HomeView() {
               Search anything · finds parts, models, compatibility & more
             </div>
             <h1 className="mb-3 text-center text-4xl font-bold tracking-tight sm:text-5xl">
-              Find any part in <span className="text-gradient">seconds</span>
+              What phone are you <span className="text-gradient">looking for?</span>
             </h1>
             <p className="mb-10 max-w-lg text-center text-lg text-muted-foreground">
-              Type a phone model, LCD code, barcode, or compatible phone. Results appear instantly.
+              Search any phone model — we'll show you which parts fit and if we have them in stock.
             </p>
           </motion.div>
         )}
@@ -320,7 +333,19 @@ export function HomeView() {
       )}
 
       {/* Results */}
-      {!isLoading && hasResults && (
+      {/* Compatibility-first view: phone model → part groups → qualities → sell */}
+      {!isLoading && showCompatibility && compatQ.data && (
+        <CompatibilityResults
+          matchedModels={compatQ.data.matchedModels}
+          compatibleModels={compatQ.data.compatibleModels}
+          partGroups={compatQ.data.partGroups}
+          onQuickSell={(p) => setQuickSellProduct(p)}
+          onViewProduct={(p) => setSelected(p)}
+        />
+      )}
+
+      {/* Fallback: universal search results (products, customers, etc.) */}
+      {!isLoading && hasResults && !showCompatibility && (
         <div className="mt-6 space-y-6">
           {/* Keyboard hint */}
           {dedupedProducts.length > 0 && (

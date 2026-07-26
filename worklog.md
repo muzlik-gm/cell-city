@@ -1264,3 +1264,54 @@ Redesigned from a compact info-dense card to a large, spacious e-commerce-style 
 - **Card height**: cards are tall (image + name + stock + price + shelf + compatible + Sell button + 4 actions). This is intentional per the design philosophy ("4 large cards > 12 tiny cards, scrolling is acceptable"). Could add a "compact view" toggle for power users who want density.
 - **Product images**: most seeded products don't have real images (showing Package placeholder). The large image area is ready for real product photos.
 - **Next priorities**: (1) add real product images via AI generation or upload, (2) add a compact/density view toggle, (3) implement real JWT auth + login screen, (4) add live barcode scanning, (5) wrap home widgets in CollapsibleWidget, (6) add low-stock email alerts.
+
+---
+Task ID: CRON-REVIEW-11
+Agent: orchestrator (Z.ai Code) — cron review round 11
+Task: Redesign search to be compatibility-first — "What spare part fits this phone, and do we have it?" Phone-model-centric results showing part groups with stock per quality.
+
+## Current Project Status Assessment
+PartsHub has been transformed from a product-centric search to a **compatibility-first search engine**. The core question the app answers is now: "What spare part fits this phone, and do we have it?" Searching a phone model immediately shows which parts (LCD, Touch, Battery, Frame, etc.) fit it, with stock aggregated by quality (Original/OEM/Copy), shelf location, price, and a Sell button — all on one screen without navigation. Lint: 0 errors. All 7 views render.
+
+## Completed Modifications
+
+### New API: compatibility-search (`src/app/api/compatibility-search/route.ts`)
+A compatibility-first search endpoint that:
+1. Finds phone models matching the query (by name, slug, or brand).
+2. Finds all compatible peer models (bidirectional ModelCompatibility).
+3. Fetches all products for matched + peer models.
+4. Groups products by part type (LCD, OLED, Touch Glass, Battery, Frame, etc.).
+5. Within each part group, aggregates stock by quality (ORIGINAL, OEM, COPY, PREMIUM_COPY).
+6. Returns: matchedModels, compatibleModels, partGroups (each with fitsModels, qualities with totalStock/products/shelves, bestPrice, image).
+- Verified: searching "A12" returns 2 matched models, 4 compatible models, 6 part groups (OLED, Touch Glass, Battery, Frame, Charging Flex, Front Camera) with qualities aggregated (e.g., Battery: ORIGINAL=30, COPY=10).
+
+### New component: CompatibilityResults (`src/components/shared/compatibility-results.tsx`)
+A phone-model-centric results layout that shows:
+- **Phone model header**: large card with "Phone Model" label, model name (text-3xl), brand.
+- **Compatible models**: prominent chips showing all phones that use the same parts ("All these phones use the same parts: A12, M12, F12").
+- **Part groups**: each part type (LCD, OLED, Touch Glass, etc.) is a large section with:
+  - Part type name (text-2xl) + "Required" label + "In Stock" / "Out of Stock" badge.
+  - Product image (aspect-[4/3]).
+  - "Fits" models list.
+  - Quality rows: each quality (ORIGINAL/OEM/COPY) shown as a row with quality badge, stock count (large, color-coded), shelf location, price, and a large "Sell" button (h-12).
+  - "View product details" link.
+- VLM-verified: all 6 design checks pass (phone model header, compatible chips, part sections with Required/In Stock, quality rows with stock/shelf/price/Sell, spacious layout, large readable fonts).
+
+### Home view integration (`src/components/views/home-view.tsx`)
+- Added compatibility-search query (runs alongside the existing universal search).
+- When compatibility results exist (phone models with part groups found), shows the CompatibilityResults view.
+- Falls back to the universal search product cards when no phone models match (e.g., searching a customer name or barcode).
+- Updated hero title to "What phone are you looking for?" with subtitle "Search any phone model — we'll show you which parts fit and if we have them in stock."
+
+### Verification Results
+- `bun run lint`: 0 errors, 0 warnings.
+- All 7 nav views render correctly.
+- Compatibility search verified: "A12" shows Samsung Galaxy A12 header, compatible models (A12 Nacho, M12, F12), 6 part groups (OLED, Touch Glass, Battery, Frame, Charging Flex, Front Camera) each with qualities, stock, shelf, price, Sell button.
+- VLM review: all 6 design checks pass (phone model header, compatible chips, part sections, quality rows, spacious layout, large fonts).
+- Fallback to universal search works for non-model queries.
+- Dark mode works.
+
+## Unresolved Issues / Risks & Next-Phase Recommendations
+- **Compatibility data coverage**: only ~28 seeded phone models with compatibility links. Real shops would need comprehensive compatibility data for hundreds of models. The architecture supports it — just needs data entry.
+- **AI identification integration**: the AI Camera modal identifies phones but doesn't yet feed into the compatibility search. Could pipe the detected model name directly into the search.
+- **Next priorities**: (1) pipe AI Camera results into compatibility search, (2) add comprehensive compatibility data for more models, (3) add "Sell LCD" / "Sell Touch" quick-sell buttons per part group, (4) implement real JWT auth, (5) add barcode scanning that feeds into compatibility search.
