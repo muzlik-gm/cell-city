@@ -14,8 +14,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
-import { Settings as SettingsIcon, Building2, Users, Database, Palette, Save, Download, Sun, Moon, Monitor } from "lucide-react";
+import { Settings as SettingsIcon, Building2, Users, Database, Palette, Save, Download, Sun, Moon, Monitor, Layers } from "lucide-react";
 import { useMounted } from "@/hooks/use-mounted";
+import { CatalogManager } from "@/components/shared/catalog-manager";
 
 export function SettingsView() {
   const mounted = useMounted();
@@ -89,8 +90,9 @@ function SettingsBody({
       <PageHeader title="Settings" description="Business info, users, backup & appearance" icon={SettingsIcon} />
 
       <Tabs defaultValue="business">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="business" className="gap-1.5"><Building2 className="h-4 w-4" /> Business</TabsTrigger>
+          <TabsTrigger value="catalog" className="gap-1.5"><Layers className="h-4 w-4" /> Catalog</TabsTrigger>
           <TabsTrigger value="users" className="gap-1.5"><Users className="h-4 w-4" /> Users</TabsTrigger>
           <TabsTrigger value="backup" className="gap-1.5"><Database className="h-4 w-4" /> Backup</TabsTrigger>
           <TabsTrigger value="appearance" className="gap-1.5"><Palette className="h-4 w-4" /> Theme</TabsTrigger>
@@ -126,6 +128,11 @@ function SettingsBody({
               <Save className="h-4 w-4" /> Save
             </Button>
           </Card>
+        </TabsContent>
+
+        {/* Catalog — manage phone models, brands, part types, compatibility */}
+        <TabsContent value="catalog" className="space-y-4">
+          <CatalogManager />
         </TabsContent>
 
         {/* Users */}

@@ -1315,3 +1315,50 @@ A phone-model-centric results layout that shows:
 - **Compatibility data coverage**: only ~28 seeded phone models with compatibility links. Real shops would need comprehensive compatibility data for hundreds of models. The architecture supports it — just needs data entry.
 - **AI identification integration**: the AI Camera modal identifies phones but doesn't yet feed into the compatibility search. Could pipe the detected model name directly into the search.
 - **Next priorities**: (1) pipe AI Camera results into compatibility search, (2) add comprehensive compatibility data for more models, (3) add "Sell LCD" / "Sell Touch" quick-sell buttons per part group, (4) implement real JWT auth, (5) add barcode scanning that feeds into compatibility search.
+
+---
+Task ID: CRON-REVIEW-12
+Agent: orchestrator (Z.ai Code) — cron review round 12
+Task: Implement user-requested improvements — bidirectional compatibility, CRUD pages, AI camera → search pipe, verify real DB.
+
+## Current Project Status Assessment
+PartsHub is a compatibility-first Mobile Spare Parts Management System (Next.js 16 SPA, Prisma+SQLite). The app already uses real DB data (111 products, 37 models, 10 brands, bidirectional compatibility). After this round: compatibility API now creates truly bidirectional links (A→B and B→A), DELETE removes both directions, new Catalog Manager in Settings with full CRUD for Phone Models/Brands/Part Types/Compatibility, AI Camera modal pipes identified model into compatibility search. Lint: 0 errors. All 7 views render.
+
+## Completed Modifications
+
+### 1. Bidirectional compatibility (POST + DELETE)
+- **`src/app/api/compatibility/route.ts`**:
+  - **POST**: now creates both A→B and B→A links in a `$transaction` with `upsert` (idempotent). Verified: adding A50↔A22 link makes searching A50 show A22 AND searching A22 show A50.
+  - **DELETE**: now removes both directions. Supports deletion by `id` (looks up the link, deletes reverse too) or by `modelId+peerId+partType` (deletes both directions). Verified: deleting removes from both models.
+  - The existing GET already queried both directions (asModel + asPeer), so search was already bidirectional — but now the data itself is stored both ways for consistency.
+
+### 2. CRUD pages for Phone Models, Brands, Part Types, Compatibility
+- **New component** (`src/components/shared/catalog-manager.tsx`): a tabbed CRUD manager with 4 sub-sections:
+  - **Phone Models**: list all 37 models with brand + part count, Add/Edit dialog (name, brand, year), delete (soft: sets active=false + removes compatibility links).
+  - **Compatibility**: add bidirectional link (Model A + Model B + Part Type selects), search a model to view its links, remove links (both directions). Clear explanation: "Linking A↔B means searching either model shows the other as compatible."
+  - **Brands**: inline add (name + country), list with part count, delete (soft).
+  - **Part Types**: inline add (name + category select), list with product count, delete (soft).
+- **New API routes**: `models/[id]` (PUT + DELETE), `brands/[id]` (DELETE), `part-types/[id]` (DELETE).
+- **Integrated into Settings**: added "Catalog" tab (5th tab) with the CatalogManager component. Verified: 37 phone models render, sub-tabs switch correctly.
+
+### 3. AI Camera → compatibility search pipe
+- **`src/components/shared/ai-camera-modal.tsx`**: matched models in the AI results are now clickable buttons. Clicking a matched model name fills the universal search input with that model name and closes the modal, which triggers the compatibility search showing all compatible parts. This completes the workflow: take photo → AI identifies model → click model → see all compatible parts + inventory.
+
+### 4. Real DB verification
+- Confirmed all data is from the real SQLite database (no mock data):
+  - 111 products, 37 phone models, 10 brands, 19 part types, 4 suppliers, 4 customers.
+  - All APIs hit Prisma `db` client — no hardcoded arrays or mock responses.
+  - Compatibility relationships stored in `ModelCompatibility` table (bidirectional).
+
+### Verification Results
+- `bun run lint`: 0 errors, 0 warnings.
+- All 7 nav views render correctly.
+- Bidirectional compatibility verified via curl: POST A50↔A22 → both show each other; DELETE → both removed.
+- Catalog Manager verified: Settings > Catalog tab shows 37 phone models, Add Model dialog works, Compatibility/Brands/Part Types sub-tabs render.
+- AI Camera pipe verified: matched model chips are clickable, fill search input.
+- All APIs healthy (models, brands, part-types, compatibility, products, search).
+
+## Unresolved Issues / Risks & Next-Phase Recommendations
+- **Camera workflow on desktop**: the AI Camera modal uses `<input capture="environment">` which opens the webcam on desktop browsers. This works but is basic. Could add a live camera preview with `getUserMedia` for a more polished experience.
+- **Models API pagination**: the Catalog Manager fetches all 37 models. For 100+ models, add pagination.
+- **Next priorities**: (1) add live camera preview with getUserMedia in the AI modal, (2) add product CRUD in the Catalog Manager, (3) implement real JWT auth, (4) add barcode scanning that pipes into search.

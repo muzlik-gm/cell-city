@@ -239,15 +239,31 @@ export function AiCameraModal({ open, onOpenChange }: AiCameraModalProps) {
                 </div>
               )}
 
-              {/* Matched models in catalog */}
+              {/* Matched models in catalog — click to view all compatible parts */}
               {result.matchedModels?.length > 0 && (
                 <div>
                   <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">In your catalog</p>
                   <div className="flex flex-wrap gap-1.5">
                     {result.matchedModels.map((m: any) => (
-                      <Badge key={m.id} variant="outline" className="bg-primary/10 text-primary">
+                      <button
+                        key={m.id}
+                        onClick={() => {
+                          // Pipe the detected model into the home universal search
+                          const input = document.getElementById("universal-search") as HTMLInputElement | null;
+                          if (input) {
+                            const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set;
+                            if (setter) {
+                              setter.call(input, m.name);
+                              input.dispatchEvent(new Event("input", { bubbles: true }));
+                            }
+                          }
+                          onOpenChange(false);
+                        }}
+                        className="flex items-center gap-1 rounded-lg bg-primary/10 px-3 py-1.5 text-sm font-medium text-primary transition hover:bg-primary/20"
+                      >
                         {m.name}
-                      </Badge>
+                        <ArrowRight className="h-3 w-3" />
+                      </button>
                     ))}
                   </div>
                 </div>

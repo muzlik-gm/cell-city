@@ -56,26 +56,72 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({ models, peers: Array.from(peerMap.values()), products });
 }
 
-// POST /api/compatibility - add compatibility link
+// POST /api/compatibility - add compatibility link (bidirectional)
+// Creates both A→B and B→A so the relationship works both ways.
 export async function POST(req: NextRequest) {
   const { modelId, peerId, partType, note } = await req.json();
   if (!modelId || !peerId) return NextResponse.json({ error: "modelId and peerId required" }, { status: 400 });
   if (modelId === peerId) return NextResponse.json({ error: "Cannot link a model to itself" }, { status: 400 });
+
+  const pt = partType || "";
+  const n = note || null;
+
   try {
-    const compat = await db.modelCompatibility.create({
-      data: { modelId, peerId, partType: partType || "", note: note || null },
-    });
-    return NextResponse.json(compat, { status: 201 });
+    // Create both directions in a transaction so the relationship is truly bidirectional.
+    // If either already exists, upsert silently skips it.
+    await db.$transaction([
+      db.modelCompatibility.upsert({
+        where: { modelId_peerId_partType: { modelId, peerId, partType: pt } },
+        update: { note: n },
+        create: { modelId, peerId, partType: pt, note: n },
+      }),
+      db.modelCompatibility.upsert({
+        where: { modelId_peerId_partType: { modelId: peerId, peerId: modelId, partType: pt } },
+        update: { note: n },
+        create: { modelId: peerId, peerId: modelId, partType: pt, note: n },
+      }),
+    ]);
+    return NextResponse.json({ success: true, bidirectional: true }, { status: 201 });
   } catch {
-    return NextResponse.json({ error: "Compatibility link already exists" }, { status: 409 });
+    return NextResponse.json({ error: "Failed to create compatibility link" }, { status: 500 });
   }
 }
 
-// DELETE /api/compatibility?id=...
+// DELETE /api/compatibility?id=...  OR  ?modelId=&peerId=&partType=
+// Removes the link in both directions.
 export async function DELETE(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const id = searchParams.get("id");
-  if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
-  await db.modelCompatibility.delete({ where: { id } });
-  return NextResponse.json({ success: true });
+  const modelId = searchParams.get("modelId");
+  const peerId = searchParams.get("peerId");
+  const partType = searchParams.get("partType") ?? "";
+
+  if (id) {
+    // Delete by id, then also delete the reverse link.
+    const link = await db.modelCompatibility.findUnique({ where: { id } }).catch(() => null);
+    await db.modelCompatibility.deleteMany({
+      where: {
+        OR: [
+          { id },
+          ...(link ? [{ modelId: link.peerId, peerId: link.modelId, partType: link.partType }] : []),
+        ],
+      },
+    });
+    return NextResponse.json({ success: true });
+  }
+
+  if (modelId && peerId) {
+    // Delete both directions by model pair + partType.
+    await db.modelCompatibility.deleteMany({
+      where: {
+        OR: [
+          { modelId, peerId, partType },
+          { modelId: peerId, peerId: modelId, partType },
+        ],
+      },
+    });
+    return NextResponse.json({ success: true });
+  }
+
+  return NextResponse.json({ error: "id or (modelId + peerId) required" }, { status: 400 });
 }
