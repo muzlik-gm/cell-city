@@ -1420,3 +1420,48 @@ Rebranded everywhere:
 - **Camera permissions**: getUserMedia requires HTTPS or localhost. In production, the site must be served over HTTPS for the camera to work.
 - **Camera on desktop**: works with webcam. The "Switch camera" button toggles front/back which is most useful on mobile.
 - **Next priorities**: (1) implement real JWT auth + login screen, (2) add product CRUD in Catalog Manager, (3) add barcode scanning with live camera, (4) optimize search DB indexes for 100k+ products, (5) add low-stock email alerts.
+
+---
+Task ID: CRON-REVIEW-14
+Agent: orchestrator (Z.ai Code) — cron review round 14
+Task: Wire every value to DB, create completely fresh database, rebrand already done.
+
+## Current Project Status Assessment
+Cell City is a compatibility-first Mobile Spare Parts Management System (Next.js 16 SPA, Prisma+SQLite). After this round: completely fresh database created with realistic deterministic data (no Math.random), all values wired to the real DB, old stale data (111 products, 9 low stock) replaced with clean data (43 products, 2 low stock). Lint: 0 errors. All 7 views render with real data.
+
+## Completed Modifications
+
+### 1. Completely new database
+- **Deleted** the old `db/custom.db` (had 111 random products, 9 low stock, stale sales).
+- **Re-pushed** the Prisma schema (fresh empty DB).
+- **Rewrote** `prisma/seed.ts` with realistic deterministic data:
+  - **43 products** with real Pakistani market prices (PKR), realistic stock levels, proper shelf locations, real LCD codes.
+  - **No Math.random** — all values are deterministic and consistent.
+  - Real stock distribution: some well-stocked (20-30 units), some low (3-5), some out — reflecting a real shop.
+  - **10 brands** (Samsung, Apple, Xiaomi, Oppo, Vivo, Realme, Infinix, Tecno, Huawei, Nokia).
+  - **28 phone models** in 15 compatibility groups (bidirectional links for LCD/Touch/Battery/Frame/Flex).
+  - **4 suppliers** (Guangzhou Display, Shenzhen Parts Hub, Karachi Wholesale, Dubai Mobile Hub) with real contact info.
+  - **4 customers** (Ahmed Mobile Shop, Bilal Repair Center, Usman Cell Point, Walk-in).
+  - **4 users** (Owner, Manager, Technician, Sales Staff) with real Pakistani names.
+  - **2 warehouses, 8 shelves** with real locations.
+  - **Recent sales** (last 7 days, deterministic), **purchases** (last 14 days), **6 repair jobs** with real problems, **damaged inventory** entries.
+- **Restarted dev server** to pick up new Prisma client + fresh DB.
+
+### 2. All values wired to DB (verified)
+- **Dashboard summary**: 43 products, 566 stock units, 2 low stock, 4 pending repairs, 2 sales today (Rs 10,200), Rs 5,200 profit, Rs 1,053,050 inventory value — all real.
+- **Home search**: "A12" returns Samsung Galaxy A12 with LCD/Touch/Battery/Frame sections, real stock (COPY: 22, ORIGINAL: 14, OEM: 8), real prices (Rs 2,500 - Rs 6,500), real shelf (A1).
+- **Topbar avatar**: real user initials from DB (fetches /api/users?role=OWNER → "BA" for Bilal Ahmed).
+- **Notifications bell**: real low-stock count (2) from DB.
+- **All APIs** hit Prisma db client — no hardcoded arrays or mock responses.
+
+### 3. Verification Results
+- `bun run lint`: 0 errors, 0 warnings.
+- All 7 nav views render correctly.
+- Dashboard shows: 43 products, 566 units, 2 low stock, 4 pending repairs, Rs 10,200 sales today, Rs 5,200 profit.
+- Search verified: "A12" shows real compatibility groups with real stock/prices/shelves.
+- AI Camera modal opens (Live Camera + Upload toggle).
+- Dev server restarted, all APIs return 200 with fresh data.
+
+## Unresolved Issues / Risks & Next-Phase Recommendations
+- **Camera in production**: getUserMedia requires HTTPS. Works on localhost for development.
+- **Next priorities**: (1) implement real JWT auth + login screen, (2) add product CRUD in Catalog Manager, (3) add barcode scanning with live camera, (4) add low-stock email alerts, (5) add product images (currently placeholders — could generate AI images or allow upload).
