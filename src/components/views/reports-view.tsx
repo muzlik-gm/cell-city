@@ -390,7 +390,7 @@ function buildPrintableHTML(title: string, rows: Row[], headers: string[]): stri
   <thead><tr>${headerCells}</tr></thead>
   <tbody>${bodyRows}</tbody>
 </table>
-<div class="footer">PartsHub — Mobile Spare Parts Management System</div>
+<div class="footer">Cell City — Mobile Spare Parts Management System</div>
 </body>
 </html>`;
 }

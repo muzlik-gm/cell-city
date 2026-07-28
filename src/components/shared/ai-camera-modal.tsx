@@ -10,6 +10,7 @@ import { useAppStore } from "@/lib/store";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatCurrency } from "@/lib/format";
+import { LiveCameraCapture } from "@/components/shared/live-camera-capture";
 
 interface AiCameraModalProps {
   open: boolean;
@@ -28,12 +29,12 @@ interface IdentifyResult {
 
 export function AiCameraModal({ open, onOpenChange }: AiCameraModalProps) {
   const [mode, setMode] = useState<"phone" | "lcd">("phone");
+  const [captureMode, setCaptureMode] = useState<"camera" | "upload">("camera");
   const [image, setImage] = useState<string | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState<IdentifyResult | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const cameraInputRef = useRef<HTMLInputElement>(null);
   const { setView } = useAppStore();
 
   const reset = useCallback(() => {
@@ -123,48 +124,62 @@ export function AiCameraModal({ open, onOpenChange }: AiCameraModalProps) {
                 </button>
               </div>
 
-              {/* Upload zone */}
-              <div
-                onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-                onDragLeave={() => setDragOver(false)}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  setDragOver(false);
-                  const file = e.dataTransfer.files[0];
-                  if (file) handleFile(file);
-                }}
-                className={`flex aspect-video w-full flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed transition ${
-                  dragOver ? "border-primary bg-primary/5" : "border-border bg-muted/30"
-                }`}
-              >
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-card shadow-soft">
-                  <Camera className="h-7 w-7 text-primary" />
-                </div>
-                <div className="text-center">
-                  <p className="text-sm font-medium">Take a photo or upload an image</p>
-                  <p className="text-xs text-muted-foreground">Drag & drop or click below</p>
-                </div>
-                <div className="flex gap-2">
-                  <Button size="sm" variant="default" className="gap-1.5" onClick={() => cameraInputRef.current?.click()}>
-                    <Camera className="h-4 w-4" /> Camera
-                  </Button>
-                  <Button size="sm" variant="outline" className="gap-1.5" onClick={() => fileInputRef.current?.click()}>
-                    <Upload className="h-4 w-4" /> Upload
-                  </Button>
-                </div>
+              {/* Capture mode toggle */}
+              <div className="mb-4 grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => setCaptureMode("camera")}
+                  className={`flex items-center justify-center gap-2 rounded-xl border-2 px-4 py-2.5 text-sm font-medium transition ${
+                    captureMode === "camera" ? "border-primary bg-primary/5 text-primary" : "border-border text-muted-foreground hover:border-muted-foreground/40"
+                  }`}
+                >
+                  <Camera className="h-4 w-4" /> Live Camera
+                </button>
+                <button
+                  onClick={() => setCaptureMode("upload")}
+                  className={`flex items-center justify-center gap-2 rounded-xl border-2 px-4 py-2.5 text-sm font-medium transition ${
+                    captureMode === "upload" ? "border-primary bg-primary/5 text-primary" : "border-border text-muted-foreground hover:border-muted-foreground/40"
+                  }`}
+                >
+                  <Upload className="h-4 w-4" /> Upload Image
+                </button>
               </div>
+
+              {/* Live camera capture */}
+              {captureMode === "camera" && (
+                <LiveCameraCapture onCapture={handleFile} onClose={() => onOpenChange(false)} />
+              )}
+
+              {/* Upload zone */}
+              {captureMode === "upload" && (
+                <div
+                  onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                  onDragLeave={() => setDragOver(false)}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setDragOver(false);
+                    const file = e.dataTransfer.files[0];
+                    if (file) handleFile(file);
+                  }}
+                  className={`flex aspect-video w-full flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed transition ${
+                    dragOver ? "border-primary bg-primary/5" : "border-border bg-muted/30"
+                  }`}
+                >
+                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-card shadow-soft">
+                    <Upload className="h-7 w-7 text-primary" />
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm font-medium">Upload an image</p>
+                    <p className="text-xs text-muted-foreground">Drag & drop or click below</p>
+                  </div>
+                  <Button size="sm" variant="outline" className="gap-1.5" onClick={() => fileInputRef.current?.click()}>
+                    <Upload className="h-4 w-4" /> Choose File
+                  </Button>
+                </div>
+              )}
               <input
                 ref={fileInputRef}
                 type="file"
                 accept="image/*"
-                className="hidden"
-                onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ""; }}
-              />
-              <input
-                ref={cameraInputRef}
-                type="file"
-                accept="image/*"
-                capture="environment"
                 className="hidden"
                 onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ""; }}
               />

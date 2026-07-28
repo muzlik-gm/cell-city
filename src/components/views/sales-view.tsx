@@ -740,7 +740,7 @@ function InvoiceDialog({
       </style></head><body>
       <div class="head">
         <div>
-          <h1>${escapeHtml(biz?.name ?? "PartsHub")}</h1>
+          <h1>${escapeHtml(biz?.name ?? "Cell City")}</h1>
           <p class="muted">${escapeHtml(biz?.address ?? "")}</p>
           <p class="muted">${biz?.phone ? "Tel: " + escapeHtml(biz.phone) : ""} ${biz?.email ? " · " + escapeHtml(biz.email) : ""}</p>
         </div>
@@ -840,7 +840,7 @@ function InvoiceDialog({
             <div className="p-6 space-y-5">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <h3 className="text-lg font-bold text-primary">{sale.business?.name ?? "PartsHub"}</h3>
+                  <h3 className="text-lg font-bold text-primary">{sale.business?.name ?? "Cell City"}</h3>
                   <p className="text-xs text-muted-foreground">{sale.business?.address}</p>
                   <p className="text-xs text-muted-foreground">
                     {sale.business?.phone ? `Tel: ${sale.business.phone}` : ""}

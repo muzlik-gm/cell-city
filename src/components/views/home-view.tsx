@@ -32,7 +32,7 @@ import { cn } from "@/lib/utils";
 import { formatCurrency, timeAgo } from "@/lib/format";
 import { motion, AnimatePresence } from "framer-motion";
 
-const RECENT_KEY = "partshub-recent-searches";
+const RECENT_KEY = "cellcity-recent-searches";
 const MAX_RECENT = 6;
 
 export function HomeView() {

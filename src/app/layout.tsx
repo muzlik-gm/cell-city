@@ -11,7 +11,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "PartsHub — Mobile Spare Parts Management",
+  title: "Cell City — Mobile Spare Parts Management",
   description:
     "Operating system for mobile repair shops & spare-parts wholesalers: inventory, compatibility, AI identification, sales, repairs and analytics.",
   keywords: [

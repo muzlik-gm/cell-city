@@ -13,10 +13,10 @@ async function main() {
 
   // ── Settings ─────────────────────────────────────────────
   const settings: Record<string, string> = {
-    business_name: "MobileCare Spare Parts",
+    business_name: "Cell City",
     business_phone: "+92 300 1234567",
     business_address: "Main Market, Karachi, Pakistan",
-    business_email: "info@mobilecare.com",
+    business_email: "info@cellcity.com",
     currency: "PKR",
     currency_symbol: "Rs",
     tax_rate: "0",
@@ -37,11 +37,11 @@ async function main() {
   }
 
   // ── User (demo owner) ────────────────────────────────────
-  const existingUser = await db.user.findUnique({ where: { email: "owner@mobilecare.com" } });
+  const existingUser = await db.user.findUnique({ where: { email: "owner@cellcity.com" } });
   if (!existingUser) {
     await db.user.create({
       data: {
-        email: "owner@mobilecare.com",
+        email: "owner@cellcity.com",
         name: "Shop Owner",
         passwordHash: "$2a$10$demo_hash_replace_in_production_xxxxxxxxxxxxx", // demo only
         role: "OWNER",
@@ -443,8 +443,8 @@ async function main() {
   const repairStatuses = ["RECEIVED", "DIAGNOSED", "WAITING_PARTS", "REPAIRING", "COMPLETED", "DELIVERED"];
   const problems = ["Broken LCD", "Touch not working", "Charging issue", "Battery drain", "No display", "Speaker fault"];
   const techUser = await db.user.create({
-    data: { email: "tech@mobilecare.com", name: "Ali Technician", passwordHash: "demo", role: "TECHNICIAN", phone: "+92 311 0000000" },
-  }).catch(async () => await db.user.findFirst({ where: { email: "tech@mobilecare.com" } })!);
+    data: { email: "tech@cellcity.com", name: "Ali Technician", passwordHash: "demo", role: "TECHNICIAN", phone: "+92 311 0000000" },
+  }).catch(async () => await db.user.findFirst({ where: { email: "tech@cellcity.com" } })!);
   const modelIds = allModels.map(([, id]) => id);
   for (let i = 0; i < 8; i++) {
     const createdAt = new Date(now.getTime() - i * 43200000);

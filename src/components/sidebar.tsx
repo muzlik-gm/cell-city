@@ -41,14 +41,14 @@ export function Sidebar() {
         <button
           onClick={() => setView("home")}
           className="flex items-center gap-2.5"
-          aria-label="PartsHub home"
+          aria-label="Cell City home"
         >
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl gradient-emerald text-white shadow-soft">
             <Smartphone className="h-5 w-5" />
           </div>
           {!sidebarCollapsed && (
             <div className="flex flex-col leading-none">
-              <span className="text-[15px] font-bold tracking-tight">PartsHub</span>
+              <span className="text-[15px] font-bold tracking-tight">Cell City</span>
               <span className="text-[10px] text-muted-foreground">Spare Parts OS</span>
             </div>
           )}

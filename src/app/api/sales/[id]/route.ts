@@ -18,7 +18,7 @@ async function getBusinessInfo() {
   const map: Record<string, string> = {};
   for (const r of rows) map[r.key] = r.value;
   return {
-    name: map.business_name ?? "PartsHub",
+    name: map.business_name ?? "Cell City",
     phone: map.business_phone ?? "",
     address: map.business_address ?? "",
     email: map.business_email ?? "",

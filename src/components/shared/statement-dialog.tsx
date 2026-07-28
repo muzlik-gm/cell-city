@@ -647,7 +647,7 @@ function buildStatementHTML(
   stmt: StatementResponse,
   settings: Record<string, string>
 ): string {
-  const bizName = settings.business_name || "PartsHub";
+  const bizName = settings.business_name || "Cell City";
   const bizPhone = settings.business_phone || "";
   const bizEmail = settings.business_email || "";
   const bizAddress = settings.business_address || "";
@@ -872,11 +872,11 @@ function buildStatementHTML(
     </div>
   </div>
 
-  <p class="note">This statement is computer-generated and reflects transactions recorded in the PartsHub system as of ${escapeHtml(generatedAt)}.</p>
+  <p class="note">This statement is computer-generated and reflects transactions recorded in the Cell City system as of ${escapeHtml(generatedAt)}.</p>
 
   <div class="footer">
     <strong>${escapeHtml(bizName)}</strong>${bizAddress ? ` · ${escapeHtml(bizAddress)}` : ""}${bizPhone ? ` · Tel: ${escapeHtml(bizPhone)}` : ""}<br>
-    PartsHub — Mobile Spare Parts Management System
+    Cell City — Mobile Spare Parts Management System
   </div>
 </div>
 </body>

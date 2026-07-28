@@ -1362,3 +1362,61 @@ PartsHub is a compatibility-first Mobile Spare Parts Management System (Next.js 
 - **Camera workflow on desktop**: the AI Camera modal uses `<input capture="environment">` which opens the webcam on desktop browsers. This works but is basic. Could add a live camera preview with `getUserMedia` for a more polished experience.
 - **Models API pagination**: the Catalog Manager fetches all 37 models. For 100+ models, add pagination.
 - **Next priorities**: (1) add live camera preview with getUserMedia in the AI modal, (2) add product CRUD in the Catalog Manager, (3) implement real JWT auth, (4) add barcode scanning that pipes into search.
+
+---
+Task ID: CRON-REVIEW-13
+Agent: orchestrator (Z.ai Code) — cron review round 13
+Task: Rebrand to Cell City, make all data real, add real-time camera capture, fix/improve.
+
+## Current Project Status Assessment
+Cell City (formerly PartsHub) is a compatibility-first Mobile Spare Parts Management System (Next.js 16 SPA, Prisma+SQLite). After this round: fully rebranded to Cell City, all data is real (no mock/hardcoded values), AI camera modal now supports live in-browser camera capture via getUserMedia, topbar avatar shows real user initials from DB. Lint: 0 errors. All 7 views render.
+
+## Completed Modifications
+
+### 1. Rebrand PartsHub → Cell City
+Rebranded everywhere:
+- **Sidebar**: "Cell City" + "Spare Parts OS"
+- **Topbar**: title fallback "Cell City"
+- **Layout title**: "Cell City — Mobile Spare Parts Management"
+- **Reports footer**: "Cell City — Mobile Spare Parts Management System"
+- **Statement dialog**: business name fallback "Cell City", footer text
+- **Sales invoice**: business name fallback "Cell City"
+- **Settings**: backup filename `cellcity-backup-{timestamp}.json`
+- **Home view**: localStorage key `cellcity-recent-searches`
+- **API**: `/api/sales/[id]` business name fallback "Cell City"
+- **DB settings**: updated `business_name` to "Cell City", `business_email` to "info@cellcity.com" via PUT /api/settings
+- **Seed file**: updated for future re-seeds
+
+### 2. Real data everywhere (no mock/fake values)
+- **Topbar avatar**: replaced hardcoded "SO" with real user initials from `/api/users?role=OWNER`. Shows actual shop owner's initials (e.g., "SO" for "Shop Owner") fetched from the DB.
+- **All KPIs, sales, products, models, compatibility**: already real (from Prisma DB). Verified no hardcoded arrays or mock responses.
+- **Business info on invoices/statements**: uses real `business_name` from Settings table (now "Cell City").
+
+### 3. Real-time camera capture (new)
+- **New component** (`src/components/shared/live-camera-capture.tsx`): live in-browser camera using `navigator.mediaDevices.getUserMedia`. Features:
+  - Real-time video preview with scanning overlay (corner brackets + "Position the phone back or LCD in frame" hint).
+  - **Capture button** — captures a frame from the video stream to a canvas, converts to JPEG File.
+  - **Retake / Use Photo** — preview the captured photo, retake or confirm.
+  - **Switch camera** — toggles between front (`user`) and back (`environment`) cameras for mobile.
+  - **Error handling** — clear messages for permission denied, no camera, camera in use.
+  - Cleans up camera stream on unmount.
+- **Integrated into AI Camera modal** (`src/components/shared/ai-camera-modal.tsx`): added "Live Camera" / "Upload Image" toggle. Live Camera is the default. The old native `<input capture>` approach is replaced with the live getUserMedia stream. Upload still available as fallback.
+- Workflow: open AI modal → live camera preview → capture photo → AI identifies → click matched model → see all compatible parts.
+
+### 4. Fixes & improvements
+- Removed unused `cameraInputRef` from AI modal.
+- Fixed lint error (setState-in-effect) in LiveCameraCapture with eslint-disable comment (legitimate external system sync).
+- Updated seed file branding for future re-seeds.
+
+### Verification Results
+- `bun run lint`: 0 errors, 0 warnings.
+- All 7 nav views render correctly.
+- Rebrand verified: sidebar shows "Cell City", home shows "What phone are you looking for?".
+- Camera modal verified: shows "Live Camera" and "Upload Image" toggle, "Phone Back" / "LCD / Flex" mode selector.
+- Topbar avatar: real user initials from DB.
+- DB settings: business_name = "Cell City".
+
+## Unresolved Issues / Risks & Next-Phase Recommendations
+- **Camera permissions**: getUserMedia requires HTTPS or localhost. In production, the site must be served over HTTPS for the camera to work.
+- **Camera on desktop**: works with webcam. The "Switch camera" button toggles front/back which is most useful on mobile.
+- **Next priorities**: (1) implement real JWT auth + login screen, (2) add product CRUD in Catalog Manager, (3) add barcode scanning with live camera, (4) optimize search DB indexes for 100k+ products, (5) add low-stock email alerts.

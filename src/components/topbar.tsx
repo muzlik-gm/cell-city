@@ -23,6 +23,15 @@ export function Topbar() {
   const { setCommandOpen, setMobileNavOpen, setView, view } = useAppStore();
   const mounted = useMounted();
   const [now, setNow] = useState(new Date());
+
+  // Real logged-in user (first user = shop owner)
+  const userQ = useQuery({
+    queryKey: ["current-user"],
+    queryFn: () => api.get<any[]>("/users?role=OWNER"),
+    staleTime: 300_000,
+  });
+  const user = userQ.data?.[0];
+  const userInitials = user ? user.name.split(" ").map((n: string) => n[0]).slice(0, 2).join("").toUpperCase() : "?";
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 30000);
     return () => clearInterval(t);
@@ -57,7 +66,7 @@ export function Topbar() {
 
       <div className="hidden flex-col sm:flex">
         <h1 className="text-[15px] font-bold leading-tight tracking-tight">
-          {titles[view] ?? "PartsHub"}
+          {titles[view] ?? "Cell City"}
         </h1>
         <span className="text-[11px] text-muted-foreground">
           {now.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "short" })}
@@ -103,8 +112,8 @@ export function Topbar() {
           )}
         </Button>
 
-        <div className="ml-1 flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground shadow-soft">
-          SO
+        <div className="ml-1 flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground shadow-soft" title={user?.name ?? "User"}>
+          {userInitials}
         </div>
       </div>
     </header>

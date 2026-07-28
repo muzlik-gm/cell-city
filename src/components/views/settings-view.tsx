@@ -72,7 +72,7 @@ function SettingsBody({
       const blob = JSON.stringify(data, null, 2);
       const a = document.createElement("a");
       a.href = URL.createObjectURL(new Blob([blob], { type: "application/json" }));
-      a.download = `partshub-backup-${Date.now()}.json`;
+      a.download = `cellcity-backup-${Date.now()}.json`;
       a.click();
       toast.success("Backup downloaded");
     } catch (e) {
