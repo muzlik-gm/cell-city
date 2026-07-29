@@ -11,11 +11,12 @@ export async function apiFetch<T = unknown>(
   options: RequestInit = {}
 ): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
+    ...options,
+    credentials: "include", // Always send cookies with API requests
     headers: {
       "Content-Type": "application/json",
       ...(options.headers as Record<string, string>),
     },
-    ...options,
   });
   if (!res.ok) {
     let msg = `Request failed (${res.status})`;
