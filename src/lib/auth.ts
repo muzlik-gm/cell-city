@@ -56,7 +56,14 @@ export async function createUserWithCompany(opts: {
   if (existing) throw new Error("Email already registered");
 
   const passwordHash = await hashPassword(opts.ownerPassword);
-  const slug = opts.companyName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  const baseSlug = opts.companyName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+
+  // Generate a unique slug — append a short suffix if the base slug is taken
+  let slug = baseSlug;
+  const existingCompany = await db.company.findUnique({ where: { slug } });
+  if (existingCompany) {
+    slug = `${baseSlug}-${Math.random().toString(36).slice(2, 6)}`;
+  }
 
   // Create user + company + owner membership in a transaction
   const result = await db.$transaction(async (tx) => {
