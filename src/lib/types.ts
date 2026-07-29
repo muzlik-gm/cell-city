@@ -53,7 +53,8 @@ export type ViewKey =
   | "purchases"
   | "repairs"
   | "reports"
-  | "settings";
+  | "settings"
+  | "admin";
 
 export interface Paginated<T> {
   data: T[];

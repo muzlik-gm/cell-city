@@ -1465,3 +1465,73 @@ Cell City is a compatibility-first Mobile Spare Parts Management System (Next.js
 ## Unresolved Issues / Risks & Next-Phase Recommendations
 - **Camera in production**: getUserMedia requires HTTPS. Works on localhost for development.
 - **Next priorities**: (1) implement real JWT auth + login screen, (2) add product CRUD in Catalog Manager, (3) add barcode scanning with live camera, (4) add low-stock email alerts, (5) add product images (currently placeholders — could generate AI images or allow upload).
+
+---
+Task ID: AUTH-SYSTEM
+Agent: orchestrator (Z.ai Code)
+Task: Complete account creation system, company system, employee ranks, admin panel, role-based access.
+
+## Current Project Status Assessment
+Cell City now has a complete multi-tenant auth system with companies, employees, ranks, and role-based access control. Lint: 0 errors. All 8 views render. Login: owner@cellcity.pk / password123.
+
+## Completed Modifications
+
+### 1. Database schema (Company + CompanyMembership)
+- **`prisma/schema.prisma`**: added `Company` model (name, slug, ownerId, plan) and `CompanyMembership` model (userId, companyId, rank, active). Updated `User` model to remove the old `role` field and add `memberships` + `ownedCompanies` relations. Added `companyId` to `Warehouse`.
+- Ranks: FOUNDER, OWNER, MANAGER, SALES_STAFF, TECHNICIAN, WAREHOUSE_STAFF.
+
+### 2. Auth library (`src/lib/auth.ts` + `src/lib/auth-constants.ts`)
+- `auth.ts` (server-only): `hashPassword`, `verifyPassword` (bcrypt), `createUserWithCompany`, `loginUser`, `getCurrentUser`, `setSessionCookie`, `getSessionToken`, `clearSessionCookie`. Uses base64 token with 7-day expiry stored in httpOnly cookie.
+- `auth-constants.ts` (client-safe): `RANK_ORDER`, `RANK_LABELS`, `RANK_PERMISSIONS`, `hasPermission`, `isOwnerOrFounder`.
+- Split to avoid `next/headers` import in client components.
+- Fixed Next.js 16 async `cookies()` — all cookie access is now `await`ed.
+
+### 3. Auth API routes
+- `POST /api/auth/register` — creates company + owner account + membership, sets session cookie.
+- `POST /api/auth/login` — authenticates, sets session cookie.
+- `GET /api/auth/me` — returns current user or null.
+- `POST /api/auth/logout` — clears session.
+- `GET/POST /api/company/employees` — list/add employees (owner/founder only).
+- `PATCH/DELETE /api/company/employees/[id]` — update rank, remove employee.
+
+### 4. Auth store (`src/lib/auth-store.ts`)
+- Zustand store: `user`, `loading`, `fetchUser`, `login`, `register`, `logout`.
+
+### 5. Auth page (`src/components/auth/auth-page.tsx`)
+- Full-screen login/register with mode toggle. Register creates company + owner. Clean, fast, emerald design.
+
+### 6. Role-based sidebar (`src/components/sidebar.tsx`)
+- Nav items filtered by `hasPermission(rank, viewKey)`.
+- Shows company name + rank label in header.
+- Sign Out button in footer.
+- Only OWNER/FOUNDER see "Admin Panel".
+
+### 7. Admin Panel (`src/components/views/admin-view.tsx`)
+- Company info card (name, employee count, plan).
+- Rank permissions legend (6 ranks with descriptions).
+- Employees list with avatar, name, email, phone, rank badge.
+- Add Employee dialog (name, email, password, phone, rank select).
+- Change rank, activate/deactivate, remove employee (owner/founder only).
+- Crown icon for owner/founder.
+
+### 8. Role-based view router (`src/components/view-router.tsx`)
+- Shows "Access Denied" if user's rank doesn't have permission for the view.
+
+### 9. Seed updated (`prisma/seed.ts`)
+- Creates Company "Cell City" + 4 employees (Owner: Bilal Ahmed, Manager: Usman Khan, Technician: Ali Raza, Sales: Hamza Sheikh) with bcrypt password hashes.
+- Default password: "password123".
+- Company memberships with correct ranks.
+
+### Verification
+- `bun run lint`: 0 errors.
+- Login verified: owner@cellcity.pk / password123 → Bilal Ahmed, OWNER rank.
+- Admin Panel verified: shows 4 employees, rank permissions, add employee dialog.
+- All 8 views accessible (Home, Inventory, Sales, Purchases, Repairs, Reports, Settings, Admin Panel).
+- Role-based nav: sidebar shows only permitted views per rank.
+- Sign Out button present in sidebar footer.
+
+## Login Credentials
+- Owner: owner@cellcity.pk / password123 (full access + admin)
+- Manager: manager@cellcity.pk / password123 (no admin)
+- Technician: tech@cellcity.pk / password123 (home, inventory, repairs)
+- Sales: sales@cellcity.pk / password123 (home, inventory, sales, repairs)

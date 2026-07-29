@@ -3,6 +3,7 @@
  * Run: bun run prisma/seed.ts
  */
 import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
 
 const db = new PrismaClient();
 
@@ -38,21 +39,39 @@ async function main() {
   }
 
   // ── Users ────────────────────────────────────────────────
+  // Default password for all seeded accounts: "password123"
+  const defaultHash = await bcrypt.hash("password123", 10);
   const users = [
-    { name: "Bilal Ahmed", email: "owner@cellcity.pk", role: "OWNER", phone: "+92 300 1234567" },
-    { name: "Usman Khan", email: "manager@cellcity.pk", role: "MANAGER", phone: "+92 301 2345678" },
-    { name: "Ali Raza", email: "tech@cellcity.pk", role: "TECHNICIAN", phone: "+92 311 0000001" },
-    { name: "Hamza Sheikh", email: "sales@cellcity.pk", role: "SALES_STAFF", phone: "+92 321 0000002" },
+    { name: "Bilal Ahmed", email: "owner@cellcity.pk", rank: "OWNER", phone: "+92 300 1234567" },
+    { name: "Usman Khan", email: "manager@cellcity.pk", rank: "MANAGER", phone: "+92 301 2345678" },
+    { name: "Ali Raza", email: "tech@cellcity.pk", rank: "TECHNICIAN", phone: "+92 311 0000001" },
+    { name: "Hamza Sheikh", email: "sales@cellcity.pk", rank: "SALES_STAFF", phone: "+92 321 0000002" },
   ];
   const userMap: Record<string, string> = {};
   for (const u of users) {
     const user = await db.user.upsert({
       where: { email: u.email },
-      update: { name: u.name, role: u.role, phone: u.phone },
-      create: { ...u, passwordHash: "$2a$10$placeholder_hash_replace_in_production" },
+      update: { name: u.name, phone: u.phone, passwordHash: defaultHash },
+      create: { email: u.email, name: u.name, phone: u.phone, passwordHash: defaultHash },
     });
-    userMap[u.role] = user.id;
+    userMap[u.rank] = user.id;
   }
+
+  // ── Company + Memberships ────────────────────────────────
+  const companySlug = "cell-city";
+  const company = await db.company.upsert({
+    where: { slug: companySlug },
+    update: { name: "Cell City", ownerId: userMap["OWNER"] },
+    create: { name: "Cell City", slug: companySlug, ownerId: userMap["OWNER"], plan: "PRO" },
+  });
+  for (const u of users) {
+    await db.companyMembership.upsert({
+      where: { userId_companyId: { userId: userMap[u.rank], companyId: company.id } },
+      update: { rank: u.rank, active: true },
+      create: { userId: userMap[u.rank], companyId: company.id, rank: u.rank },
+    });
+  }
+  console.log("✅ Company + users created (login: owner@cellcity.pk / password123)");
 
   // ── Warehouses & Shelves ─────────────────────────────────
   const whMain = await db.warehouse.upsert({

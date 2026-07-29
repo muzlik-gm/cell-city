@@ -16,6 +16,7 @@ import { useEffect, useState } from "react";
 import { useMounted } from "@/hooks/use-mounted";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
+import { useAuth } from "@/lib/auth-store";
 import { NotificationsBell } from "@/components/shared/notifications-bell";
 
 export function Topbar() {
@@ -23,14 +24,7 @@ export function Topbar() {
   const { setCommandOpen, setMobileNavOpen, setView, view } = useAppStore();
   const mounted = useMounted();
   const [now, setNow] = useState(new Date());
-
-  // Real logged-in user (first user = shop owner)
-  const userQ = useQuery({
-    queryKey: ["current-user"],
-    queryFn: () => api.get<any[]>("/users?role=OWNER"),
-    staleTime: 300_000,
-  });
-  const user = userQ.data?.[0];
+  const { user } = useAuth();
   const userInitials = user ? user.name.split(" ").map((n: string) => n[0]).slice(0, 2).join("").toUpperCase() : "?";
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 30000);
