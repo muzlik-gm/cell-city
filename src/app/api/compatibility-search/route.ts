@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { getBusinessId } from "@/lib/business-context";
 
 // GET /api/compatibility-search?q=<phone model or brand>
 // Compatibility-first search: returns phone models matching the query,
@@ -32,9 +33,12 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ query: q, matchedModels: [], compatibleModels: [], partGroups: [] });
   }
 
-  // 1. Find phone models matching the query
+  // 1. Find phone models matching the query (scoped to business)
+  const businessId = await getBusinessId();
+  const bizFilter = businessId ? { businessId } : {};
   const matchedModels = await db.phoneModel.findMany({
     where: {
+      ...bizFilter,
       OR: [
         { name: { contains: q } },
         { slug: { contains: q } },
@@ -77,7 +81,7 @@ export async function GET(req: NextRequest) {
 
   // 4. Fetch all products for these models
   const products = await db.product.findMany({
-    where: { modelId: { in: allModelIds }, active: true },
+    where: { ...bizFilter, modelId: { in: allModelIds }, active: true },
     include: {
       brand: true, model: true, partType: true, supplier: true,
       warehouse: true, shelf: true, images: { orderBy: { order: "asc" } },

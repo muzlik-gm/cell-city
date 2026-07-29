@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { getBusinessId } from "@/lib/business-context";
 
 export async function GET() {
   const types = await db.partType.findMany({ where: { active: true }, orderBy: { category: "asc" } });

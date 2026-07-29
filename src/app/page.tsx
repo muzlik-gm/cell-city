@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useAuth } from "@/lib/auth-store";
 import { AuthPage } from "@/components/auth/auth-page";
+import { BusinessOnboarding } from "@/components/auth/business-onboarding";
 import { AppShell } from "@/components/app-shell";
 import { Loader2 } from "lucide-react";
 
@@ -21,6 +22,12 @@ export default function Home() {
     );
   }
 
+  // Not authenticated → show auth page
   if (!user) return <AuthPage />;
+
+  // App user with no business → show business onboarding
+  if (user.type === "app_user" && !user.business) return <BusinessOnboarding />;
+
+  // Employee or app user with business → show app shell
   return <AppShell />;
 }

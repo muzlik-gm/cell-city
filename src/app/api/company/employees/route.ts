@@ -1,81 +1,77 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { getCurrentUser, hashPassword, isOwnerOrFounder, RANK_LABELS } from "@/lib/auth";
+import { getCurrentSession, hashPassword, canManageEmployees, RANK_LABELS } from "@/lib/auth";
 
-// GET /api/company/employees — list all employees in the active company
+// GET /api/company/employees — list all employees in the active business
 export async function GET() {
-  const user = await getCurrentUser();
-  if (!user?.activeCompany) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  const session = await getCurrentSession();
+  if (!session?.business) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
 
-  const memberships = await db.companyMembership.findMany({
-    where: { companyId: user.activeCompany.id },
-    include: { user: true },
-    orderBy: { joinedAt: "desc" },
+  const employees = await db.employee.findMany({
+    where: { businessId: session.business.id },
+    orderBy: { createdAt: "desc" },
   });
 
-  const employees = memberships.map((m) => ({
-    id: m.id,
-    userId: m.user.id,
-    name: m.user.name,
-    email: m.user.email,
-    phone: m.user.phone,
-    rank: m.rank,
-    rankLabel: RANK_LABELS[m.rank] ?? m.rank,
-    active: m.active,
-    joinedAt: m.joinedAt,
-    lastLogin: m.user.lastLogin,
+  const result = employees.map((e) => ({
+    id: e.id,
+    name: e.name,
+    username: e.username,
+    phone: e.phone,
+    rank: e.rank,
+    rankLabel: RANK_LABELS[e.rank] ?? e.rank,
+    active: e.active,
+    joinedAt: e.createdAt,
+    lastLogin: e.lastLogin,
   }));
 
-  return NextResponse.json({ employees, canManage: isOwnerOrFounder(user.activeCompany.rank) });
+  const canManage = session.type === "app_user" ? true : canManageEmployees(session.rank ?? "");
+  return NextResponse.json({ employees: result, canManage });
 }
 
-// POST /api/company/employees — invite/add a new employee
+// POST /api/company/employees — create a new employee sub-account
 export async function POST(req: NextRequest) {
-  const user = await getCurrentUser();
-  if (!user?.activeCompany) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-  if (!isOwnerOrFounder(user.activeCompany.rank)) {
-    return NextResponse.json({ error: "Only owners and founders can add employees" }, { status: 403 });
+  const session = await getCurrentSession();
+  if (!session?.business) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+
+  const isAppUser = session.type === "app_user";
+  if (!isAppUser && !canManageEmployees(session.rank ?? "")) {
+    return NextResponse.json({ error: "Only owners and managers can add employees" }, { status: 403 });
   }
 
-  const { name, email, password, phone, rank } = await req.json();
-  if (!name || !email || !password) {
-    return NextResponse.json({ error: "Name, email, and password are required" }, { status: 400 });
+  const { name, username, password, phone, rank } = await req.json();
+  if (!name || !username || !password) {
+    return NextResponse.json({ error: "Name, username, and password are required" }, { status: 400 });
   }
   if (!RANK_LABELS[rank ?? "SALES_STAFF"]) {
     return NextResponse.json({ error: "Invalid rank" }, { status: 400 });
   }
 
-  const existing = await db.user.findUnique({ where: { email } });
+  const cleanUsername = username.toLowerCase().trim();
+  const existing = await db.employee.findUnique({
+    where: { businessId_username: { businessId: session.business.id, username: cleanUsername } },
+  });
   if (existing) {
-    // If user already exists, just add membership
-    const existingMembership = await db.companyMembership.findUnique({
-      where: { userId_companyId: { userId: existing.id, companyId: user.activeCompany.id } },
-    });
-    if (existingMembership) {
-      return NextResponse.json({ error: "Employee already in this company" }, { status: 409 });
-    }
-    const membership = await db.companyMembership.create({
-      data: { userId: existing.id, companyId: user.activeCompany.id, rank: rank ?? "SALES_STAFF" },
-    });
-    return NextResponse.json({ id: membership.id, name: existing.name, email: existing.email, rank: membership.rank }, { status: 201 });
+    return NextResponse.json({ error: "Username already exists in this business" }, { status: 409 });
   }
 
   const passwordHash = await hashPassword(password);
-  const result = await db.$transaction(async (tx) => {
-    const newUser = await tx.user.create({ data: { email, name, passwordHash, phone: phone || null } });
-    const membership = await tx.companyMembership.create({
-      data: { userId: newUser.id, companyId: user.activeCompany.id, rank: rank ?? "SALES_STAFF" },
-    });
-    return { newUser, membership };
+  const employee = await db.employee.create({
+    data: {
+      name,
+      username: cleanUsername,
+      passwordHash,
+      phone: phone || null,
+      rank: rank ?? "SALES_STAFF",
+      businessId: session.business.id,
+    },
   });
 
   return NextResponse.json({
-    id: result.membership.id,
-    userId: result.newUser.id,
-    name: result.newUser.name,
-    email: result.newUser.email,
-    phone: result.newUser.phone,
-    rank: result.membership.rank,
-    rankLabel: RANK_LABELS[result.membership.rank],
+    id: employee.id,
+    name: employee.name,
+    username: employee.username,
+    phone: employee.phone,
+    rank: employee.rank,
+    rankLabel: RANK_LABELS[employee.rank],
   }, { status: 201 });
 }

@@ -5,24 +5,40 @@ import { cookies } from "next/headers";
 const JWT_SECRET = process.env.JWT_SECRET || "cellcity-dev-secret-change-in-production";
 const SESSION_COOKIE = "cellcity-session";
 
-export interface AuthUser {
-  id: string;
-  email: string;
-  name: string;
-  phone?: string | null;
-  avatarUrl?: string | null;
-  companies: { id: string; name: string; slug: string; rank: string; plan: string }[];
-  activeCompany?: { id: string; name: string; slug: string; rank: string; plan: string } | null;
+export interface AuthSession {
+  type: "app_user" | "employee";
+  userId: string;       // AppUser.id or Employee.id
+  businessId?: string;  // active business
+  rank?: string;        // employee rank (for employee sessions)
+  exp: number;
 }
 
-// Simple base64 JWT-like token (no external jwt lib needed)
-function encodeToken(payload: any): string {
+export interface AuthResult {
+  type: "app_user" | "employee";
+  id: string;
+  username: string;
+  name: string;
+  email?: string;
+  phone?: string | null;
+  avatarUrl?: string | null;
+  business?: {
+    id: string;
+    name: string;
+    handle: string;
+    plan: string;
+  };
+  rank?: string;
+  businesses?: { id: string; name: string; handle: string; plan: string }[];
+}
+
+// Simple base64 token (no external jwt lib)
+function encodeToken(payload: AuthSession): string {
   const body = Buffer.from(JSON.stringify(payload)).toString("base64url");
   const sig = Buffer.from(JWT_SECRET).toString("base64url").slice(0, 16);
   return `${body}.${sig}`;
 }
 
-function decodeToken(token: string): any | null {
+function decodeToken(token: string): AuthSession | null {
   try {
     const [body, sig] = token.split(".");
     const expectedSig = Buffer.from(JWT_SECRET).toString("base64url").slice(0, 16);
@@ -38,103 +54,111 @@ export async function hashPassword(password: string): Promise<string> {
 }
 
 export async function verifyPassword(password: string, hash: string): Promise<boolean> {
-  // Support legacy plain-text hashes (from old seed) by comparing directly
   if (hash.startsWith("$2a$") || hash.startsWith("$2b$")) {
     return bcrypt.compare(password, hash);
   }
   return password === hash;
 }
 
-export async function createUserWithCompany(opts: {
-  companyName: string;
-  ownerName: string;
-  ownerEmail: string;
-  ownerPassword: string;
-  ownerPhone?: string;
-}): Promise<AuthUser> {
-  const existing = await db.user.findUnique({ where: { email: opts.ownerEmail } });
-  if (existing) throw new Error("Email already registered");
+// ── App User Registration (personal account — no business yet) ──────────
+export async function registerAppUser(opts: {
+  username: string;
+  email: string;
+  password: string;
+  name: string;
+  phone?: string;
+}): Promise<AuthResult> {
+  const username = opts.username.toLowerCase().trim();
+  const email = opts.email.toLowerCase().trim();
 
-  const passwordHash = await hashPassword(opts.ownerPassword);
-  const baseSlug = opts.companyName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  const existingEmail = await db.appUser.findUnique({ where: { email } });
+  if (existingEmail) throw new Error("Email already registered");
+  const existingUsername = await db.appUser.findUnique({ where: { username } });
+  if (existingUsername) throw new Error("Username already taken");
 
-  // Generate a unique slug — append a short suffix if the base slug is taken
-  let slug = baseSlug;
-  const existingCompany = await db.company.findUnique({ where: { slug } });
-  if (existingCompany) {
-    slug = `${baseSlug}-${Math.random().toString(36).slice(2, 6)}`;
-  }
-
-  // Create user + company + owner membership in a transaction
-  const result = await db.$transaction(async (tx) => {
-    const user = await tx.user.create({
-      data: {
-        email: opts.ownerEmail,
-        name: opts.ownerName,
-        passwordHash,
-        phone: opts.ownerPhone || null,
-      },
-    });
-    const company = await tx.company.create({
-      data: {
-        name: opts.companyName,
-        slug,
-        ownerId: user.id,
-        plan: "FREE",
-      },
-    });
-    await tx.companyMembership.create({
-      data: { userId: user.id, companyId: company.id, rank: "OWNER" },
-    });
-    return { user, company };
+  const passwordHash = await hashPassword(opts.password);
+  const user = await db.appUser.create({
+    data: { username, email, name: opts.name, passwordHash, phone: opts.phone || null },
   });
 
   return {
-    id: result.user.id,
-    email: result.user.email,
-    name: result.user.name,
-    phone: result.user.phone,
-    avatarUrl: result.user.avatarUrl,
-    companies: [{ id: result.company.id, name: result.company.name, slug: result.company.slug, rank: "OWNER", plan: result.company.plan }],
-    activeCompany: { id: result.company.id, name: result.company.name, slug: result.company.slug, rank: "OWNER", plan: result.company.plan },
+    type: "app_user",
+    id: user.id,
+    username: user.username,
+    name: user.name,
+    email: user.email,
+    phone: user.phone,
+    avatarUrl: user.avatarUrl,
+    businesses: [],
   };
 }
 
-export async function loginUser(email: string, password: string): Promise<AuthUser> {
-  const user = await db.user.findUnique({
-    where: { email },
-    include: {
-      memberships: { include: { company: true } },
-    },
+// ── App User Login ──────────────────────────────────────────────────────
+export async function loginAppUser(identifier: string, password: string): Promise<AuthResult> {
+  const id = identifier.toLowerCase().trim();
+  const user = await db.appUser.findFirst({
+    where: { OR: [{ email: id }, { username: id }] },
   });
-  if (!user) throw new Error("Invalid email or password");
+  if (!user) throw new Error("Invalid username/email or password");
   if (!user.active) throw new Error("Account is deactivated");
 
   const valid = await verifyPassword(password, user.passwordHash);
-  if (!valid) throw new Error("Invalid email or password");
+  if (!valid) throw new Error("Invalid username/email or password");
 
-  await db.user.update({ where: { id: user.id }, data: { lastLogin: new Date() } });
+  await db.appUser.update({ where: { id: user.id }, data: { lastLogin: new Date() } });
 
-  const companies = user.memberships
-    .filter((m) => m.active && m.company.active)
-    .map((m) => ({ id: m.company.id, name: m.company.name, slug: m.company.slug, rank: m.rank, plan: m.company.plan }));
-
-  if (companies.length === 0) throw new Error("No active company membership");
+  const businesses = await db.business.findMany({
+    where: { ownerId: user.id, active: true },
+    select: { id: true, name: true, handle: true, plan: true },
+  });
 
   return {
+    type: "app_user",
     id: user.id,
-    email: user.email,
+    username: user.username,
     name: user.name,
+    email: user.email,
     phone: user.phone,
     avatarUrl: user.avatarUrl,
-    companies,
-    activeCompany: companies[0],
+    businesses,
+    business: businesses[0],
   };
 }
 
-export function setSessionCookie(user: AuthUser): string {
-  const token = encodeToken({ userId: user.id, companyId: user.activeCompany?.id, exp: Date.now() + 7 * 86400000 });
-  return token;
+// ── Employee Login (business-scoped sub-account) ────────────────────────
+export async function loginEmployee(businessHandle: string, username: string, password: string): Promise<AuthResult> {
+  // Find the business by handle (any owner)
+  const business = await db.business.findFirst({
+    where: { handle: businessHandle.toLowerCase().trim(), active: true },
+  });
+  if (!business) throw new Error("Business not found");
+
+  const employee = await db.employee.findUnique({
+    where: { businessId_username: { businessId: business.id, username: username.toLowerCase().trim() } },
+  });
+  if (!employee) throw new Error("Invalid username or password");
+  if (!employee.active) throw new Error("Account is deactivated");
+
+  const valid = await verifyPassword(password, employee.passwordHash);
+  if (!valid) throw new Error("Invalid username or password");
+
+  await db.employee.update({ where: { id: employee.id }, data: { lastLogin: new Date() } });
+
+  return {
+    type: "employee",
+    id: employee.id,
+    username: employee.username,
+    name: employee.name,
+    phone: employee.phone,
+    avatarUrl: employee.avatarUrl,
+    rank: employee.rank,
+    business: { id: business.id, name: business.name, handle: business.handle, plan: business.plan },
+  };
+}
+
+// ── Session Management ──────────────────────────────────────────────────
+export function createSessionToken(session: AuthSession): string {
+  return encodeToken({ ...session, exp: Date.now() + 7 * 86400000 });
 }
 
 export async function getSessionToken(): Promise<string | undefined> {
@@ -142,36 +166,49 @@ export async function getSessionToken(): Promise<string | undefined> {
   return cookieStore.get(SESSION_COOKIE)?.value;
 }
 
-export async function getCurrentUser(): Promise<AuthUser | null> {
+export async function getCurrentSession(): Promise<AuthResult | null> {
   const token = await getSessionToken();
   if (!token) return null;
   const payload = decodeToken(token);
-  if (!payload) return null;
-  if (payload.exp < Date.now()) return null;
+  if (!payload || payload.exp < Date.now()) return null;
 
-  const user = await db.user.findUnique({
-    where: { id: payload.userId },
-    include: { memberships: { include: { company: true } } },
-  });
-  if (!user || !user.active) return null;
-
-  const companies = user.memberships
-    .filter((m) => m.active && m.company.active)
-    .map((m) => ({ id: m.company.id, name: m.company.name, slug: m.company.slug, rank: m.rank, plan: m.company.plan }));
-
-  if (companies.length === 0) return null;
-
-  const activeCompany = companies.find((c) => c.id === payload.companyId) ?? companies[0];
-
-  return {
-    id: user.id,
-    email: user.email,
-    name: user.name,
-    phone: user.phone,
-    avatarUrl: user.avatarUrl,
-    companies,
-    activeCompany,
-  };
+  if (payload.type === "app_user") {
+    const user = await db.appUser.findUnique({ where: { id: payload.userId } });
+    if (!user || !user.active) return null;
+    const businesses = await db.business.findMany({
+      where: { ownerId: user.id, active: true },
+      select: { id: true, name: true, handle: true, plan: true },
+    });
+    const activeBusiness = businesses.find((b) => b.id === payload.businessId) ?? businesses[0];
+    return {
+      type: "app_user",
+      id: user.id,
+      username: user.username,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      avatarUrl: user.avatarUrl,
+      businesses,
+      business: activeBusiness,
+    };
+  } else {
+    // Employee session
+    const employee = await db.employee.findUnique({
+      where: { id: payload.userId },
+      include: { business: true },
+    });
+    if (!employee || !employee.active) return null;
+    return {
+      type: "employee",
+      id: employee.id,
+      username: employee.username,
+      name: employee.name,
+      phone: employee.phone,
+      avatarUrl: employee.avatarUrl,
+      rank: employee.rank,
+      business: { id: employee.business.id, name: employee.business.name, handle: employee.business.handle, plan: employee.business.plan },
+    };
+  }
 }
 
 export async function clearSessionCookie(): Promise<void> {
@@ -181,5 +218,5 @@ export async function clearSessionCookie(): Promise<void> {
 
 export { SESSION_COOKIE };
 
-// Re-export client-safe constants from auth-constants (so API routes can import from one place)
+// Re-export client-safe constants
 export { RANK_ORDER, RANK_LABELS, RANK_PERMISSIONS, hasPermission, isOwnerOrFounder } from "./auth-constants";

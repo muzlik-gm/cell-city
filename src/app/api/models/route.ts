@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { getBusinessId } from "@/lib/business-context";
 
 // GET /api/models?brandId=...&q=...&popular=true
 // When popular=true, returns models sorted by sales volume (sum of SaleItem qty).

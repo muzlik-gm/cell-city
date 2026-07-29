@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { getBusinessId } from "@/lib/business-context";
 
 // Latest sales, latest purchases, low stock items for dashboard widgets.
 export async function GET() {

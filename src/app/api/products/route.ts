@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { Prisma } from "@prisma/client";
+import { getBusinessId } from "@/lib/business-context";
 
-// GET /api/products - list with search, filters, pagination
+// GET /api/products - list with search, filters, pagination (scoped to business)
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const q = searchParams.get("q") ?? "";
@@ -16,7 +17,8 @@ export async function GET(req: NextRequest) {
   const quality = searchParams.get("quality");
   const lowStock = searchParams.get("lowStock") === "true";
 
-  const where: Prisma.ProductWhereInput = { active: true };
+  const businessId = await getBusinessId();
+  const where: Prisma.ProductWhereInput = { active: true, ...(businessId ? { businessId } : {}) };
   if (q) {
     where.OR = [
       { name: { contains: q } },

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { getBusinessId } from "@/lib/business-context";
 
 // GET /api/reports?type=<inventory|sales|profit|supplier|customer|repair|purchase|lowstock|damaged>[&format=csv][&from=ISO][&to=ISO]
 //

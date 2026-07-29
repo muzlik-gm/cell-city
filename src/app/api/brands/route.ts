@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { getBusinessId } from "@/lib/business-context";
 
 export async function GET() {
   const brands = await db.brand.findMany({ where: { active: true }, orderBy: { name: "asc" }, include: { _count: { select: { models: true, products: true } } } });

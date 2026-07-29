@@ -16,7 +16,7 @@ import { Shield, Plus, Trash2, UserCog, Users, Crown, Store, Mail, Phone } from 
 import { toast } from "sonner";
 
 const RANKS = [
-  { value: "FOUNDER", label: "Founder", desc: "Full access + can transfer ownership" },
+  
   { value: "OWNER", label: "Owner", desc: "Full access + admin panel" },
   { value: "MANAGER", label: "Manager", desc: "All operations + reports" },
   { value: "SALES_STAFF", label: "Sales Staff", desc: "Home, Inventory, Sales, Repairs" },
@@ -25,7 +25,7 @@ const RANKS = [
 ];
 
 const rankBadgeStyles: Record<string, string> = {
-  FOUNDER: "bg-purple-500/10 text-purple-600 border-purple-500/20",
+  
   OWNER: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
   MANAGER: "bg-teal-500/10 text-teal-600 border-teal-500/20",
   SALES_STAFF: "bg-amber-500/10 text-amber-600 border-amber-500/20",
@@ -37,7 +37,7 @@ export function AdminView() {
   const { user } = useAuth();
   const qc = useQueryClient();
   const [addOpen, setAddOpen] = useState(false);
-  const [newEmp, setNewEmp] = useState({ name: "", email: "", password: "", phone: "", rank: "SALES_STAFF" });
+  const [newEmp, setNewEmp] = useState({ name: "", username: "", password: "", phone: "", rank: "SALES_STAFF" });
 
   const employeesQ = useQuery({
     queryKey: ["company-employees"],
@@ -50,7 +50,7 @@ export function AdminView() {
       qc.invalidateQueries({ queryKey: ["company-employees"] });
       toast.success("Employee added");
       setAddOpen(false);
-      setNewEmp({ name: "", email: "", password: "", phone: "", rank: "SALES_STAFF" });
+      setNewEmp({ name: "", username: "", password: "", phone: "", rank: "SALES_STAFF" });
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -80,7 +80,7 @@ export function AdminView() {
     <div className="mx-auto max-w-4xl space-y-5">
       <PageHeader
         title="Admin Panel"
-        description={`Manage employees and access for ${user?.activeCompany?.name ?? "your company"}`}
+        description={`Manage employees and access for ${user?.business?.name ?? "your business"}`}
         icon={Shield}
         actions={canManage && (
           <Button className="gap-1.5" onClick={() => setAddOpen(true)}>
@@ -96,10 +96,10 @@ export function AdminView() {
             <Store className="h-7 w-7" />
           </div>
           <div className="flex-1">
-            <h3 className="text-xl font-bold">{user?.activeCompany?.name}</h3>
+            <h3 className="text-xl font-bold">{user?.business?.name}</h3>
             <div className="mt-1 flex items-center gap-3 text-sm text-muted-foreground">
               <span className="flex items-center gap-1"><Users className="h-3.5 w-3.5" /> {employees.length} employees</span>
-              <Badge variant="outline" className="uppercase">{user?.activeCompany?.plan ?? "FREE"}</Badge>
+              <Badge variant="outline" className="uppercase">{user?.business?.plan ?? "FREE"}</Badge>
             </div>
           </div>
         </div>
@@ -141,19 +141,19 @@ export function AdminView() {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <p className="truncate text-sm font-semibold">{emp.name}</p>
-                    {(emp.rank === "OWNER" || emp.rank === "FOUNDER") && <Crown className="h-3.5 w-3.5 text-amber-500" />}
+                    {(emp.rank === "OWNER") && <Crown className="h-3.5 w-3.5 text-amber-500" />}
                   </div>
                   <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1"><Mail className="h-3 w-3" /> {emp.email}</span>
+                    <span className="flex items-center gap-1"><Mail className="h-3 w-3" /> {emp.username}</span>
                     {emp.phone && <span className="flex items-center gap-1"><Phone className="h-3 w-3" /> {emp.phone}</span>}
                   </div>
                 </div>
-                {canManage && emp.rank !== "OWNER" && emp.rank !== "FOUNDER" ? (
+                {canManage && emp.rank !== "OWNER" ? (
                   <>
                     <Select value={emp.rank} onValueChange={(v) => updateRank.mutate({ id: emp.id, rank: v })}>
                       <SelectTrigger className="h-9 w-[140px]"><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        {RANKS.filter((r) => r.value !== "FOUNDER" && r.value !== "OWNER").map((r) => (
+                        {RANKS.filter((r) => r.value !== "OWNER").map((r) => (
                           <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
                         ))}
                       </SelectContent>
@@ -182,7 +182,7 @@ export function AdminView() {
           <DialogHeader><DialogTitle>Add Employee</DialogTitle></DialogHeader>
           <div className="space-y-3 py-2">
             <div><Label className="mb-1.5 block text-xs">Full Name *</Label><Input value={newEmp.name} onChange={(e) => setNewEmp((s) => ({ ...s, name: e.target.value }))} placeholder="Ali Raza" /></div>
-            <div><Label className="mb-1.5 block text-xs">Email *</Label><Input type="email" value={newEmp.email} onChange={(e) => setNewEmp((s) => ({ ...s, email: e.target.value }))} placeholder="ali@cellcity.pk" /></div>
+            <div><Label className="mb-1.5 block text-xs">Username *</Label><Input value={newEmp.username} onChange={(e) => setNewEmp((s) => ({ ...s, username: e.target.value.toLowerCase() }))} placeholder="ali" /></div>
             <div><Label className="mb-1.5 block text-xs">Password *</Label><Input type="password" value={newEmp.password} onChange={(e) => setNewEmp((s) => ({ ...s, password: e.target.value }))} placeholder="Min 6 characters" /></div>
             <div><Label className="mb-1.5 block text-xs">Phone</Label><Input value={newEmp.phone} onChange={(e) => setNewEmp((s) => ({ ...s, phone: e.target.value }))} placeholder="+92 311 0000001" /></div>
             <div>
@@ -190,7 +190,7 @@ export function AdminView() {
               <Select value={newEmp.rank} onValueChange={(v) => setNewEmp((s) => ({ ...s, rank: v }))}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {RANKS.filter((r) => r.value !== "FOUNDER" && r.value !== "OWNER").map((r) => (
+                  {RANKS.filter((r) => r.value !== "OWNER").map((r) => (
                     <SelectItem key={r.value} value={r.value}>{r.label} — {r.desc}</SelectItem>
                   ))}
                 </SelectContent>

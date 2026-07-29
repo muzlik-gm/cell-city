@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { getBusinessId } from "@/lib/business-context";
 
 // Charts: 30-day revenue/profit trend, top selling products, top brands, top models.
 export async function GET() {

@@ -1,26 +1,29 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { getBusinessId } from "@/lib/business-context";
 
 // Dashboard summary: today's sales/purchases/revenue/profit, inventory value, pending repairs.
 export async function GET() {
   const now = new Date();
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const businessId = await getBusinessId();
+  const bizFilter = businessId ? { businessId } : {};
 
   const [todaySales, todayPurchases, monthSales, products, pendingRepairs] = await Promise.all([
     db.sale.findMany({
-      where: { createdAt: { gte: startOfToday }, status: "COMPLETED" },
+      where: { ...bizFilter, createdAt: { gte: startOfToday }, status: "COMPLETED" },
       include: { items: true, customer: true },
     }),
     db.purchase.findMany({
-      where: { createdAt: { gte: startOfToday } },
+      where: { ...bizFilter, createdAt: { gte: startOfToday } },
     }),
     db.sale.findMany({
-      where: { createdAt: { gte: startOfMonth }, status: "COMPLETED" },
+      where: { ...bizFilter, createdAt: { gte: startOfMonth }, status: "COMPLETED" },
     }),
-    db.product.findMany({ where: { active: true } }),
+    db.product.findMany({ where: { ...bizFilter, active: true } }),
     db.repairJob.count({
-      where: { status: { in: ["RECEIVED", "DIAGNOSED", "WAITING_PARTS", "REPAIRING"] } },
+      where: { ...bizFilter, status: { in: ["RECEIVED", "DIAGNOSED", "WAITING_PARTS", "REPAIRING"] } },
     }),
   ]);
 

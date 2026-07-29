@@ -17,7 +17,7 @@ import { ShieldAlert } from "lucide-react";
 export function ViewRouter() {
   const view = useAppStore((s) => s.view);
   const { user } = useAuth();
-  const rank = user?.activeCompany?.rank ?? "SALES_STAFF";
+  const rank = user?.type === "app_user" ? "app_user" : (user?.rank ?? "SALES_STAFF");
 
   const views: Record<string, React.ReactNode> = {
     home: <HomeView />,

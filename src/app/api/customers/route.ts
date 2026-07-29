@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { getBusinessId } from "@/lib/business-context";
 import { Prisma } from "@prisma/client";
 
 // Helper: compute outstanding receivable for a customer.

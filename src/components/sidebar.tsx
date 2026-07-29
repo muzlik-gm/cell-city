@@ -31,7 +31,7 @@ export function Sidebar() {
   const { view, setView, sidebarCollapsed, toggleSidebar } = useAppStore();
   const { user, logout } = useAuth();
 
-  const rank = user?.activeCompany?.rank ?? "SALES_STAFF";
+  const rank = user?.type === "app_user" ? "app_user" : (user?.rank ?? "SALES_STAFF");
   const nav = ALL_NAV.filter((item) => hasPermission(rank, item.key));
 
   return (
@@ -44,8 +44,10 @@ export function Sidebar() {
           </div>
           {!sidebarCollapsed && (
             <div className="flex flex-col leading-none">
-              <span className="text-[15px] font-bold tracking-tight">{user?.activeCompany?.name ?? "Cell City"}</span>
-              <span className="text-[10px] text-muted-foreground">{RANK_LABELS[rank] ?? "Staff"}</span>
+              <span className="text-[15px] font-bold tracking-tight">{user?.business?.name ?? "Cell City"}</span>
+              <span className="text-[10px] text-muted-foreground">
+                {user?.type === "app_user" ? "Owner" : RANK_LABELS[rank] ?? "Staff"}
+              </span>
             </div>
           )}
         </button>
@@ -100,7 +102,7 @@ export function Sidebar() {
             </div>
             <div className="min-w-0 flex-1 leading-tight">
               <div className="text-xs font-semibold">Sign Out</div>
-              <div className="truncate text-[10px] text-muted-foreground">{user?.email}</div>
+              <div className="truncate text-[10px] text-muted-foreground">{user?.email ?? user?.username}</div>
             </div>
           </button>
         </div>

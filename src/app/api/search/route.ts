@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { getBusinessId } from "@/lib/business-context";
 import { Prisma } from "@prisma/client";
 
 // GET /api/search?q=<query>
@@ -23,7 +24,10 @@ export async function GET(req: NextRequest) {
   }
 
   // 1. Direct product search (by name, sku, barcode, lcdCode, connector, model name, brand name)
+  const businessId = await getBusinessId();
+  const bizFilter = businessId ? { businessId } : {};
   const productWhere: Prisma.ProductWhereInput = {
+    ...bizFilter,
     active: true,
     OR: [
       { name: { contains: q } },
@@ -46,31 +50,31 @@ export async function GET(req: NextRequest) {
       orderBy: [{ stock: "desc" }, { name: "asc" }],
       take: 50,
     }),
-    // 2. Phone models matching the query
+    // 2. Phone models matching the query (scoped to business)
     db.phoneModel.findMany({
-      where: { OR: [{ name: { contains: q } }, { slug: { contains: q } }] },
+      where: { ...bizFilter, OR: [{ name: { contains: q } }, { slug: { contains: q } }] },
       include: { brand: true, _count: { select: { products: true } } },
       take: 10,
     }),
-    // 3. Brands matching
+    // 3. Brands matching (scoped to business)
     db.brand.findMany({
-      where: { OR: [{ name: { contains: q } }, { slug: { contains: q } }] },
+      where: { ...bizFilter, OR: [{ name: { contains: q } }, { slug: { contains: q } }] },
       include: { _count: { select: { products: true } } },
       take: 5,
     }),
-    // 4. Customers matching
+    // 4. Customers matching (scoped to business)
     db.customer.findMany({
-      where: { OR: [{ name: { contains: q } }, { phone: { contains: q } }, { company: { contains: q } }] },
+      where: { ...bizFilter, OR: [{ name: { contains: q } }, { phone: { contains: q } }, { company: { contains: q } }] },
       take: 5,
     }),
-    // 5. Suppliers matching
+    // 5. Suppliers matching (scoped to business)
     db.supplier.findMany({
-      where: { OR: [{ name: { contains: q } }, { phone: { contains: q } }, { company: { contains: q } }] },
+      where: { ...bizFilter, OR: [{ name: { contains: q } }, { phone: { contains: q } }, { company: { contains: q } }] },
       take: 5,
     }),
-    // 6. Recent sales matching invoice number or customer
+    // 6. Recent sales matching (scoped to business)
     db.sale.findMany({
-      where: { OR: [{ invoiceNo: { contains: q } }, { customer: { name: { contains: q } } }] },
+      where: { ...bizFilter, OR: [{ invoiceNo: { contains: q } }, { customer: { name: { contains: q } } }] },
       include: { customer: true, items: true },
       orderBy: { createdAt: "desc" },
       take: 5,

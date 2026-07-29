@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { getBusinessId } from "@/lib/business-context";
 import { Prisma } from "@prisma/client";
 
 // GET /api/sales — list with filters (q, paymentStatus, status, customerId, from, to) + pagination.

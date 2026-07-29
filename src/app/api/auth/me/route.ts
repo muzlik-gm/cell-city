@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser, clearSessionCookie } from "@/lib/auth";
+import { getCurrentSession } from "@/lib/auth";
 
 // GET /api/auth/me — return the currently authenticated user
 export async function GET() {
-  const user = await getCurrentUser();
+  const user = await getCurrentSession();
   if (!user) {
     return NextResponse.json({ user: null }, { status: 200 });
   }

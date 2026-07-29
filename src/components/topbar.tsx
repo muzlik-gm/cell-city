@@ -26,6 +26,7 @@ export function Topbar() {
   const [now, setNow] = useState(new Date());
   const { user } = useAuth();
   const userInitials = user ? user.name.split(" ").map((n: string) => n[0]).slice(0, 2).join("").toUpperCase() : "?";
+  const userTitle = user?.business?.name ?? "Cell City";
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 30000);
     return () => clearInterval(t);
