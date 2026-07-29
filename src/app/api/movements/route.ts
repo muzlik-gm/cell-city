@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
         product: { include: { brand: true, model: true, partType: true } },
         fromWarehouse: true,
         toWarehouse: true,
-        user: true,
+        employee: true,
       },
       orderBy: { date: "desc" },
       skip: (page - 1) * pageSize,

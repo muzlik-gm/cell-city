@@ -24,12 +24,12 @@ export async function GET(req: NextRequest) {
   }
   if (q) {
     where.OR = [
-      { note: { contains: q, mode: "insensitive" } },
-      { reason: { contains: q, mode: "insensitive" } },
-      { product: { name: { contains: q, mode: "insensitive" } } },
-      { product: { sku: { contains: q, mode: "insensitive" } } },
-      { product: { brand: { name: { contains: q, mode: "insensitive" } } } },
-      { product: { model: { name: { contains: q, mode: "insensitive" } } } },
+      { note: { contains: q,  } },
+      { reason: { contains: q,  } },
+      { product: { name: { contains: q,  } } },
+      { product: { sku: { contains: q,  } } },
+      { product: { brand: { name: { contains: q,  } } } },
+      { product: { model: { name: { contains: q,  } } } },
     ];
   }
 

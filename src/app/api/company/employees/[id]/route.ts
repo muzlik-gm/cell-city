@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { getCurrentSession, canManageEmployees, RANK_LABELS } from "@/lib/auth";
+import { getCurrentSession, RANK_LABELS } from "@/lib/auth";
+import { canManageEmployees } from "@/lib/auth-constants";
 
 interface Params { params: Promise<{ id: string }> }
 

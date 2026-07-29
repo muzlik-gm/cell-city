@@ -6,7 +6,7 @@ import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Smartphone, Store, ArrowRight, Loader2, Building2 } from "lucide-react";
+import { Store, ArrowRight, Loader2, Building2 } from "lucide-react";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -23,6 +23,7 @@ export function BusinessOnboarding() {
     setLoading(true);
     try {
       await api.post("/business", { name, handle });
+      // Refresh the auth session to pick up the new business
       await fetchUser();
       qc.invalidateQueries();
       toast.success("Business created! Welcome to your workspace.");
@@ -55,13 +56,13 @@ export function BusinessOnboarding() {
                 value={name}
                 onChange={(e) => {
                   setName(e.target.value);
-                  // Auto-generate handle from name
                   const h = e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
                   setHandle(h);
                 }}
                 placeholder="Cell City"
                 className="h-12 pl-10"
                 required
+                maxLength={50}
               />
             </div>
           </div>
@@ -75,10 +76,11 @@ export function BusinessOnboarding() {
                 placeholder="cell-city"
                 className="h-12 pl-10"
                 required
+                maxLength={40}
               />
             </div>
             <p className="mt-1.5 text-xs text-muted-foreground">
-              Employees use this handle to sign in. Must be unique to your account.
+              Employees use this handle to sign in. Unique to your account.
             </p>
           </div>
           <Button type="submit" size="lg" className="h-12 w-full gap-2 text-base font-semibold" disabled={loading || !name || !handle}>
