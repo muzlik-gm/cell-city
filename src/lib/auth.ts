@@ -219,4 +219,4 @@ export async function clearSessionCookie(): Promise<void> {
 export { SESSION_COOKIE };
 
 // Re-export client-safe constants
-export { RANK_ORDER, RANK_LABELS, RANK_PERMISSIONS, hasPermission, isOwnerOrFounder } from "./auth-constants";
+export { RANK_ORDER, RANK_LABELS, RANK_PERMISSIONS, hasPermission, isOwnerOrFounder, canManageEmployees } from "./auth-constants";

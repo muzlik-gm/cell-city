@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { getCurrentSession, hashPassword, canManageEmployees, RANK_LABELS } from "@/lib/auth";
+import { getCurrentSession, hashPassword, RANK_LABELS } from "@/lib/auth";
+import { canManageEmployees } from "@/lib/auth-constants";
 
 // GET /api/company/employees — list all employees in the active business
 export async function GET() {
