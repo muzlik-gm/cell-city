@@ -25,10 +25,10 @@ export async function GET(req: NextRequest) {
   }
   if (q) {
     where.OR = [
-      { poNo: { contains: q, mode: "insensitive" } },
-      { supplier: { name: { contains: q, mode: "insensitive" } } },
-      { supplier: { company: { contains: q, mode: "insensitive" } } },
-      { notes: { contains: q, mode: "insensitive" } },
+      { poNo: { contains: q } },
+      { supplier: { name: { contains: q } } },
+      { supplier: { company: { contains: q } } },
+      { notes: { contains: q } },
     ];
   }
 
@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
       where,
       include: {
         supplier: true,
-        user: true,
+        employee: true,
         items: { include: { product: { include: { brand: true, model: true } } } },
       },
       orderBy: { createdAt: "desc" },
@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
 
   let resolvedUserId = userId;
   if (!resolvedUserId) {
-    const anyUser = await db.user.findFirst({ orderBy: { createdAt: "asc" } });
+    const anyUser = await db.employee.findFirst({ orderBy: { createdAt: "asc" } });
     resolvedUserId = anyUser?.id ?? null;
   }
 
@@ -140,7 +140,7 @@ export async function POST(req: NextRequest) {
     data: {
       poNo,
       supplierId: supplierId || null,
-      userId: resolvedUserId ?? null,
+      employeeId: resolvedUserId ?? null,
       subtotal,
       discount: overallDiscount,
       tax: taxAmount,
@@ -153,7 +153,7 @@ export async function POST(req: NextRequest) {
     },
     include: {
       supplier: true,
-      user: true,
+      employee: true,
       items: { include: { product: { include: { brand: true, model: true } } } },
     },
   });
@@ -189,7 +189,7 @@ export async function POST(req: NextRequest) {
       qty: it.qty,
       type: "PURCHASE",
       ref: poNo,
-      userId: resolvedUserId ?? null,
+      employeeId: resolvedUserId ?? null,
       note: `Purchase ${poNo}`,
     })),
   });

@@ -99,7 +99,7 @@ export async function POST(req: NextRequest, { params }: Params) {
   // ── Resolve user (optional) ────────────────────────────────────────────
   let resolvedUserId = userId ?? null;
   if (!resolvedUserId) {
-    const anyUser = await db.user.findFirst({ orderBy: { createdAt: "asc" } });
+    const anyUser = await db.employee.findFirst({ orderBy: { createdAt: "asc" } });
     resolvedUserId = anyUser?.id ?? null;
   }
 
@@ -209,10 +209,10 @@ export async function POST(req: NextRequest, { params }: Params) {
         qty: movementQty,
         type: movementType,
         ref: reason,
-        userId: resolvedUserId,
+        employeeId: resolvedUserId,
         note: movementNote,
       },
-      include: { user: true },
+      include: { employee: true },
     }),
     ...(priceChanged
       ? [

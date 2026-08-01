@@ -11,7 +11,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
       brand: true, model: true, partType: true, supplier: true,
       warehouse: true, shelf: true, images: { orderBy: { order: "asc" } },
       priceHistory: { include: { supplier: true }, orderBy: { date: "desc" }, take: 20 },
-      movements: { include: { user: true }, orderBy: { date: "desc" }, take: 15 },
+      movements: { include: { employee: true }, orderBy: { date: "desc" }, take: 15 },
     },
   });
   if (!product) return NextResponse.json({ error: "Product not found" }, { status: 404 });

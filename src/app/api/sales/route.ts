@@ -26,10 +26,10 @@ export async function GET(req: NextRequest) {
   }
   if (q) {
     where.OR = [
-      { invoiceNo: { contains: q, mode: "insensitive" } },
-      { customer: { name: { contains: q, mode: "insensitive" } } },
+      { invoiceNo: { contains: q } },
+      { customer: { name: { contains: q } } },
       { customer: { phone: { contains: q } } },
-      { notes: { contains: q, mode: "insensitive" } },
+      { notes: { contains: q } },
     ];
   }
 
@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
       where,
       include: {
         customer: true,
-        user: true,
+        employee: true,
         items: { include: { product: { include: { brand: true, model: true } } } },
       },
       orderBy: { createdAt: "desc" },
@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
   // Resolve user: explicit userId, else first OWNER/SALES_STAFF as fallback (no auth wired in).
   let resolvedUserId = userId;
   if (!resolvedUserId) {
-    const anyUser = await db.user.findFirst({ orderBy: { createdAt: "asc" } });
+    const anyUser = await db.employee.findFirst({ orderBy: { createdAt: "asc" } });
     resolvedUserId = anyUser?.id ?? null;
   }
 
@@ -159,7 +159,7 @@ export async function POST(req: NextRequest) {
     data: {
       invoiceNo,
       customerId: customerId || null,
-      userId: resolvedUserId ?? null,
+      employeeId: resolvedUserId ?? null,
       subtotal,
       discount: overallDiscount + saleItemsData.reduce((s, i) => s + i.discount, 0),
       tax: taxAmount,
@@ -174,7 +174,7 @@ export async function POST(req: NextRequest) {
     },
     include: {
       customer: true,
-      user: true,
+      employee: true,
       items: { include: { product: { include: { brand: true, model: true } } } },
     },
   });
@@ -195,7 +195,7 @@ export async function POST(req: NextRequest) {
       qty: it.qty,
       type: "SALE",
       ref: invoiceNo,
-      userId: resolvedUserId ?? null,
+      employeeId: resolvedUserId ?? null,
       note: `Sale ${invoiceNo}`,
     })),
   });

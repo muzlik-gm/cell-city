@@ -13,7 +13,8 @@ export async function GET() {
     shelves,
     suppliers,
     customers,
-    users,
+    appUsers,
+    employees,
     products,
     sales,
     saleItems,
@@ -34,7 +35,8 @@ export async function GET() {
     db.shelf.findMany(),
     db.supplier.findMany(),
     db.customer.findMany(),
-    db.user.findMany({ select: { id: true, email: true, name: true, role: true, phone: true, active: true, avatarUrl: true, lastLogin: true, createdAt: true, updatedAt: true } }),
+    db.appUser.findMany({ select: { id: true, email: true, name: true, phone: true, active: true, avatarUrl: true, lastLogin: true, createdAt: true, updatedAt: true } }),
+    db.employee.findMany({ select: { id: true, username: true, name: true, rank: true, phone: true, active: true, avatarUrl: true, lastLogin: true, createdAt: true, updatedAt: true } }),
     db.product.findMany(),
     db.sale.findMany(),
     db.saleItem.findMany(),
@@ -47,6 +49,8 @@ export async function GET() {
     db.priceHistory.findMany(),
     db.modelCompatibility.findMany(),
   ]);
+
+  const users = [...appUsers, ...employees];
 
   return NextResponse.json({
     exportedAt: new Date().toISOString(),

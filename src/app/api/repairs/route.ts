@@ -20,16 +20,16 @@ export async function GET(req: NextRequest) {
   if (customerId) where.customerId = customerId;
   if (q) {
     where.OR = [
-      { ticketNo: { contains: q, mode: "insensitive" } },
+      { ticketNo: { contains: q } },
       { imei: { contains: q } },
-      { problem: { contains: q, mode: "insensitive" } },
-      { diagnosis: { contains: q, mode: "insensitive" } },
-      { notes: { contains: q, mode: "insensitive" } },
-      { customer: { name: { contains: q, mode: "insensitive" } } },
+      { problem: { contains: q } },
+      { diagnosis: { contains: q } },
+      { notes: { contains: q } },
+      { customer: { name: { contains: q } } },
       { customer: { phone: { contains: q } } },
-      { model: { name: { contains: q, mode: "insensitive" } } },
-      { model: { brand: { name: { contains: q, mode: "insensitive" } } } },
-      { technician: { name: { contains: q, mode: "insensitive" } } },
+      { model: { name: { contains: q } } },
+      { model: { brand: { name: { contains: q } } } },
+      { technician: { name: { contains: q } } },
     ];
   }
 

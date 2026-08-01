@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
         product: { include: { brand: true, model: true, partType: true } },
         fromWarehouse: true,
         toWarehouse: true,
-        user: true,
+employee: true,
       },
       orderBy: { date: "desc" },
       skip: (page - 1) * pageSize,
@@ -149,7 +149,7 @@ export async function POST(req: NextRequest) {
   // Resolve user
   let resolvedUserId: string | null = userId ?? null;
   if (!resolvedUserId) {
-    const anyUser = await db.user.findFirst({ orderBy: { createdAt: "asc" } });
+    const anyUser = await db.employee.findFirst({ orderBy: { createdAt: "asc" } });
     resolvedUserId = anyUser?.id ?? null;
   }
 
@@ -175,14 +175,14 @@ export async function POST(req: NextRequest) {
       qty: qtyNum,
       type: "TRANSFER",
       ref,
-      userId: resolvedUserId ?? null,
+      employeeId: resolvedUserId ?? null,
       note: note?.trim() || `Transfer ${ref}`,
     },
     include: {
       product: { include: { brand: true, model: true, partType: true } },
       fromWarehouse: true,
       toWarehouse: true,
-      user: true,
+      employee: true,
     },
   });
 

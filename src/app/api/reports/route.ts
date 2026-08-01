@@ -75,7 +75,7 @@ async function salesReport(from: string | null, to: string | null) {
     where: {
       ...(fromD || toD ? { createdAt: { ...(fromD ? { gte: fromD } : {}), ...(toD ? { lte: toD } : {}) } } : {}),
     },
-    include: { customer: true, user: true, items: true },
+    include: { customer: true, employee: true, items: true },
     orderBy: { createdAt: "desc" },
   });
   return sales.map((s) => ({
@@ -229,7 +229,7 @@ async function purchaseReport(from: string | null, to: string | null) {
     where: {
       ...(fromD || toD ? { createdAt: { ...(fromD ? { gte: fromD } : {}), ...(toD ? { lte: toD } : {}) } } : {}),
     },
-    include: { supplier: true, user: true, items: true },
+    include: { supplier: true, employee: true, items: true },
     orderBy: { createdAt: "desc" },
   });
   return purchases.map((p) => ({

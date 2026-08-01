@@ -10,7 +10,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
     where: { id },
     include: {
       supplier: true,
-      user: true,
+      employee: true,
       items: { include: { product: { include: { brand: true, model: true, partType: true } } } },
     },
   });

@@ -54,25 +54,3 @@ export function sanitizeObject<T extends Record<string, any>>(obj: T): T {
   }
   return result as T;
 }
-
-/// Wraps a route handler with try-catch error handling.
-export function withErrorHandler<T extends (...args: any[]) => Promise<any>>(
-  handler: T
-): T {
-  return (async (...args: any[]) => {
-    try {
-      return await handler(...args);
-    } catch (e) {
-      const error = e as Error;
-      console.error(`[API Error] ${error.message}`, { stack: error.stack });
-      // Don't leak internal errors to the client
-      const isKnownError = error.message.length < 200 && !error.message.includes("at ");
-      return NextResponse.json(
-        { error: isKnownError ? error.message : "An internal error occurred" },
-        { status: 500 }
-      );
-    }
-  }) as T;
-}
-
-import { NextResponse } from "next/server";
