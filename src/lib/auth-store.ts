@@ -6,7 +6,7 @@ import { api } from "./api";
 export interface AuthResult {
   type: "app_user" | "employee";
   id: string;
-  username: string;
+  username?: string;
   name: string;
   email?: string;
   phone?: string | null;
@@ -73,9 +73,9 @@ export const useAuth = create<AuthState>((set, get) => ({
     }
   },
 
-  loginEmployee: async (businessHandle, username, password) => {
+  loginEmployee: async (businessHandle, email, password) => {
     try {
-      const res = await api.post<{ user: AuthResult }>("/auth/employee-login", { businessHandle, username, password });
+      const res = await api.post<{ user: AuthResult }>("/auth/employee-login", { businessHandle, email, password });
       set({ user: res.user, error: null });
       return res.user;
     } catch (e) {

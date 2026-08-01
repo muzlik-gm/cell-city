@@ -84,7 +84,7 @@ export function Topbar() {
         <Button
           size="sm"
           variant="default"
-          className="hidden h-9 gap-1.5 rounded-lg shadow-soft sm:flex"
+          className="hidden h-9 gap-1.5 rounded-lg shadow-soft active:scale-[0.98] transition-transform sm:flex"
           onClick={() => setView("sales")}
         >
           <Plus className="h-4 w-4" />
@@ -96,7 +96,7 @@ export function Topbar() {
         <Button
           variant="ghost"
           size="icon"
-          className="h-9 w-9 rounded-lg"
+          className="h-9 w-9 rounded-lg active:scale-[0.95] transition-transform"
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
           aria-label="Toggle theme"
         >

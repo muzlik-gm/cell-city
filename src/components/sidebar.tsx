@@ -60,8 +60,8 @@ export function Sidebar() {
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 overflow-y-auto px-3 py-4">
-        <div className="space-y-1">
+      <nav className="flex-1 overflow-y-auto px-2.5 py-3">
+        <div className="space-y-0.5">
           {nav.map((item) => {
             const active = view === item.key;
             const Icon = item.icon;
@@ -71,12 +71,12 @@ export function Sidebar() {
                 onClick={() => setView(item.key)}
                 title={sidebarCollapsed ? item.label : undefined}
                 className={cn(
-                  "group flex w-full items-center gap-3 rounded-xl px-4 py-3.5 text-base font-medium transition-all",
+                  "group flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all active:scale-[0.97]",
                   active ? "bg-primary text-primary-foreground shadow-soft" : "text-muted-foreground hover:bg-sidebar-accent hover:text-foreground",
                   sidebarCollapsed && "justify-center"
                 )}
               >
-                <Icon className="h-6 w-6 shrink-0" />
+                <Icon className="h-5 w-5 shrink-0" />
                 {!sidebarCollapsed && <span className="truncate">{item.label}</span>}
               </button>
             );
@@ -86,18 +86,18 @@ export function Sidebar() {
 
       {/* AI Camera + user footer */}
       {!sidebarCollapsed ? (
-        <div className="space-y-2 border-t p-3">
-          <button onClick={() => setView("home")} className="flex w-full items-center gap-3 rounded-xl border bg-card p-3 text-left shadow-soft transition hover:shadow-md">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg gradient-emerald text-white">
+        <div className="space-y-1.5 border-t p-2.5">
+          <button onClick={() => setView("home")} className="flex w-full items-center gap-3 rounded-xl border bg-card p-2.5 text-left shadow-soft transition-all hover:shadow-md active:scale-[0.98]">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg gradient-emerald text-white">
               <ScanEye className="h-4 w-4" />
             </div>
             <div className="min-w-0 flex-1 leading-tight">
               <div className="text-xs font-semibold">AI Camera</div>
-              <div className="text-[10px] text-muted-foreground">Identify any phone or LCD</div>
+              <div className="text-[10px] text-muted-foreground">Identify any phone</div>
             </div>
           </button>
-          <button onClick={logout} className="flex w-full items-center gap-3 rounded-xl p-3 text-left text-muted-foreground transition hover:bg-destructive/5 hover:text-destructive">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
+          <button onClick={logout} className="flex w-full items-center gap-3 rounded-xl p-2.5 text-left text-muted-foreground transition-all hover:bg-destructive/5 hover:text-destructive active:scale-[0.98]">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
               <LogOut className="h-4 w-4" />
             </div>
             <div className="min-w-0 flex-1 leading-tight">
@@ -107,8 +107,8 @@ export function Sidebar() {
           </button>
         </div>
       ) : (
-        <div className="border-t p-3">
-          <button onClick={logout} className="flex w-full items-center justify-center rounded-xl p-2 text-muted-foreground transition hover:bg-destructive/5 hover:text-destructive" aria-label="Sign out">
+        <div className="border-t p-2.5">
+          <button onClick={logout} className="flex w-full items-center justify-center rounded-xl p-2 text-muted-foreground transition-all hover:bg-destructive/5 hover:text-destructive active:scale-[0.95]" aria-label="Sign out">
             <LogOut className="h-5 w-5" />
           </button>
         </div>

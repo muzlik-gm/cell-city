@@ -12,17 +12,17 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const businessHandle = sanitizeHandle(body.businessHandle);
-    const username = sanitizeUsername(body.username);
+    const email = sanitizeString(body.email).toLowerCase().trim();
     const password = body.password ?? "";
 
-    if (!businessHandle || !username || !password) {
-      return NextResponse.json({ error: "Business handle, username, and password are required" }, { status: 400 });
+    if (!businessHandle || !email || !password) {
+      return NextResponse.json({ error: "Business handle, email, and password are required" }, { status: 400 });
     }
 
-    const user = await loginEmployee(businessHandle, username, password);
+    const user = await loginEmployee(businessHandle, email, password);
     const token = createSessionToken({ type: "employee", userId: user.id, businessId: user.business?.id, rank: user.rank, exp: Date.now() + 7 * 86400000 });
 
-    logger.info("Employee logged in", { userId: user.id, username: user.username, business: user.business?.handle });
+    logger.info("Employee logged in", { userId: user.id, email: user.email, business: user.business?.handle });
 
     const res = NextResponse.json({ user });
     res.cookies.set(SESSION_COOKIE, token, { httpOnly: true, sameSite: "lax", maxAge: 7 * 86400, path: "/" });

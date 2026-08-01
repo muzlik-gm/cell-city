@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Store, ArrowRight, Loader2, Building2 } from "lucide-react";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
+import { motion } from "framer-motion";
 
 export function BusinessOnboarding() {
   const { user, fetchUser } = useAuth();
@@ -23,7 +24,6 @@ export function BusinessOnboarding() {
     setLoading(true);
     try {
       await api.post("/business", { name, handle });
-      // Refresh the auth session to pick up the new business
       await fetchUser();
       qc.invalidateQueries();
       toast.success("Business created! Welcome to your workspace.");
@@ -36,20 +36,31 @@ export function BusinessOnboarding() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-emerald-50 via-background to-teal-50 p-4 dark:from-emerald-950/20 dark:via-background dark:to-teal-950/20">
-      <div className="w-full max-w-md">
-        <div className="mb-8 flex flex-col items-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl gradient-emerald text-white shadow-lg">
-            <Store className="h-8 w-8" />
+      <div className="w-full max-w-[380px]">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
+          className="mb-8 flex flex-col items-center"
+        >
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl gradient-emerald text-white shadow-lg">
+            <Store className="h-7 w-7" />
           </div>
-          <h1 className="mt-4 text-3xl font-bold tracking-tight">Create Your Business</h1>
-          <p className="mt-1 text-center text-sm text-muted-foreground">
-            Welcome, {user?.name}! Set up your spare parts business workspace.
+          <h1 className="mt-4 text-2xl font-bold tracking-tight">Create Your Business</h1>
+          <p className="mt-1 text-center text-xs text-muted-foreground">
+            Welcome, {user?.name}! Set up your workspace.
           </p>
-        </div>
+        </motion.div>
 
-        <form onSubmit={submit} className="space-y-4 rounded-2xl border bg-card p-6 shadow-lg">
+        <motion.form
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+          onSubmit={submit}
+          className="space-y-4 rounded-2xl border bg-card p-5 shadow-lg"
+        >
           <div>
-            <Label className="mb-1.5 block text-sm font-medium">Business Name</Label>
+            <Label className="mb-1 block text-xs font-medium">Business Name</Label>
             <div className="relative">
               <Store className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
@@ -60,35 +71,37 @@ export function BusinessOnboarding() {
                   setHandle(h);
                 }}
                 placeholder="Cell City"
-                className="h-12 pl-10"
+                className="h-11 pl-10"
                 required
                 maxLength={50}
               />
             </div>
           </div>
           <div>
-            <Label className="mb-1.5 block text-sm font-medium">Business Handle</Label>
+            <Label className="mb-1 block text-xs font-medium">Business Handle</Label>
             <div className="relative">
               <Building2 className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 value={handle}
                 onChange={(e) => setHandle(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
                 placeholder="cell-city"
-                className="h-12 pl-10"
+                className="h-11 pl-10"
                 required
                 maxLength={40}
               />
             </div>
-            <p className="mt-1.5 text-xs text-muted-foreground">
-              Employees use this handle to sign in. Unique to your account.
+            <p className="mt-1.5 text-[11px] text-muted-foreground">
+              Employees use this handle to sign in.
             </p>
           </div>
-          <Button type="submit" size="lg" className="h-12 w-full gap-2 text-base font-semibold" disabled={loading || !name || !handle}>
-            {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <>
-              Create Business <ArrowRight className="h-5 w-5" />
-            </>}
-          </Button>
-        </form>
+          <motion.div whileTap={{ scale: 0.97 }} transition={{ type: "spring", stiffness: 400, damping: 20 }}>
+            <Button type="submit" size="lg" className="h-11 w-full gap-2 text-sm font-semibold active:scale-[0.98] transition-transform" disabled={loading || !name || !handle}>
+              {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> Creating…</> : <>
+                Create Business <ArrowRight className="h-4 w-4" />
+              </>}
+            </Button>
+          </motion.div>
+        </motion.form>
       </div>
     </div>
   );

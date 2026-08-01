@@ -16,7 +16,7 @@ export async function GET() {
   const result = employees.map((e) => ({
     id: e.id,
     name: e.name,
-    username: e.username,
+    email: e.email,
     phone: e.phone,
     rank: e.rank,
     rankLabel: RANK_LABELS[e.rank] ?? e.rank,
@@ -39,27 +39,27 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Only owners and managers can add employees" }, { status: 403 });
   }
 
-  const { name, username, password, phone, rank } = await req.json();
-  if (!name || !username || !password) {
-    return NextResponse.json({ error: "Name, username, and password are required" }, { status: 400 });
+  const { name, email, password, phone, rank } = await req.json();
+  if (!name || !email || !password) {
+    return NextResponse.json({ error: "Name, email, and password are required" }, { status: 400 });
   }
   if (!RANK_LABELS[rank ?? "SALES_STAFF"]) {
     return NextResponse.json({ error: "Invalid rank" }, { status: 400 });
   }
 
-  const cleanUsername = username.toLowerCase().trim();
+  const cleanEmail = email.toLowerCase().trim();
   const existing = await db.employee.findUnique({
-    where: { businessId_username: { businessId: session.business.id, username: cleanUsername } },
+    where: { businessId_email: { businessId: session.business.id, email: cleanEmail } },
   });
   if (existing) {
-    return NextResponse.json({ error: "Username already exists in this business" }, { status: 409 });
+    return NextResponse.json({ error: "Email already exists in this business" }, { status: 409 });
   }
 
   const passwordHash = await hashPassword(password);
   const employee = await db.employee.create({
     data: {
       name,
-      username: cleanUsername,
+      email: cleanEmail,
       passwordHash,
       phone: phone || null,
       rank: rank ?? "SALES_STAFF",
@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({
     id: employee.id,
     name: employee.name,
-    username: employee.username,
+    email: employee.email,
     phone: employee.phone,
     rank: employee.rank,
     rankLabel: RANK_LABELS[employee.rank],

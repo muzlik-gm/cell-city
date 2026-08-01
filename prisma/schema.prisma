@@ -209,11 +209,12 @@ model Business {
 }
 
 /// An Employee is a sub-account scoped to a single Business.
-/// They log in with username + password. Only owners/managers can create them.
+/// They log in with email + password. Only owners/managers can create them.
 /// Ranks: OWNER, MANAGER, SALES_STAFF, TECHNICIAN, WAREHOUSE_STAFF
 model Employee {
   id           String      @id @default(cuid())
-  username     String      // login username (unique per business)
+  email        String      // login email (unique per business)
+  username     String?     // optional legacy username
   passwordHash String
   name         String
   phone        String?
@@ -230,7 +231,7 @@ model Employee {
   repairJobs   RepairJob[]
   movements    InventoryMovement[]
 
-  @@unique([businessId, username])
+  @@unique([businessId, email])
   @@index([businessId])
 }
 

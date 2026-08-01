@@ -126,7 +126,7 @@ export async function loginAppUser(identifier: string, password: string): Promis
 }
 
 // ── Employee Login (business-scoped sub-account) ────────────────────────
-export async function loginEmployee(businessHandle: string, username: string, password: string): Promise<AuthResult> {
+export async function loginEmployee(businessHandle: string, email: string, password: string): Promise<AuthResult> {
   // Find the business by handle (any owner)
   const business = await db.business.findFirst({
     where: { handle: businessHandle.toLowerCase().trim(), active: true },
@@ -134,20 +134,20 @@ export async function loginEmployee(businessHandle: string, username: string, pa
   if (!business) throw new Error("Business not found");
 
   const employee = await db.employee.findUnique({
-    where: { businessId_username: { businessId: business.id, username: username.toLowerCase().trim() } },
+    where: { businessId_email: { businessId: business.id, email: email.toLowerCase().trim() } },
   });
-  if (!employee) throw new Error("Invalid username or password");
+  if (!employee) throw new Error("Invalid email or password");
   if (!employee.active) throw new Error("Account is deactivated");
 
   const valid = await verifyPassword(password, employee.passwordHash);
-  if (!valid) throw new Error("Invalid username or password");
+  if (!valid) throw new Error("Invalid email or password");
 
   await db.employee.update({ where: { id: employee.id }, data: { lastLogin: new Date() } });
 
   return {
     type: "employee",
     id: employee.id,
-    username: employee.username,
+    email: employee.email,
     name: employee.name,
     phone: employee.phone,
     avatarUrl: employee.avatarUrl,
