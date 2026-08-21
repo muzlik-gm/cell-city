@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import {
   Home, Package, ShoppingCart, Truck, Wrench, FileBarChart,
   Settings, Smartphone, ScanEye, Shield, LogOut,
+  ChevronLeft, ChevronRight,
 } from "lucide-react";
 
 interface NavItem {
@@ -36,33 +37,45 @@ export function Sidebar() {
 
   return (
     <div className="flex h-full flex-col">
-      {/* Brand */}
-      <div className="flex h-16 items-center gap-2.5 border-b px-4">
-        <button onClick={() => setView("home")} className="flex items-center gap-2.5" aria-label="Cell City home">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl gradient-emerald text-white shadow-soft">
+      {/* Brand Header */}
+      <div className="flex h-16 items-center gap-3 border-b border-border/50 px-4">
+        <button 
+          onClick={() => setView("home")} 
+          className="flex items-center gap-3 group" 
+          aria-label="Cell City home"
+        >
+          <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl gradient-primary text-white shadow-elevated transition-transform group-hover:scale-105">
             <Smartphone className="h-5 w-5" />
+            <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-emerald-400 border-2 border-background" />
           </div>
           {!sidebarCollapsed && (
-            <div className="flex flex-col leading-none">
-              <span className="text-[15px] font-bold tracking-tight">{user?.business?.name ?? "Cell City"}</span>
-              <span className="text-[10px] text-muted-foreground">
+            <div className="flex flex-col leading-none animate-slide-right">
+              <span className="text-[15px] font-bold tracking-tight text-foreground">
+                {user?.business?.name ?? "Cell City"}
+              </span>
+              <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
                 {user?.type === "app_user" ? "Owner" : RANK_LABELS[rank] ?? "Staff"}
               </span>
             </div>
           )}
         </button>
-        <button onClick={toggleSidebar} className="ml-auto hidden rounded-lg p-1.5 text-muted-foreground hover:bg-sidebar-accent hover:text-foreground lg:block" aria-label="Toggle sidebar">
-          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <rect x="3" y="3" width="18" height="18" rx="2" />
-            <line x1="9" y1="3" x2="9" y2="21" />
-          </svg>
+        
+        <button 
+          onClick={toggleSidebar} 
+          className={cn(
+            "ml-auto hidden items-center justify-center rounded-lg p-2 text-muted-foreground transition-all hover:bg-accent hover:text-foreground lg:flex",
+            sidebarCollapsed && "rotate-180"
+          )}
+          aria-label="Toggle sidebar"
+        >
+          <ChevronLeft className="h-4 w-4" />
         </button>
       </div>
 
-      {/* Nav */}
-      <nav className="flex-1 overflow-y-auto px-2.5 py-3">
-        <div className="space-y-0.5">
-          {nav.map((item) => {
+      {/* Navigation */}
+      <nav className="flex-1 overflow-y-auto px-3 py-4">
+        <div className="space-y-1">
+          {nav.map((item, index) => {
             const active = view === item.key;
             const Icon = item.icon;
             return (
@@ -71,48 +84,102 @@ export function Sidebar() {
                 onClick={() => setView(item.key)}
                 title={sidebarCollapsed ? item.label : undefined}
                 className={cn(
-                  "group flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all active:scale-[0.97]",
-                  active ? "bg-primary text-primary-foreground shadow-soft" : "text-muted-foreground hover:bg-sidebar-accent hover:text-foreground",
-                  sidebarCollapsed && "justify-center"
+                  "group relative flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all duration-200",
+                  "animate-in-up",
+                  active
+                    ? "bg-primary text-primary-foreground shadow-elevated"
+                    : "text-muted-foreground hover:bg-accent hover:text-foreground",
+                  sidebarCollapsed && "justify-center px-2.5"
                 )}
+                style={{ animationDelay: `${index * 50}ms` }}
               >
-                <Icon className="h-5 w-5 shrink-0" />
-                {!sidebarCollapsed && <span className="truncate">{item.label}</span>}
+                {/* Active indicator */}
+                {active && (
+                  <div className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-primary-foreground/30" />
+                )}
+                
+                <Icon className={cn(
+                  "h-5 w-5 shrink-0 transition-transform group-hover:scale-110",
+                  active && "drop-shadow-sm"
+                )} />
+                
+                {!sidebarCollapsed && (
+                  <span className="truncate font-medium">{item.label}</span>
+                )}
+
+                {/* Keyboard shortcut hints */}
+                {!sidebarCollapsed && index < 7 && (
+                  <kbd className="ml-auto hidden rounded-md bg-background/20 px-1.5 py-0.5 text-[9px] font-medium opacity-60 group-hover:opacity-100 xl:block">
+                    {index + 1}
+                  </kbd>
+                )}
               </button>
             );
           })}
         </div>
       </nav>
 
-      {/* AI Camera + user footer */}
-      {!sidebarCollapsed ? (
-        <div className="space-y-1.5 border-t p-2.5">
-          <button onClick={() => setView("home")} className="flex w-full items-center gap-3 rounded-xl border bg-card p-2.5 text-left shadow-soft transition-all hover:shadow-md active:scale-[0.98]">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg gradient-emerald text-white">
-              <ScanEye className="h-4 w-4" />
+      {/* Footer Section */}
+      <div className="border-t border-border/50 p-3 space-y-2">
+        {!sidebarCollapsed ? (
+          <>
+            {/* AI Camera Button */}
+            <button 
+              onClick={() => setView("home")} 
+              className="group flex w-full items-center gap-3 rounded-xl bg-gradient-to-r from-primary/10 to-primary/5 p-3 text-left transition-all hover:from-primary/15 hover:to-primary/10 hover:shadow-card"
+            >
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg gradient-primary text-white shadow-soft transition-transform group-hover:scale-105">
+                <ScanEye className="h-4 w-4" />
+              </div>
+              <div className="min-w-0 flex-1 leading-tight">
+                <div className="text-xs font-semibold text-foreground">AI Camera</div>
+                <div className="text-[10px] text-muted-foreground">Identify any phone model</div>
+              </div>
+              <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+            </button>
+
+            {/* User Profile & Logout */}
+            <div className="flex items-center gap-2.5 rounded-xl bg-card p-2.5 shadow-soft">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground shadow-soft">
+                {user?.name?.split(" ").map((n: string) => n[0]).slice(0, 2).join("").toUpperCase() ?? "?"}
+              </div>
+              <div className="min-w-0 flex-1 leading-tight">
+                <div className="text-xs font-semibold truncate">{user?.name ?? "User"}</div>
+                <div className="truncate text-[10px] text-muted-foreground">{user?.email ?? user?.username}</div>
+              </div>
+              <button 
+                onClick={logout}
+                className="rounded-lg p-2 text-muted-foreground transition-all hover:bg-destructive/10 hover:text-destructive"
+                aria-label="Sign out"
+              >
+                <LogOut className="h-4 w-4" />
+              </button>
             </div>
-            <div className="min-w-0 flex-1 leading-tight">
-              <div className="text-xs font-semibold">AI Camera</div>
-              <div className="text-[10px] text-muted-foreground">Identify any phone</div>
-            </div>
-          </button>
-          <button onClick={logout} className="flex w-full items-center gap-3 rounded-xl p-2.5 text-left text-muted-foreground transition-all hover:bg-destructive/5 hover:text-destructive active:scale-[0.98]">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
-              <LogOut className="h-4 w-4" />
-            </div>
-            <div className="min-w-0 flex-1 leading-tight">
-              <div className="text-xs font-semibold">Sign Out</div>
-              <div className="truncate text-[10px] text-muted-foreground">{user?.email ?? user?.username}</div>
-            </div>
-          </button>
-        </div>
-      ) : (
-        <div className="border-t p-2.5">
-          <button onClick={logout} className="flex w-full items-center justify-center rounded-xl p-2 text-muted-foreground transition-all hover:bg-destructive/5 hover:text-destructive active:scale-[0.95]" aria-label="Sign out">
-            <LogOut className="h-5 w-5" />
-          </button>
-        </div>
-      )}
+          </>
+        ) : (
+          <div className="space-y-2">
+            <button 
+              onClick={() => setView("home")}
+              className="flex w-full items-center justify-center rounded-xl p-2.5 text-primary hover:bg-primary/10 transition-colors"
+              aria-label="AI Camera"
+            >
+              <ScanEye className="h-5 w-5" />
+            </button>
+            
+            <div className="h-px bg-border/50 mx-2" />
+            
+            <button 
+              onClick={logout} 
+              className="flex w-full items-center justify-center rounded-xl p-2.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+              aria-label="Sign out"
+            >
+              <LogOut className="h-5 w-5" />
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
+
+

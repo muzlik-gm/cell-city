@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3040 2>&1",
-    "build": "next build && cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/",
+    "build": "next build && (mkdir -p .next/standalone/.next && cp -r .next/static .next/standalone/.next/) && cp -r public .next/standalone/",
     "start": "NODE_ENV=production bun .next/standalone/server.js 2>&1",
     "lint": "eslint .",
     "db:push": "prisma db push --accept-data-loss",

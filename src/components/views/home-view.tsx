@@ -16,7 +16,6 @@ import { CustomerQuickSearch } from "@/components/shared/customer-quick-search";
 import { SupplierQuickSearch } from "@/components/shared/supplier-quick-search";
 import { RecentlySoldWidget } from "@/components/shared/recently-sold-widget";
 import { TopPartsWidget } from "@/components/shared/top-parts-widget";
-import { CollapsibleWidget } from "@/components/shared/collapsible-widget";
 import { CompatibilityResults } from "@/components/shared/compatibility-results";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -26,6 +25,7 @@ import { Card } from "@/components/ui/card";
 import {
   Search, ScanEye, Package, Smartphone, Users, Truck, ShoppingCart,
   X, TrendingUp, ArrowRight, Sparkles, Camera, Clock, Flame,
+  Zap, Target, Layers,
 } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
@@ -88,13 +88,14 @@ export function HomeView() {
     try { localStorage.removeItem(RECENT_KEY); } catch { /* ignore */ }
   }, []);
 
-  // Popular models (top by product count) for the hero
+  // Popular models (top by product count)
   const popular = useQuery({
     queryKey: ["popular-models"],
     queryFn: () => api.get<any[]>("/models?popular=true"),
     staleTime: 120_000,
   });
 
+  // Universal search
   const { data, isLoading } = useQuery({
     queryKey: ["universal-search", debounced],
     queryFn: () => api.get<any>(`/search?q=${encodeURIComponent(debounced)}`),
@@ -102,7 +103,7 @@ export function HomeView() {
     staleTime: 30_000,
   });
 
-  // Compatibility-first search: groups products by part type with stock per quality
+  // Compatibility-first search
   const compatQ = useQuery({
     queryKey: ["compatibility-search", debounced],
     queryFn: () => api.get<any>(`/compatibility-search?q=${encodeURIComponent(debounced)}`),
@@ -110,8 +111,6 @@ export function HomeView() {
     staleTime: 30_000,
   });
 
-  // If compatibility search found phone models with part groups, show that view.
-  // Otherwise fall back to the universal search results (products, customers, etc.).
   const showCompatibility = compatQ.data?.partGroups?.length > 0;
 
   const hasResults = showCompatibility || (data && (
@@ -125,6 +124,7 @@ export function HomeView() {
   ));
 
   const allProducts = data ? [...(data.products ?? []), ...(data.compatibleProducts ?? [])] : [];
+  
   // Deduplicate by id
   const seen = new Set<string>();
   const dedupedProducts = allProducts.filter((p) => {
@@ -153,7 +153,7 @@ export function HomeView() {
     setView("sales");
   }, [setView]);
 
-  // Esc clears search; Enter saves to recent / opens focused card; Arrow keys navigate cards
+  // Keyboard navigation
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === "Escape" && document.activeElement === inputRef.current) {
@@ -183,130 +183,206 @@ export function HomeView() {
   }, [debounced, saveRecent, focusedCardIndex, hasResults, isLoading, dedupedProducts]);
 
   return (
-    <div className="mx-auto max-w-6xl">
-      {/* Hero search — only shown when no query */}
+    <div className="mx-auto max-w-7xl">
+      {/* Hero Section — shown when no search */}
       <AnimatePresence mode="wait">
         {!debounced && (
           <motion.div
             key="hero"
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="flex flex-col items-center pt-4 sm:pt-8"
+            exit={{ opacity: 0, y: -16 }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            className="flex flex-col items-center pt-4 sm:pt-8 pb-8"
           >
-            {/* Today's business pulse — instant KPIs at the top of the hero */}
-            <div className="mb-4 w-full">
+            {/* Today's KPI Summary */}
+            <div className="mb-8 w-full">
               <TodaySummaryWidget />
             </div>
-            <div className="mb-3 flex items-center gap-2 rounded-full border bg-card px-3 py-1 text-xs font-medium text-muted-foreground shadow-soft">
-              <Sparkles className="h-3.5 w-3.5 text-primary" />
-              Search anything · finds parts, models, compatibility & more
+
+            {/* Hero text */}
+            <div className="mb-8 text-center max-w-2xl mx-auto">
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.1, duration: 0.5 }}
+                className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-2 mb-6"
+              >
+                <Sparkles className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium text-primary">Universal Search</span>
+                <span className="text-muted-foreground">·</span>
+                <span className="text-sm text-muted-foreground">Find parts, models & compatibility in seconds</span>
+              </motion.div>
+
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground leading-[1.1]">
+                What phone are you{" "}
+                <span className="relative inline-block">
+                  <span className="relative z-10 text-gradient">looking for?</span>
+                  <svg className="absolute -bottom-1 left-0 w-full h-3 text-primary/20" viewBox="0 0 200 12" fill="none" preserveAspectRatio="none">
+                    <path d="M2 10C40 4 160 4 198 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/>
+                  </svg>
+                </span>
+              </h1>
+              
+              <p className="mt-5 text-lg text-muted-foreground max-w-lg mx-auto leading-relaxed">
+                Search any phone model — we'll show you which parts fit and if we have them in stock right now.
+              </p>
             </div>
-            <h1 className="mb-3 text-center text-4xl font-bold tracking-tight sm:text-5xl">
-              What phone are you <span className="text-gradient">looking for?</span>
-            </h1>
-            <p className="mb-10 max-w-lg text-center text-lg text-muted-foreground">
-              Search any phone model — we'll show you which parts fit and if we have them in stock.
-            </p>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Search bar — always visible, large and centered */}
-      <div className={`relative ${!debounced ? "mx-auto max-w-2xl" : "mb-6"}`}>
-        <div className="relative">
-          <Search className="absolute left-5 top-1/2 h-6 w-6 -translate-y-1/2 text-muted-foreground" />
+      {/* Search Bar — always visible */}
+      <div className={`relative ${!debounced ? "mx-auto max-w-3xl" : "mb-8"}`}>
+        <div className={cn(
+          "relative group",
+          !debounced && "animate-scale-in"
+        )}>
+          <Search className={cn(
+            "absolute left-5 top-1/2 h-6 w-6 -translate-y-1/2 transition-colors",
+            "text-muted-foreground group-focus-within:text-primary"
+          )} />
+          
           <Input
             id="universal-search"
             ref={inputRef}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search Samsung A12, LCD code, barcode, M12…"
-            className="h-16 rounded-2xl border-2 pl-14 pr-14 text-lg shadow-card focus-visible:border-primary"
+            className={cn(
+              "h-16 rounded-2xl pl-14 pr-14 text-base font-normal",
+              "border-2 border-border/60 bg-card shadow-card",
+              "focus-visible:border-primary focus-visible:shadow-elevated",
+              "transition-all duration-200 placeholder:text-muted-foreground/70"
+            )}
             autoComplete="off"
           />
+          
           {query && (
             <button
               onClick={() => { setQuery(""); inputRef.current?.focus(); }}
-              className="absolute right-5 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-muted-foreground hover:bg-muted"
+              className="absolute right-5 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground transition-colors"
             >
-              <X className="h-6 w-6" />
+              <X className="h-4 w-4" />
             </button>
           )}
         </div>
 
-        {/* AI Camera button + recent searches + popular models — only in hero mode */}
+        {/* Hero actions — only when no search */}
         {!debounced && (
-          <div className="mt-5 space-y-5">
-            <div className="flex flex-col items-center gap-3">
+          <div className="mt-8 space-y-8">
+            {/* AI Camera CTA */}
+            <motion.div 
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.5 }}
+              className="flex flex-col items-center gap-4"
+            >
               <Button
                 size="lg"
-                className="h-12 gap-2 rounded-xl px-6 shadow-soft"
                 onClick={() => setAiOpen(true)}
+                className={cn(
+                  "h-13 gap-3 rounded-2xl px-8 text-base font-semibold",
+                  "gradient-primary shadow-elevated",
+                  "hover:shadow-card hover:scale-[1.02]",
+                  "active:scale-[0.98] transition-all duration-200"
+                )}
               >
                 <Camera className="h-5 w-5" />
-                Identify with Camera
+                Identify with AI Camera
+                <Zap className="h-4 w-4 opacity-70" />
               </Button>
-              <p className="text-xs text-muted-foreground">Take a photo of a phone back or LCD connector</p>
-            </div>
+              <p className="text-xs text-muted-foreground">
+                Take a photo of a phone back or LCD connector for instant identification
+              </p>
+            </motion.div>
 
             {/* Recent searches */}
             {recentSearches.length > 0 && (
-              <div className="mx-auto max-w-2xl">
-                <div className="mb-2 flex items-center justify-between">
-                  <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    <Clock className="h-3.5 w-3.5" /> Recent
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.25 }}
+                className="mx-auto max-w-2xl"
+              >
+                <div className="mb-3 flex items-center justify-between">
+                  <span className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    <Clock className="h-3.5 w-3.5" /> Recent Searches
                   </span>
-                  <button onClick={clearRecent} className="text-xs text-muted-foreground hover:text-foreground">Clear</button>
+                  <button 
+                    onClick={clearRecent} 
+                    className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Clear all
+                  </button>
                 </div>
-                <div className="flex flex-wrap justify-center gap-1.5">
+                <div className="flex flex-wrap justify-center gap-2">
                   {recentSearches.map((s, i) => (
-                    <button
-                      key={i}
+                    <motion.button
+                      key={s}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: i * 0.03 }}
                       onClick={() => { setQuery(s); inputRef.current?.focus(); }}
-                      className="rounded-full border bg-card px-3 py-1.5 text-xs font-medium shadow-soft transition hover:border-primary/40 hover:bg-primary/5"
+                      className={cn(
+                        "inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium",
+                        "bg-card border border-border/60 shadow-soft",
+                        "hover:border-primary/30 hover:bg-primary/5 hover:shadow-md",
+                        "transition-all duration-200"
+                      )}
                     >
                       {s}
-                    </button>
+                    </motion.button>
                   ))}
                 </div>
-              </div>
+              </motion.div>
             )}
 
             {/* Popular models */}
             {popular.data && popular.data.length > 0 && (
-              <div className="mx-auto max-w-2xl">
-                <div className="mb-2 flex items-center justify-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  <Flame className="h-3.5 w-3.5 text-primary" /> Popular Models
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 }}
+                className="mx-auto max-w-3xl"
+              >
+                <div className="mb-3 flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  <Flame className="h-3.5 w-3.5 text-chart-2" /> Trending Models
                 </div>
-                <div className="flex flex-wrap justify-center gap-1.5">
-                  {popular.data.slice(0, 8).map((m: any) => (
-                    <button
+                <div className="flex flex-wrap justify-center gap-2">
+                  {popular.data.slice(0, 10).map((m: any, i: number) => (
+                    <motion.button
                       key={m.id}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.35 + i * 0.03 }}
                       onClick={() => { setQuery(m.name); inputRef.current?.focus(); }}
-                      className="flex items-center gap-1.5 rounded-full border bg-card px-3 py-1.5 text-xs font-medium shadow-soft transition hover:border-primary/40 hover:bg-primary/5"
+                      className={cn(
+                        "inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium",
+                        "bg-card border border-border/60 shadow-soft",
+                        "hover:border-chart-2/30 hover:bg-chart-2/5 hover:shadow-md",
+                        "transition-all duration-200"
+                      )}
                     >
-                      <Smartphone className="h-3 w-3 text-primary" />
+                      <Smartphone className="h-3.5 w-3.5 text-chart-2" />
                       {m.name}
-                    </button>
+                    </motion.button>
                   ))}
                 </div>
-              </div>
+              </motion.div>
             )}
 
-            {/* Low-stock alerts + Top parts by revenue side by side on large screens */}
-            <div className="grid w-full gap-4 sm:grid-cols-2">
+            {/* Dashboard widgets grid */}
+            <div className="grid w-full gap-5 lg:grid-cols-2">
               <LowStockWidget />
               <TopPartsWidget />
             </div>
 
-            {/* Customer + Supplier quick-search side by side on large screens */}
-            <div className="grid w-full gap-4 sm:grid-cols-2">
+            <div className="grid w-full gap-5 lg:grid-cols-2">
               <CustomerQuickSearch />
               <SupplierQuickSearch />
             </div>
 
-            {/* Recently sold widget */}
             <RecentlySoldWidget />
           </div>
         )}
@@ -314,26 +390,44 @@ export function HomeView() {
 
       {/* Loading state */}
       {isLoading && debounced && (
-        <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-[520px] animate-pulse rounded-2xl border bg-muted/50" />
+        <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div 
+              key={i} 
+              className="h-[480px] rounded-2xl border border-border/40 bg-muted/20 animate-pulse"
+              style={{ animationDelay: `${i * 100}ms` }}
+            />
           ))}
         </div>
       )}
 
-      {/* No results */}
+      {/* No results state */}
       {!isLoading && debounced && !hasResults && (
-        <div className="mt-16 flex flex-col items-center text-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
-            <Package className="h-7 w-7" />
+        <motion.div 
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mt-16 flex flex-col items-center text-center"
+        >
+          <div className="flex h-18 w-18 items-center justify-center rounded-2xl bg-muted/50 text-muted-foreground mb-5">
+            <Package className="h-8 w-8" />
           </div>
-          <h3 className="mt-4 text-base font-semibold">No results for "{debounced}"</h3>
-          <p className="mt-1 text-sm text-muted-foreground">Try a different model name, LCD code, or barcode.</p>
-        </div>
+          <h3 className="text-xl font-bold text-foreground">No results found</h3>
+          <p className="mt-2 text-sm text-muted-foreground max-w-sm">
+            We couldn't find anything matching "<strong className="text-foreground">{debounced}</strong>". Try a different model name or LCD code.
+          </p>
+          <Button 
+            variant="outline" 
+            className="mt-5 rounded-xl"
+            onClick={() => setQuery("")}
+          >
+            Clear search
+          </Button>
+        </motion.div>
       )}
 
-      {/* Results */}
-      {/* Compatibility-first view: phone model → part groups → qualities → sell */}
+      {/* Results section */}
+      
+      {/* Compatibility-first view */}
       {!isLoading && showCompatibility && compatQ.data && (
         <CompatibilityResults
           matchedModels={compatQ.data.matchedModels}
@@ -344,84 +438,95 @@ export function HomeView() {
         />
       )}
 
-      {/* Fallback: universal search results (products, customers, etc.) */}
+      {/* Universal search results fallback */}
       {!isLoading && hasResults && !showCompatibility && (
-        <div className="mt-6 space-y-6">
-          {/* Keyboard hint */}
+        <div className="mt-8 space-y-8">
+          {/* Keyboard navigation hints */}
           {dedupedProducts.length > 0 && (
-            <div className="flex items-center justify-end gap-3 text-[10px] text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <kbd className="rounded border bg-muted px-1 py-0.5 font-mono text-[9px]">↑↓</kbd>
-                navigate
+            <div className="flex items-center justify-end gap-4 text-[11px] font-medium text-muted-foreground">
+              <span className="flex items-center gap-1.5">
+                <kbd className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-[9px] border border-border/50">↑↓</kbd>
+                Navigate
               </span>
-              <span className="flex items-center gap-1">
-                <kbd className="rounded border bg-muted px-1 py-0.5 font-mono text-[9px]">Enter</kbd>
-                open
+              <span className="flex items-center gap-1.5">
+                <kbd className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-[9px] border border-border/50">Enter</kbd>
+                Open
               </span>
-              <span className="flex items-center gap-1">
-                <kbd className="rounded border bg-muted px-1 py-0.5 font-mono text-[9px]">Esc</kbd>
-                clear
+              <span className="flex items-center gap-1.5">
+                <kbd className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-[9px] border border-border/50">Esc</kbd>
+                Clear
               </span>
             </div>
           )}
-          {/* Quick info chips: matched models, brands, customers, suppliers */}
-          <div className="flex flex-wrap gap-2">
+
+          {/* Quick filter chips */}
+          <div className="flex flex-wrap gap-2.5">
             {data.models?.map((m: any) => (
               <button
                 key={m.id}
                 onClick={() => setQuery(m.name)}
-                className="flex items-center gap-1.5 rounded-full border bg-card px-3 py-1.5 text-xs font-medium shadow-soft transition hover:border-primary/40"
+                className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-card px-4 py-2 text-sm font-medium shadow-soft hover:border-primary/30 hover:bg-primary/5 transition-all"
               >
                 <Smartphone className="h-3.5 w-3.5 text-primary" />
                 {m.name}
-                <span className="text-muted-foreground">· {m._count?.products ?? 0} parts</span>
+                <Badge variant="secondary" className="rounded-full bg-muted/50 text-[10px] font-semibold">
+                  {m._count?.products ?? 0} parts
+                </Badge>
               </button>
             ))}
+            
             {data.brands?.map((b: any) => (
               <button
                 key={b.id}
                 onClick={() => setQuery(b.name)}
-                className="flex items-center gap-1.5 rounded-full border bg-card px-3 py-1.5 text-xs font-medium shadow-soft transition hover:border-primary/40"
+                className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-card px-4 py-2 text-sm font-medium shadow-soft hover:border-primary/30 hover:bg-primary/5 transition-all"
               >
-                <Smartphone className="h-3.5 w-3.5 text-primary" />
+                <Layers className="h-3.5 w-3.5 text-chart-3" />
                 {b.name}
-                <span className="text-muted-foreground">· {b._count?.products ?? 0} parts</span>
+                <Badge variant="secondary" className="rounded-full bg-muted/50 text-[10px] font-semibold">
+                  {b._count?.products ?? 0} parts
+                </Badge>
               </button>
             ))}
+
             {data.customers?.map((c: any) => (
               <button
                 key={c.id}
                 onClick={() => setView("sales")}
-                className="flex items-center gap-1.5 rounded-full border bg-card px-3 py-1.5 text-xs font-medium shadow-soft transition hover:border-primary/40"
+                className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-card px-4 py-2 text-sm font-medium shadow-soft hover:border-primary/30 hover:bg-primary/5 transition-all"
               >
                 <Users className="h-3.5 w-3.5 text-primary" />
                 {c.name}
               </button>
             ))}
+
             {data.suppliers?.map((s: any) => (
               <button
                 key={s.id}
                 onClick={() => setView("purchases")}
-                className="flex items-center gap-1.5 rounded-full border bg-card px-3 py-1.5 text-xs font-medium shadow-soft transition hover:border-primary/40"
+                className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-card px-4 py-2 text-sm font-medium shadow-soft hover:border-primary/30 hover:bg-primary/5 transition-all"
               >
-                <Truck className="h-3.5 w-3.5 text-primary" />
+                <Truck className="h-3.5 w-3.5 text-chart-2" />
                 {s.name}
               </button>
             ))}
           </div>
 
-          {/* Compatible models note */}
+          {/* Cross-compatible models note */}
           {data.compatibleModels?.length > 0 && (
-            <Card className="border-primary/20 bg-primary/5 p-3">
-              <div className="flex flex-wrap items-center gap-2 text-xs">
-                <span className="font-semibold text-primary">Cross-compatible parts found:</span>
+            <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-transparent p-4">
+              <div className="flex flex-wrap items-center gap-2.5">
+                <Target className="h-4 w-4 text-primary" />
+                <span className="text-sm font-semibold text-primary">Cross-compatible parts:</span>
                 {data.compatibleModels.slice(0, 6).map((m: any, i: number) => (
-                  <Badge key={i} variant="outline" className="bg-card">
+                  <Badge key={i} variant="outline" className="rounded-full bg-background/80 font-medium">
                     {m.name}
                   </Badge>
                 ))}
                 {data.compatibleModels.length > 6 && (
-                  <span className="text-muted-foreground">+{data.compatibleModels.length - 6} more</span>
+                  <span className="text-xs text-muted-foreground font-medium">
+                    +{data.compatibleModels.length - 6} more models
+                  </span>
                 )}
               </div>
             </Card>
@@ -431,12 +536,15 @@ export function HomeView() {
           {(() => {
             let globalIdx = -1;
             return sortedGroups.map(([partType, products]) => (
-              <div key={partType}>
-                <div className="mb-4 flex items-center gap-3">
-                  <h3 className="text-xl font-bold tracking-tight">{partType}</h3>
-                  <Badge variant="secondary" className="text-sm">{products.length}</Badge>
+              <section key={partType}>
+                <div className="mb-5 flex items-center gap-3">
+                  <h2 className="text-xl font-bold tracking-tight text-foreground">{partType}</h2>
+                  <Badge variant="secondary" className="rounded-full px-2.5 py-0.5 text-xs font-bold tabular-nums">
+                    {products.length}
+                  </Badge>
                 </div>
-                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
                   {products.map((p) => {
                     globalIdx++;
                     const idx = globalIdx;
@@ -445,8 +553,8 @@ export function HomeView() {
                         key={p.id}
                         ref={idx === focusedCardIndex ? focusedCardRef : undefined}
                         className={cn(
-                          "rounded-2xl transition-all",
-                          idx === focusedCardIndex && "ring-2 ring-primary ring-offset-2 ring-offset-background scale-[1.02]"
+                          "rounded-2xl transition-all duration-200",
+                          idx === focusedCardIndex && "ring-2 ring-primary ring-offset-2 ring-offset-background shadow-elevated scale-[1.02]"
                         )}
                       >
                         <SmartProductCard
@@ -462,63 +570,77 @@ export function HomeView() {
                     );
                   })}
                 </div>
-              </div>
+              </section>
             ));
           })()}
 
-          {/* Recent sales matches */}
+          {/* Related sales */}
           {data.sales?.length > 0 && (
-            <div>
-              <div className="mb-3 flex items-center gap-2">
-                <ShoppingCart className="h-4 w-4 text-muted-foreground" />
-                <h3 className="text-xl font-bold tracking-tight">Related Sales</h3>
+            <section>
+              <div className="mb-5 flex items-center gap-3">
+                <ShoppingCart className="h-5 w-5 text-muted-foreground" />
+                <h2 className="text-xl font-bold tracking-tight text-foreground">Related Sales</h2>
               </div>
-              <div className="space-y-2">
+              
+              <div className="space-y-2.5">
                 {data.sales.map((s: any) => (
                   <button
                     key={s.id}
                     onClick={() => setView("sales")}
-                    className="flex w-full items-center gap-3 rounded-xl border bg-card p-3 text-left shadow-soft transition hover:shadow-md"
+                    className="group flex w-full items-center gap-4 rounded-2xl border border-border/50 bg-card p-4 text-left shadow-soft hover:shadow-card hover:border-primary/20 transition-all duration-200"
                   >
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                      <ShoppingCart className="h-4 w-4" />
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                      <ShoppingCart className="h-5 w-5" />
                     </div>
+                    
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium">{s.invoiceNo}</p>
-                      <p className="text-xs text-muted-foreground">{s.customer?.name ?? "Walk-in"} · {timeAgo(s.createdAt)}</p>
+                      <p className="text-sm font-semibold text-foreground">{s.invoiceNo}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {s.customer?.name ?? "Walk-in"} · {timeAgo(s.createdAt)}
+                      </p>
                     </div>
-                    <span className="text-sm font-bold">{formatCurrency(s.total)}</span>
+                    
+                    <div className="text-right">
+                      <span className="text-sm font-bold text-foreground">{formatCurrency(s.total)}</span>
+                      <ArrowRight className="ml-2 inline h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
                   </button>
                 ))}
               </div>
-            </div>
+            </section>
           )}
         </div>
       )}
 
-      {/* Product detail sheet */}
-      <ProductDetailSheet product={selected} onOpenChange={(o) => !o && setSelected(null)} onEdit={(p) => { setSelected(null); setEditing(p); setFormOpen(true); }} />
-      {/* Edit form */}
+      {/* Modals & Sheets */}
+      <ProductDetailSheet 
+        product={selected} 
+        onOpenChange={(o) => !o && setSelected(null)} 
+        onEdit={(p) => { setSelected(null); setEditing(p); setFormOpen(true); }} 
+      />
+      
       <ProductFormDialog open={formOpen} onOpenChange={setFormOpen} product={editing} />
-      {/* QR dialog */}
+      
       <Dialog open={!!qrProduct} onOpenChange={(o) => !o && setQrProduct(null)}>
-        <DialogContent className="max-w-sm">
+        <DialogContent className="max-w-sm rounded-2xl">
           <DialogHeader>
-            <DialogTitle>QR Code — {qrProduct?.sku}</DialogTitle>
+            <DialogTitle className="text-base font-bold">QR Code — {qrProduct?.sku}</DialogTitle>
           </DialogHeader>
-          <div className="flex flex-col items-center gap-3 py-4">
+          <div className="flex flex-col items-center gap-4 py-4">
             {qrProduct && <QrDisplay value={qrProduct.sku} size={200} />}
-            <p className="text-center text-sm font-medium">{qrProduct?.name}</p>
-            <p className="text-center text-xs text-muted-foreground">{qrProduct?.shelf?.code} · {qrProduct?.warehouse?.name}</p>
-            <Button onClick={() => window.print()} className="mt-2 w-full">Print</Button>
+            <p className="text-sm font-semibold text-foreground">{qrProduct?.name}</p>
+            <p className="text-xs text-muted-foreground text-center">
+              {qrProduct?.shelf?.code} · {qrProduct?.warehouse?.name}
+            </p>
+            <Button onClick={() => window.print()} className="w-full rounded-xl">
+              Print QR Code
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
-      {/* Stock adjust */}
+
       <StockAdjustDialog product={adjustProduct} open={!!adjustProduct} onOpenChange={(o) => !o && setAdjustProduct(null)} />
-      {/* AI Camera modal */}
       <AiCameraModal open={aiOpen} onOpenChange={setAiOpen} />
-      {/* Quick sell modal */}
       <QuickSellModal product={quickSellProduct} open={!!quickSellProduct} onOpenChange={(o) => !o && setQuickSellProduct(null)} />
     </div>
   );
