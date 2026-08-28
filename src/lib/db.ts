@@ -1,146 +1,205 @@
 import { PrismaClient } from '@prisma/client'
+import { createClient } from '@libsql/client'
+import { PrismaLibSQL } from '@prisma/adapter-libsql'
 import path from 'path'
 
 /**
- * ═══════════════════════════════════════════════════════════
- * DATABASE CLIENT - Turso (Production) / SQLite (Development)
- * ═══════════════════════════════════════════════════════════
- * 
- * PRODUCTION: Uses Turso/libSQL remote database via adapter
- * DEVELOPMENT: Uses SQLite local database
- * 
- * ⚠️ CRITICAL: When using Turso adapter, do NOT pass datasources option!
- *    Prisma schema still needs DATABASE_URL but adapter overrides connection.
- * ═══════════════════════════════════════════════════════════
+ * ═══════════════════════════════════════════════════════════════════════════
+ * DATABASE CLIENT - Turso (Production) / SQLite (Local Development)
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * ARCHITECTURE:
+ * - Uses STATIC imports for @libsql/client and @prisma/adapter-libsql
+ * - Singleton pattern prevents connection leaks during hot-reload
+ * - Turso: Remote libSQL database for production/staging
+ * - SQLite: Local file-based database for offline development
+ *
+ * ENVIRONMENT VARIABLES:
+ * - TURSO_DATABASE_URL: libsql://your-db-name.turso.io (required for Turso)
+ * - TURSO_AUTH_TOKEN: Your Turso database auth token (required for Turso)
+ * - DATABASE_URL: file:./dev.db (auto-configured for SQLite fallback)
+ * ═══════════════════════════════════════════════════════════════════════════
  */
 
-// ─── Global Singleton Pattern ──────────────────────────────
+// ─── Global Singleton Pattern ────────────────────────────────────────
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
 }
 
-// Get local database URL with fallback
-function getLocalDatabaseUrl(): string {
-  const url = process.env.DATABASE_URL;
-  if (!url || url.includes('/home/z/my-project/db/')) {
-    return `file:${path.join(process.cwd(), 'prisma', 'dev.db')}`;
-  }
-  return url;
+// ─── Configuration ──────────────────────────────────────────────────
+interface DatabaseConfig {
+  provider: 'turso' | 'sqlite'
+  url: string
+  authToken?: string
 }
 
-// Create appropriate Prisma client based on environment
-async function createPrismaClient(): Promise<PrismaClient> {
-  const tursoUrl = process.env.TURSO_DATABASE_URL?.trim();
-  const tursoAuthToken = process.env.TURSO_AUTH_TOKEN?.trim();
+function getDatabaseConfig(): DatabaseConfig {
+  const tursoUrl = process.env.TURSO_DATABASE_URL?.trim()
+  const tursoAuthToken = process.env.TURSO_AUTH_TOKEN?.trim()
   
-  console.log('[DB] Initializing database client...');
-  console.log('[DB] Environment:', {
-    nodeEnv: process.env.NODE_ENV,
-    hasTursoUrl: !!tursoUrl,
-    tursoUrlLength: tursoUrl?.length || 0,
-    hasTursoAuth: !!tursoAuthToken,
-    authLength: tursoAuthToken?.length || 0,
-  });
-  
-  // ─── Use Turso if BOTH variables are set and valid ──────────
+  // Validate Turso configuration
   if (tursoUrl && tursoAuthToken && tursoUrl.startsWith('libsql://')) {
-    console.log(`[DB] ✅ Using Turso: ${tursoUrl.substring(0, 50)}...`);
+    return {
+      provider: 'turso',
+      url: tursoUrl,
+      authToken: tursoAuthToken,
+    }
+  }
+  
+  // Fallback to local SQLite
+  const localUrl = process.env.DATABASE_URL?.trim()
+  if (localUrl && localUrl.startsWith('file:')) {
+    return {
+      provider: 'sqlite',
+      url: localUrl,
+    }
+  }
+  
+  // Default local database path
+  return {
+    provider: 'sqlite',
+    url: `file:${path.join(process.cwd(), 'prisma', 'dev.db')}`,
+  }
+}
+
+// ─── Client Factory ─────────────────────────────────────────────────
+function createPrismaClient(): PrismaClient {
+  const config = getDatabaseConfig()
+  
+  console.log('[DB] ════════════════════════════════════════════════')
+  console.log('[DB] Initializing database client...')
+  console.log(`[DB] Provider: ${config.provider.toUpperCase()}`)
+  console.log(`[DB] URL: ${config.url.substring(0, 60)}${config.url.length > 60 ? '...' : ''}`)
+  
+  if (config.provider === 'turso') {
+    console.log('[DB] Auth Token: ✓ Configured (' + (config.authToken?.length || 0) + ' chars)')
     
-    try {
-      // Import Turso packages dynamically
-      const libsqlModule = await import('@libsql/client');
-      const prismaAdapterModule = await import('@prisma/adapter-libsql');
-      
-      const { createClient } = libsqlModule as any;
-      const { PrismaLibSQL } = prismaAdapterModule as any;
-      
-      if (!createClient || !PrismaLibSQL) {
-        throw new Error('Failed to load Turso packages');
-      }
-      
-      // Create libsql client FIRST
-      const libsql = createClient({
-        url: tursoUrl,
-        authToken: tursoAuthToken,
-      });
-      
-      // Test the connection immediately
-      console.log('[DB] Testing Turso connection...');
-      try {
-        await libsql.execute('SELECT 1');
-        console.log('[DB] ✅ Turso connection test successful');
-      } catch (testError) {
-        console.error('[DB] ❌ Turso connection test failed:', testError);
-        throw testError;
-      }
-      
-      // Create adapter from working client
-      const adapter = new PrismaLibSQL(libsql);
-      
-      // Create PrismaClient WITH adapter but WITHOUT datasource override
-      // This is critical - adapter handles all connections
-      const client = new PrismaClient({
-        adapter,
-        log: ['error', 'warn', 'query'],
-      });
-      
-      console.log('[DB] ✅ Turso Prisma client ready');
-      return client;
-      
-    } catch (error) {
-      console.error('[DB] ❌ Turso initialization failed:', error);
-      console.warn('[DB] Falling back to SQLite...');
-      // Continue to fallback below
-    }
-  } else {
-    if (tursoUrl && !tursoAuthToken) {
-      console.warn('[DB] ⚠️ TURSO_DATABASE_URL set but TURSO_AUTH_TOKEN missing!');
-    } else if (!tursoUrl) {
-      console.log('[DB] No Turso configuration, using SQLite');
-    } else {
-      console.warn('[DB] ⚠️ Invalid TURSO_DATABASE_URL format (must start with libsql://)');
-    }
+    // Create libsql client with explicit URL and auth
+    const libsql = createClient({
+      url: config.url,        // ← EXPLICIT URL (this was becoming undefined!)
+      authToken: config.authToken!,
+    })
+    
+    // Create Prisma adapter from libsql client
+    const adapter = new PrismaLibSQL(libsql)
+    
+    // Create PrismaClient with the adapter
+    const client = new PrismaClient({
+      adapter,
+      log: process.env.NODE_ENV === 'development' 
+        ? ['error', 'warn', 'query'] 
+        : ['error'],
+    })
+    
+    console.log('[DB] ✅ Turso Prisma client created successfully')
+    console.log('[DB] ════════════════════════════════════════════════')
+    
+    return client
   }
   
-  // ─── Fallback to SQLite ──────────────────────────────────
-  const dbUrl = getLocalDatabaseUrl();
+  // SQLite client (no adapter needed)
+  console.log('[DB] Using local SQLite database')
   
-  // IMPORTANT: Set DATABASE_URL so Prisma schema validation passes
-  if (!process.env.DATABASE_URL || !process.env.DATABASE_URL.startsWith('file:')) {
-    process.env.DATABASE_URL = dbUrl;
+  // Ensure DATABASE_URL is set for Prisma schema validation
+  if (!process.env.DATABASE_URL) {
+    process.env.DATABASE_URL = config.url
   }
   
-  console.log(`[DB] Using SQLite: ${dbUrl}`);
+  const client = new PrismaClient({
+    log: process.env.NODE_ENV === 'development' 
+      ? ['error', 'warn', 'query'] 
+      : ['error'],
+  })
   
-  return new PrismaClient({
-    log: ['error', 'warn', 'query'],
-  });
+  console.log('[DB] ✅ SQLite Prisma client created successfully')
+  console.log('[DB] ════════════════════════════════════════════════')
+  
+  return client
 }
 
-// Initialize and export the database client
-export const db = await createPrismaClient();
-
-// Cache in development to avoid multiple connections during hot-reload
-if (process.env.NODE_ENV !== 'production') {
-  globalForPrisma.prisma = db;
+// ─── Initialize & Export ────────────────────────────────────────────
+// Use cached instance in development to avoid connection leaks on hot-reload
+function getPrismaClient(): PrismaClient {
+  if (process.env.NODE_ENV !== 'production') {
+    // Development: use global singleton
+    if (!globalForPrisma.prisma) {
+      globalForPrisma.prisma = createPrismaClient()
+    }
+    return globalForPrisma.prisma
+  }
+  
+  // Production: always create fresh client (serverless)
+  return createPrismaClient()
 }
 
-// Test connection helper
-export async function testConnection() {
+export const db = getPrismaClient()
+
+// ─── Connection Test Helper ─────────────────────────────────────────
+export async function testConnection(): Promise<{
+  success: boolean
+  message: string
+  provider: string
+  details?: any
+}> {
   try {
-    const result = await db.$queryRaw`SELECT 1 as test`;
+    const config = getDatabaseConfig()
+    
+    if (config.provider === 'turso') {
+      // Direct test of libsql connection
+      const testClient = createClient({
+        url: config.url,
+        authToken: config.authToken!,
+      })
+      
+      const result = await testClient.execute('SELECT 1 as test')
+      await testClient.close()
+      
+      return {
+        success: true,
+        message: 'Turso connection successful',
+        provider: 'turso',
+        details: result,
+      }
+    }
+    
+    // SQLite test
+    const result = await db.$queryRaw`SELECT 1 as test`
+    
     return {
       success: true,
-      message: 'Database connection successful',
-      provider: process.env.TURSO_DATABASE_URL?.startsWith('libsql://') ? 'Turso' : 'SQLite',
-      result,
-    };
+      message: 'SQLite connection successful',
+      provider: 'sqlite',
+      details: result,
+    }
   } catch (error: any) {
+    console.error('[DB] ❌ Connection test failed:', error)
     return {
       success: false,
       message: error?.message || 'Connection failed',
-      code: error?.code,
-      stack: error?.stack,
-    };
+      provider: getDatabaseConfig().provider,
+      details: {
+        code: error?.code,
+        stack: error?.stack,
+      },
+    }
+  }
+}
+
+// ─── Health Check Endpoint Helper ───────────────────────────────────
+export async function healthCheck() {
+  const config = getDatabaseConfig()
+  const test = await testConnection()
+  
+  return {
+    status: test.success ? 'healthy' : 'unhealthy',
+    database: {
+      provider: config.provider,
+      url: config.provider === 'turso' 
+        ? config.url.replace(new RegExp('//[^:]+:'), '//***:')  // Mask auth in logs
+        : config.url,
+      connected: test.success,
+      error: test.success ? undefined : test.message,
+    },
+    timestamp: new Date().toISOString(),
   }
 }
