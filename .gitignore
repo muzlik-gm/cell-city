@@ -35,7 +35,7 @@ yarn-error.log*
 
 # vercel
 .vercel
-
+.env
 
 # typescript
 *.tsbuildinfo
@@ -48,6 +48,7 @@ dev.log
 dev.out.log
 test
 prompt
+
 
 server.log
 # Skills directory
