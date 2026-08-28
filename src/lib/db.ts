@@ -6,13 +6,11 @@ import path from 'path'
  * DATABASE CLIENT - Turso (Production) / SQLite (Development)
  * ═══════════════════════════════════════════════════════════
  * 
- * PRODUCTION: Uses Turso/libSQL remote database
- *   → Requires: TURSO_DATABASE_URL + TURSO_AUTH_TOKEN env vars
- *
- * DEVELOPMENT: Uses SQLite local database  
- *   → Requires: DATABASE_URL or defaults to ./prisma/dev.db
+ * PRODUCTION: Uses Turso/libSQL remote database via adapter
+ * DEVELOPMENT: Uses SQLite local database
  * 
- * ⚠️ Vercel CANNOT use local SQLite (read-only filesystem)
+ * ⚠️ CRITICAL: When using Turso adapter, do NOT pass datasources option!
+ *    Prisma schema still needs DATABASE_URL but adapter overrides connection.
  * ═══════════════════════════════════════════════════════════
  */
 
@@ -32,80 +30,90 @@ function getLocalDatabaseUrl(): string {
 
 // Create appropriate Prisma client based on environment
 async function createPrismaClient(): Promise<PrismaClient> {
-  const tursoUrl = process.env.TURSO_DATABASE_URL;
-  const tursoAuthToken = process.env.TURSO_AUTH_TOKEN;
+  const tursoUrl = process.env.TURSO_DATABASE_URL?.trim();
+  const tursoAuthToken = process.env.TURSO_AUTH_TOKEN?.trim();
   
+  console.log('[DB] Initializing database client...');
   console.log('[DB] Environment:', {
     nodeEnv: process.env.NODE_ENV,
     hasTursoUrl: !!tursoUrl,
+    tursoUrlLength: tursoUrl?.length || 0,
     hasTursoAuth: !!tursoAuthToken,
-    tursoUrlPreview: tursoUrl ? `${tursoUrl.substring(0, 40)}...` : null,
-    localDbUrl: getLocalDatabaseUrl()
+    authLength: tursoAuthToken?.length || 0,
   });
   
-  // ─── Use Turso if BOTH variables are set ─────────────────
-  if (tursoUrl && tursoAuthToken) {
-    console.log(`[DB] Initializing Turso client for: ${tursoUrl}`);
+  // ─── Use Turso if BOTH variables are set and valid ──────────
+  if (tursoUrl && tursoAuthToken && tursoUrl.startsWith('libsql://')) {
+    console.log(`[DB] ✅ Using Turso: ${tursoUrl.substring(0, 50)}...`);
     
     try {
       // Import Turso packages dynamically
-      const { createClient } = await import('@libsql/client') as any;
-      const { PrismaLibSQL } = await import('@prisma/adapter-libsql') as any;
+      const libsqlModule = await import('@libsql/client');
+      const prismaAdapterModule = await import('@prisma/adapter-libsql');
       
-      console.log('[DB] Turso packages imported successfully');
+      const { createClient } = libsqlModule as any;
+      const { PrismaLibSQL } = prismaAdapterModule as any;
       
-      // Create libsql client with EXPLICIT url parameter
+      if (!createClient || !PrismaLibSQL) {
+        throw new Error('Failed to load Turso packages');
+      }
+      
+      // Create libsql client FIRST
       const libsql = createClient({
-        url: tursoUrl,  // Must be explicit!
+        url: tursoUrl,
         authToken: tursoAuthToken,
       });
       
-      console.log('[DB] libsql client created');
+      // Test the connection immediately
+      console.log('[DB] Testing Turso connection...');
+      try {
+        await libsql.execute('SELECT 1');
+        console.log('[DB] ✅ Turso connection test successful');
+      } catch (testError) {
+        console.error('[DB] ❌ Turso connection test failed:', testError);
+        throw testError;
+      }
       
-      // Create Prisma adapter
+      // Create adapter from working client
       const adapter = new PrismaLibSQL(libsql);
       
-      console.log('[DB] PrismaLibSQL adapter created');
-      
-      // Create and return Prisma client with adapter
+      // Create PrismaClient WITH adapter but WITHOUT datasource override
+      // This is critical - adapter handles all connections
       const client = new PrismaClient({
         adapter,
-        log: process.env.NODE_ENV === 'development' 
-          ? ['query', 'error', 'warn'] 
-          : ['error', 'warn'],
+        log: ['error', 'warn', 'query'],
       });
       
-      console.log('[DB] ✅ Turso Prisma client created successfully');
+      console.log('[DB] ✅ Turso Prisma client ready');
       return client;
       
     } catch (error) {
-      console.error('[DB] ❌ Failed to initialize Turso:', error);
+      console.error('[DB] ❌ Turso initialization failed:', error);
       console.warn('[DB] Falling back to SQLite...');
-      // Don't throw - fall through to SQLite
+      // Continue to fallback below
+    }
+  } else {
+    if (tursoUrl && !tursoAuthToken) {
+      console.warn('[DB] ⚠️ TURSO_DATABASE_URL set but TURSO_AUTH_TOKEN missing!');
+    } else if (!tursoUrl) {
+      console.log('[DB] No Turso configuration, using SQLite');
+    } else {
+      console.warn('[DB] ⚠️ Invalid TURSO_DATABASE_URL format (must start with libsql://)');
     }
   }
   
   // ─── Fallback to SQLite ──────────────────────────────────
-  if (tursoUrl && !tursoAuthToken) {
-    console.warn('[DB] ⚠️ TURSO_DATABASE_URL set but TURSO_AUTH_TOKEN is missing!');
-  }
-  
-  if (!tursoUrl && process.env.NODE_ENV === 'production') {
-    console.warn('[DB] ⚠️ No TURSO_DATABASE_URL in production! Using SQLite.');
-  }
-  
   const dbUrl = getLocalDatabaseUrl();
+  
+  // IMPORTANT: Set DATABASE_URL so Prisma schema validation passes
+  if (!process.env.DATABASE_URL || !process.env.DATABASE_URL.startsWith('file:')) {
+    process.env.DATABASE_URL = dbUrl;
+  }
+  
   console.log(`[DB] Using SQLite: ${dbUrl}`);
   
   return new PrismaClient({
-    datasources: {
-      db: {
-        url: dbUrl,
-      },
-    },
-    log: process.env.NODE_ENV === 'development' 
-      ? ['query', 'error', 'warn'] 
-      : ['error', 'warn'],
+    log: ['error', 'warn', 'query'],
   });
 }
 
@@ -120,17 +128,19 @@ if (process.env.NODE_ENV !== 'production') {
 // Test connection helper
 export async function testConnection() {
   try {
-    await db.$queryRaw`SELECT 1 as test`;
+    const result = await db.$queryRaw`SELECT 1 as test`;
     return {
       success: true,
       message: 'Database connection successful',
-      provider: process.env.TURSO_DATABASE_URL && process.env.TURSO_AUTH_TOKEN ? 'Turso' : 'SQLite',
+      provider: process.env.TURSO_DATABASE_URL?.startsWith('libsql://') ? 'Turso' : 'SQLite',
+      result,
     };
   } catch (error: any) {
     return {
       success: false,
       message: error?.message || 'Connection failed',
       code: error?.code,
+      stack: error?.stack,
     };
   }
 }
